@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+    <name>Alt Horsemen (War Update)</name>
+    <directory>althorsemen</directory>
+    <id>2530772508</id>
+    <description>This mod adds a completely new harbinger for the alternate path!
+Also comes with a unique (stronger) cube of meat variant.
+
+Requires [b]Custom Stage API[/b] (for now)
+get it -&gt;  [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1348031964]here[/url]
+
+-----------------------------------------
+
+[h1]Harbinger Hitlist[/h1]
+[list]
+    [*]Famine (Downpour/Dross) ✓
+
+    [*]Pestilence ✗
+    [*]War ✗
+    [*]Death ✗
+    [*]Conquest (?)
+    [*]Headless Horseman (?)
+[/list]
+
+When the horsemen get added into the alt path officially, this mod will cease to exist forever
+
+-----------------------------------------
+
+[h1]Credits[/h1]
+lambchop_is_ok - Sprites
+hippocrunchy - Design, Sprites, Implementation
+jubbalub - Tumor Item Concept
+NotYourSagittarius - Original Character Design</description>
+    <version>1.7</version>
+    <visibility>Public</visibility>
+    <tag id="Lua"/>
+    <tag id="Items"/>
+    <tag id="Bosses"/>
+</metadata>
