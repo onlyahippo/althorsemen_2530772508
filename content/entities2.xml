@@ -6,7 +6,7 @@
     </entity>
 	
 	<!-- War2 -->
-	<entity anm2path="bosses/war2/boss_war2.anm2" baseHP="500" boss="1" champion="0" id="650" variant="101" name="Tainted War" hasFloorAlts="true" collisionDamage="1" collisionMass="50" collisionRadius="20" friction="1" numGridCollisionPoints="24" shadowSize="20" stageHP="0" portrait="29" bestiary="true" bestiaryTransform="0,0,1" bestiaryAnim="Horn" tags="nodelirium">
+	<entity anm2path="bosses/war2/boss_war2.anm2" baseHP="555" boss="1" champion="0" id="650" variant="101" name="Tainted War" hasFloorAlts="true" collisionDamage="1" collisionMass="50" collisionRadius="20" friction="1" numGridCollisionPoints="24" shadowSize="20" stageHP="0" portrait="29" bestiary="true" bestiaryTransform="0,0,1" bestiaryAnim="Horn" tags="nodelirium">
         <gibs amount="25" blood="1" bone="1" eye="1" gut="1" large="1" poop="0" />
     </entity>
 	

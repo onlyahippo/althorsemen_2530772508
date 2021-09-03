@@ -520,7 +520,7 @@ Althorsemen.War2 = {
 		reflectChance = 2,
 		walkingBombDamage = 20,
 		bombDamage = 30,
-		bombPower = 14,
+		bombPower = 17,
 		bombCountdown = 25,
 		speed = 3.5,
 	},
@@ -547,12 +547,17 @@ Althorsemen.War2 = {
 		chargeSpeed = 3,
 		chargeDamage = 10,
 		rockPower = 9,
-		phase2Health = 0.4,
+		rockDist = 10,
+		phase2Health = 0.5,
+		phase2Bomb = 60,
 		walkArmor = 0.3,
-		walkWait = 130,
-		walkMax = 7,
-		armyDist = 150,
-		deathArmyDist = 120
+		walkWait = 140,
+		walkMax = 7.2,
+		armyDistMin = 150,
+		armyDistMax = 170,
+		deathArmyDist = 120,
+		fireAmount = 3,
+		firePower = 6,
 	}
 }
 local w2 = Althorsemen.War2
@@ -584,7 +589,7 @@ function mod:War2AI(npc)
 		end
 		
 		d.movesBeforeHorn = 0
-		d.movesBeforeCharge = math.random(4,6)
+		d.movesBeforeCharge = math.random(4,5)
 		d.idleWait = 10
 		d.state = "idle"
 	end
@@ -619,7 +624,7 @@ function mod:War2AI(npc)
 			--charge timer
 			if d.movesBeforeCharge <= 0 then
 				if not d.chargeMoment then
-					d.movesBeforeCharge = math.random(5,7)
+					d.movesBeforeCharge = math.random(4,6)
 					d.dice = 3
 				else
 					d.chargeMoment = nil
@@ -772,6 +777,11 @@ function mod:War2AI(npc)
 		---start charge
 		elseif d.substate == 1 then
 			npc.Friction = w2.bal.attackFriction
+			
+			if sprite:IsEventTriggered("Flame") then
+				npc:PlaySound(SoundEffect.SOUND_WAR_FLAME, 1, 0, false, 1)
+			end
+			
 			if sprite:IsFinished("AttackDashStart") then
 				mod:SpritePlay(sprite,"AttackDash")
 				Isaac.Explode(npc.Position, npc, 0)
@@ -795,6 +805,10 @@ function mod:War2AI(npc)
 			end			
 		--charge windup
 		elseif d.substate == 3 then
+			if sprite:IsEventTriggered("Flame") then
+				npc:PlaySound(SoundEffect.SOUND_WAR_FLAME, 1, 0, false, 1)
+			end
+		
 			if sprite:IsFinished("AttackDashAgain") then
 				mod:SpritePlay(sprite,"AttackDash")
 				
@@ -842,7 +856,7 @@ function mod:War2AI(npc)
 					params.Scale = 0.5
 					for i=-2,2 do
 						local rock = Isaac.Spawn(9, 9, 0,npc.Position+Vector(-d.dir*2,0), Vector(-d.dir*w2.bal.rockPower,0):Rotated(i*30), npc):ToProjectile()
-						rock.FallingAccel = 0.01
+						rock.FallingAccel = 0.1-(0.01*w2.bal.rockDist)
 					end
 					npc:FireBossProjectiles(3,npc.Position+Vector(-d.dir*(w2.bal.rockPower/4),0), 8,params)
 					
@@ -863,14 +877,20 @@ function mod:War2AI(npc)
 		end
 		
 		--line of fire
-		if d.substate == 2 or d.substate == 4 then
+		if d.substate == 1 or d.substate == 3 then
 		
-			--[[if npc.FrameCount % 3 == 0 then
-				local fire = Isaac.Spawn(9, 2, 0,npc.Position, Vector(0,0), npc):ToProjectile()
-				fire.Height = -14
-				fire.FallingAccel = -0.089
-				fire:GetSprite().Offset = Vector(0,10)
-			end]]
+			if sprite:IsEventTriggered("Flame") then
+				d.flameyFlame = true
+			end	
+			
+			if d.flameyFlame and npc.FrameCount % 3 == 0 then
+				local dirRand = math.random(-40,40)
+				local fire = Isaac.Spawn(9, ProjectileVariant.PROJECTILE_FIRE,0,Vector(npc.Position.X-(d.dir*7),npc.Position.Y), Vector(-d.dir*4,0):Rotated(dirRand), npc):ToProjectile()
+			end
+		end
+		
+		if d.substate == 2 or d.substate == 4 then
+			d.flameyFlame = nil
 			
 			if npc.FrameCount % 3 == 0 then
 				local bombe = Isaac.Spawn(4, 14, 0, npc.Position-Vector(d.dir,0), Vector(-d.dir,math.random(-1,1)), npc):ToBomb()
@@ -892,24 +912,44 @@ function mod:War2AI(npc)
 			d.substate = 1
 			d.minions = false
 			mod:SpritePlay(sprite, "BigBoomTime")
-			sprite:SetFrame(7)
 		end
 		
 		if sprite:IsFinished("BigBoomTime") then
-			--[[local bombe = Isaac.Spawn(4, BombVariant.BOMB_GIGA, 0, npc.Position, Vector(0,0), npc):ToBomb()
-			bombe.ExplosionDamage = 0
-			bombe:SetExplosionCountdown(0)]]
+			Isaac.Explode(npc.Position, npc, 5)
+			local boom = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.BOMB_EXPLOSION, 0, npc.Position, Vector(0,0), player):ToEffect()
+			boom.SpriteScale = Vector(2,2)
+			local boom = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF02, 1, npc.Position, Vector(0,0), player):ToEffect()
+			boom.SpriteScale = Vector(2,2)
 			
 			for i, entity in ipairs(Isaac.FindByType(w2.army.id, w2.army.variant)) do
 				entity:Kill()
 			end
+			for i, entity in ipairs(Isaac.FindByType(EntityType.ENTITY_PLAYER)) do
+				entity.Velocity = (entity.Position-npc.Position):Normalized()*15
+			end
 			
 			npc:BloodExplode()
+			game:ShakeScreen(25)
+			npc:TakeDamage(w2.bal.phase2Bomb, 0, EntityRef(npc), 0)
+			npc:PlaySound(SoundEffect.SOUND_FLAMETHROWER_START, 1, 0, false, 1)
 			npc:PlaySound(SoundEffect.SOUND_EXPLOSION_STRONG, 1, 0, false, 1)
-			game:ShakeScreen(30)
+			npc:PlaySound(SoundEffect.SOUND_MONSTER_ROAR_2, 1, 0, false, 1)
+			
+			npc.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_GROUND
 			
 			d.phase2 = true
 			mod:SpritePlay(sprite, "Inferno")
+			sprite:SetFrame(10)
+		end
+		
+		if sprite:IsEventTriggered("Flame") then
+			local dirRand = math.random(180)
+			local times = 360/w2.bal.fireAmount
+			for i=0,360,times do
+				local fire = Isaac.Spawn(9, ProjectileVariant.PROJECTILE_FIRE, 0,npc.Position, Vector(w2.bal.firePower,0):Rotated(i+dirRand), npc):ToProjectile()
+			end
+			npc:PlaySound(SoundEffect.SOUND_FLAMETHROWER_END, 1, 0, false, 1)
+			game:ShakeScreen(5)
 		end
 		
 		if sprite:IsFinished("Inferno") then
@@ -923,21 +963,6 @@ function mod:War2AI(npc)
 		npc.Friction = w2.bal.attackFriction
 	end
 	
-	--phase 2 armor
-	if d.phase2 then
-		if not d.damageCheck then
-			d.damageCheck = npc.HitPoints
-			
-		elseif npc.HitPoints < d.damageCheck then
-			local damageTaken = d.damageCheck - npc.HitPoints
-			if damageTaken ~= w2.army.bombDamage then
-				npc.HitPoints = d.damageCheck - (damageTaken * w2.bal.walkArmor) 
-			end
-		end
-		
-		d.damageCheck = npc.HitPoints
-	end
-	
 	--idle2
 	if d.state == "idle2" then
 		npc.Friction = 1
@@ -948,18 +973,33 @@ function mod:War2AI(npc)
 			d.idleWait = w2.bal.walkWait
 		end
 		
-		if target:ToPlayer().MoveSpeed < 1 then
+		--increasing speed
+		if target ~= nil and target:ToPlayer().MoveSpeed < 1 then
 			d.walkMax = (w2.bal.walkMax / 2) + (4 * target:ToPlayer().MoveSpeed)
 		else
 			d.walkMax = w2.bal.walkMax
 		end
 		
+		--sprite direction
 		if npc.Velocity:Length() > 0.1 then
 			npc:AnimWalkFrame("WalkHori","WalkVert",0)
 		else
 			sprite:SetFrame("WalkVert", 0)
 		end
 		
+		--step fire
+		if sprite:IsEventTriggered("Flame") then
+			local fire = Isaac.Spawn(33, 10, 0,npc.Position, -(target.Position - npc.Position):Normalized(), npc)
+			fire.HitPoints = 3
+			fire.EntityCollisionClass = EntityCollisionClass.ENTCOLL_PLAYERONLY
+			fire:GetSprite():Load("gfx/grid/effect_005_fire.anm2", true)
+			
+			local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector(0,0), npc):ToEffect()
+			poof.SpriteScale = Vector(0.5,0.5)
+			poof.Color = Color(0.8,0.6,0.4,1)
+		end
+		
+		--walking system
 		if not d.walkSpeed then
 			d.walkSpeed = d.walkMax / 2
 		else
@@ -994,7 +1034,16 @@ function mod:War2AI(npc)
 		if sprite:IsFinished("Inferno") then
 			d.state = "idle2"
 		elseif sprite:IsEventTriggered("Shoot") then
-		
+			npc:PlaySound(SoundEffect.SOUND_MONSTER_GRUNT_4, 1, 0, false, 1)
+			npc:PlaySound(SoundEffect.SOUND_FLAMETHROWER_START, 1, 0, false, 1)
+		elseif sprite:IsEventTriggered("Flame") then
+			local dirRand = math.random(180)
+			local times = 360/w2.bal.fireAmount
+			for i=0,360,times do
+				local fire = Isaac.Spawn(9, ProjectileVariant.PROJECTILE_FIRE, 0,npc.Position, Vector(w2.bal.firePower,0):Rotated(i+dirRand), npc):ToProjectile()
+			end
+			npc:PlaySound(SoundEffect.SOUND_FLAMETHROWER_END, 1, 0, false, 1)
+			game:ShakeScreen(5)
 		end
 		npc.Friction = w2.bal.attackFriction
 	end
@@ -1038,9 +1087,17 @@ function mod:War2AI(npc)
 			
 			d.minionPos = Isaac.GetRandomPosition()
 			local distance = 0
-			while distance < w2.bal.armyDist do
-				d.minionPos = Isaac.GetRandomPosition()
-				distance = math.sqrt(((target.Position.X-d.minionPos.X)^2)+((target.Position.Y-d.minionPos.Y)^2))
+			
+			if not d.phase2 then
+				while distance < w2.bal.armyDistMin do
+					d.minionPos = Isaac.GetRandomPosition()
+					distance = math.sqrt(((target.Position.X-d.minionPos.X)^2)+((target.Position.Y-d.minionPos.Y)^2))
+				end
+			else
+				while distance > w2.bal.armyDistMin-30 and distance < w2.bal.armyDistMax-30 do
+					d.minionPos = Isaac.GetRandomPosition()
+					distance = math.sqrt(((target.Position.X-d.minionPos.X)^2)+((target.Position.Y-d.minionPos.Y)^2))
+				end
 			end
 			
 			local posGrid = room:GetGridIndex(d.minionPos)
@@ -1073,14 +1130,18 @@ function mod:War2AI(npc)
 		end
 	end
 	
+	--death
 	if npc:IsDead() then
-		if d.phase2 then
-			npc:PlaySound(SoundEffect.SOUND_FIREDEATH_HISS, 1, 0, false, 1)
-		end
-		
 		for i, entity in ipairs(Isaac.FindByType(w2.army.id, w2.army.variant)) do
 			entity:Kill()
 		end
+		
+		if d.phase2 then
+			npc:PlaySound(SoundEffect.SOUND_FIREDEATH_HISS, 1, 0, false, 1)
+			Isaac.Explode(npc.Position, npc, 0)
+			local fire = Isaac.Spawn(33, 10, 0,npc.Position, Vector(0,0), npc)
+		end
+		
 		
 		d.minionPos = Isaac.GetRandomPosition()
 		local distance = 0
@@ -1094,8 +1155,8 @@ function mod:War2AI(npc)
 		
 		local army = Isaac.Spawn(w2.army.id, w2.army.variant, minionDice, d.minionPos, Vector(0,0), npc)
 		army:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
-		army:GetData().popoff = 15
-		army:GetData().frameToPop = 5
+		army:GetData().popoff = 12
+		army:GetData().frameToPop = 4
 	end
 end
 
@@ -1112,6 +1173,7 @@ function mod:ArmyAI(npc)
 	local level = game:GetLevel()
 	local room = game:GetRoom()
 
+	--init
 	if not d.init then
 		npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
 		d.staticPos = npc.Position
@@ -1141,12 +1203,14 @@ function mod:ArmyAI(npc)
 		npc.StateFrame = npc.StateFrame + 1
 	end
 	
+	--spawn
 	if d.state == "spawn" then
 		npc.Friction = 0
 		npc.Position = d.staticPos
 		if not d.spawnSeq then
 			mod:SpritePlay(sprite, "DigOut")
 			if sprite:IsEventTriggered("Appear") then
+				npc:PlaySound(SoundEffect.SOUND_SUMMON_POOF, 1, 0, false, 1)
 				npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_ALL
 			end
 			if sprite:IsFinished("DigOut") then
@@ -1178,8 +1242,15 @@ function mod:ArmyAI(npc)
 		elseif d.spawnSeq == 1 then
 			mod:SpritePlay(sprite, "JumpOut")
 			
-			if sprite:IsEventTriggered("Jump") and d.popoff > 0 then
-				npc:Kill()
+			if sprite:IsEventTriggered("Jump") then
+				if d.popoff > 0 then
+					npc:Kill()
+				else
+					npc:PlaySound(SoundEffect.SOUND_MOTHER_ISAAC_RISE, 0.4, 0, false, 2)
+					for i=1,3 do
+						local dirt = Isaac.Spawn(1000, EffectVariant.ROCK_PARTICLE, 0, npc.Position, Vector(math.random(-2,2),math.random(-2,2)), npc)
+					end
+				end
 			end
 			
 			
@@ -1190,6 +1261,7 @@ function mod:ArmyAI(npc)
 		end
 	end 
 	
+	--bombspawn
 	if d.state == "bombspawn" then
 		npc.Friction = 0
 		npc.Position = d.staticPos
@@ -1198,16 +1270,16 @@ function mod:ArmyAI(npc)
 			mod:SpritePlay(sprite, "ThrowBomb")
 			if sprite:IsEventTriggered("Appear") then
 				d.holdingBomb = true
+				npc:PlaySound(SoundEffect.SOUND_MOTHER_ISAAC_RISE, 0.4, 0, false, 2)
 				npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_ALL
 			end
 			if sprite:IsEventTriggered("Throw") then
 				d.holdingBomb = false
 				npc:PlaySound(SoundEffect.SOUND_SHELLGAME, 1, 0, false, 1)
-				local bombe = Isaac.Spawn(4, 0, 0, npc.Position, d.shootVec, npc):ToBomb()
+				local bombe = Isaac.Spawn(4, 0, 0, npc.Position+d.shootVec, d.shootVec, npc):ToBomb()
 				bombe:SetExplosionCountdown(w2.army.bombCountdown)
 				bombe.ExplosionDamage = w2.army.bombDamage
 				bombe:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
-				bombe.EntityCollisionClass = EntityCollisionClass.ENTCOLL_PLAYERONLY
 				bombe.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_NOPITS
 			end
 			if sprite:IsEventTriggered("Disappear") then
@@ -1219,6 +1291,7 @@ function mod:ArmyAI(npc)
 		end
 	end 
 	
+	--idle
 	if d.state == "idle" then
 		npc.Friction = 1
 		mod:OverlayPlay(sprite,"Head")
@@ -1240,6 +1313,7 @@ function mod:ArmyAI(npc)
 		end
 	end 
 	
+	--death
 	if npc:IsDead() then
 		if d.holdingBomb then
 			d.shootVec = (target.Position - npc.Position):Resized(4)
@@ -1370,8 +1444,37 @@ end
 --------------------------MOD STUFF--------------------------
 -------------------------------------------------------------
 
+--npc collisions
+mod:AddCallback(ModCallbacks.MC_PRE_NPC_COLLISION, function(_, npc, npc2)
+	if npc2.Type == w2.id and npc2.Variant == w2.variant and npc2:GetData().state == "charge" then
+		if npc.Type == w2.army.id and npc.Variant == w2.army.variant then
+			npc:Kill()
+		end
+		npc:TakeDamage(w2.bal.chargeDamage, 0, EntityRef(npc2), 0)
+	end
+end
+)
+
+--npc damage
+mod:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, function(_, npc,amount,flag,source)
+	if npc.Type == w2.id and npc.Variant == w2.variant and npc:GetData().phase2 then
+		if flag <= DamageFlag.DAMAGE_EXPLOSION then
+			if npc:GetData().armorDamage ~= nil then
+				npc:GetData().armorDamage = nil
+				return true
+			else
+				amount = amount * w2.bal.walkArmor
+				npc:GetData().armorDamage = amount
+				npc:TakeDamage(npc:GetData().armorDamage, 0, source, 0)
+				return false
+			end
+		end
+	end
+end
+)
+
 --tear collisions
-function mod:OnTearCollision(tear, npc, _)
+mod:AddCallback(ModCallbacks.MC_PRE_TEAR_COLLISION, function(_, tear, npc)
 	if npc.Type == w2.army.id and (npc.Variant == w2.army.variant or npc.Variant == w2.army.variantBomb) and npc.SubType == 3 then
 		local dice = math.random(w2.army.reflectChance)
 		if dice == 1 then
@@ -1384,22 +1487,12 @@ function mod:OnTearCollision(tear, npc, _)
 		if npc:GetData().phase2 then
 			local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, tear.Position, Vector(0,0), player):ToEffect()
 			poof.SpriteScale = Vector(0.3,0.3)
+			poof.Color = Color(0.8,0.6,0.4,1)
 			npc:ToNPC():PlaySound(SoundEffect.SOUND_FIREDEATH_HISS, 0.18, 0, false, 2)
 		end
 	end
 end
-mod:AddCallback(ModCallbacks.MC_PRE_TEAR_COLLISION, mod.OnTearCollision)
-
---npc collisions
-function mod:OnNPCCollision(npc, npc2, _)
-	if npc2.Type == w2.id and npc2.Variant == w2.variant and npc2:GetData().state == "charge" then
-		if npc.Type == w2.army.id and npc.Variant == w2.army.variant then
-			npc:Kill()
-		end
-		npc:TakeDamage(w2.bal.chargeDamage, 0, EntityRef(npc2), 0)
-	end
-end
-mod:AddCallback(ModCallbacks.MC_PRE_NPC_COLLISION, mod.OnNPCCollision)
+)
 
 --TUMOR CUBE --------------------
 Althorsemen.Tumorcube = {
@@ -2119,7 +2212,7 @@ function mod:BookOfRevelations(collectible)
 		end
 	end
 end
-mod:AddCallback(ModCallbacks.MC_USE_ITEM,mod.BookOfRevelations, collectible)
+mod:AddCallback(ModCallbacks.MC_USE_ITEM,mod.BookOfRevelations)
 
 --post mod update
 function mod:ILoveHorses()
@@ -2160,7 +2253,6 @@ mod:AddCallback(ModCallbacks.MC_POST_UPDATE, mod.ILoveHorses)
 local firstLoaded = true
 
 if StageAPI and firstLoaded then	
-
 	local setupCheck = true
 	local floorInfo = StageAPI.GetBaseFloorInfo(LevelStage.STAGE1_1,StageType.STAGETYPE_REPENTANCE, false)
 	for k, v in pairs(floorInfo.Bosses.Pool) do 
@@ -2200,8 +2292,7 @@ if StageAPI and firstLoaded then
 end
 
 --New Game
-function mod:NewGame(isContinue)
-
+mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, function(_, isContinue)
 	--local floorInfo = StageAPI.GetBaseFloorInfo(LevelStage.STAGE2_1,StageType.STAGETYPE_REPENTANCE, false)
 	--for k, v in pairs(floorInfo.Bosses.Pool) do 
 		--print (v.BossID)
@@ -2222,10 +2313,10 @@ function mod:NewGame(isContinue)
 		end
 	end
 end
-mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.NewGame)
+)
 
 --New Level
-function mod:NewLevel()
+mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL ,function(_)
 	doHorseDrop = false
 	meatCheck = false
 	bandageCheck = false
@@ -2233,9 +2324,10 @@ function mod:NewLevel()
 	revChance = false
 	bossEntered = false
 end
-mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, mod.NewLevel)
+)
 
-function mod:NewRoom()
+--New Room
+mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function(_)
 	if StageAPI and StageAPI.Loaded and not StageAPI.InTestMode then
 	
 		local room = Game():GetRoom()
@@ -2263,7 +2355,7 @@ function mod:NewRoom()
 		end
 	end
 end
-mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, mod.NewRoom)
+)
 
 --[[
 mod:AddCallback(ModCallbacks.MC_POST_RENDER, function()

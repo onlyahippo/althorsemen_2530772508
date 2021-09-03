@@ -1,5 +1,5 @@
 <AnimatedActor>
-	<Info CreatedBy="trtv" CreatedOn="7/22/2021 12:24:52 AM" Version="64" Fps="50"/>
+	<Info CreatedBy="trtv" CreatedOn="9/2/2021 6:10:17 PM" Version="65" Fps="50"/>
 	<Content>
 		<Spritesheets>
 			<Spritesheet Path="monster_army.png" Id="0"/>
@@ -156,7 +156,7 @@
 				<NullAnimation NullId="0" Visible="true"/>
 			</NullAnimations>
 			<Triggers>
-				<Trigger EventId="1" AtFrame="8"/>
+				<Trigger EventId="1" AtFrame="7"/>
 			</Triggers>
 		</Animation>
 		<Animation Name="WalkVert" FrameNum="22" Loop="true">
