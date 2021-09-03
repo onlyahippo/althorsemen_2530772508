@@ -915,7 +915,6 @@ function mod:War2AI(npc)
 		end
 		
 		if sprite:IsFinished("BigBoomTime") then
-			Isaac.Explode(npc.Position, npc, 5)
 			local boom = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.BOMB_EXPLOSION, 0, npc.Position, Vector(0,0), player):ToEffect()
 			boom.SpriteScale = Vector(2,2)
 			local boom = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF02, 1, npc.Position, Vector(0,0), player):ToEffect()
@@ -926,6 +925,9 @@ function mod:War2AI(npc)
 			end
 			for i, entity in ipairs(Isaac.FindByType(EntityType.ENTITY_PLAYER)) do
 				entity.Velocity = (entity.Position-npc.Position):Normalized()*15
+			end
+			for i, entity in ipairs(Isaac.FindInRadius(npc.Position, 120, EntityPartition.ENEMY)) do
+				entity:TakeDamage(w2.bal.phase2Bomb, DamageFlag.DAMAGE_EXPLOSION, EntityRef(npc), 0)
 			end
 			
 			npc:BloodExplode()
