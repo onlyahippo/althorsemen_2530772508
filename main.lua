@@ -12,8 +12,9 @@ local loadTextFailed = "Alt Horsemen load failed (STAGEAPI Disabled)"
 --FAMINE2--------------------
 Althorsemen.Famine2 = {
 	name = "Tainted Famine",
+	nameAlt = "Tainted Famine Alt",
 	portrait = "gfx/bosses/famine2/portrait_famine2.png",
-	altPortrait = "gfx/bosses/famine2/portrait_famine2_dross.png",
+	portraitAlt = "gfx/bosses/famine2/portrait_famine2_dross.png",
 	bossName = "gfx/bosses/famine2/bossname_famine2.png",
 	id = 630,
 	variant = 101,
@@ -507,8 +508,9 @@ mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.Famine2AI, f2.id)
 
 Althorsemen.War2 = {
 	name = "Tainted War",
+	nameAlt = "Tainted War Alt",
 	portrait = "gfx/bosses/war2/portrait_war2.png",
-	altPortrait = "gfx/bosses/war2/portrait_war2_ashpit.png",
+	portraitAlt = "gfx/bosses/war2/portrait_war2_ashpit.png",
 	bossName = "gfx/bosses/war2/bossname_war2.png",
 	id = 650,
 	variant = 101,
@@ -549,7 +551,7 @@ Althorsemen.War2 = {
 		rockPower = 9,
 		rockDist = 10,
 		phase2Health = 0.5,
-		phase2Bomb = 60,
+		phase2Bomb = 50,
 		walkArmor = 0.3,
 		walkWait = 140,
 		walkMax = 7.2,
@@ -691,8 +693,8 @@ function mod:War2AI(npc)
 			
 			if not d.bombMoves then
 				d.bombMoves = math.random(0,2)
-			elseif d.bombMoves == 0 then
-				d.bombType = math.random(1,4)
+			--[[elseif d.bombMoves == 0 then
+				d.bombType = math.random(1,4)]]
 			end
 
 			if d.bombType == 1 then
@@ -926,7 +928,7 @@ function mod:War2AI(npc)
 			for i, entity in ipairs(Isaac.FindByType(EntityType.ENTITY_PLAYER)) do
 				entity.Velocity = (entity.Position-npc.Position):Normalized()*15
 			end
-			for i, entity in ipairs(Isaac.FindInRadius(npc.Position, 120, EntityPartition.ENEMY)) do
+			for i, entity in ipairs(Isaac.FindInRadius(npc.Position, 150, EntityPartition.ENEMY)) do
 				entity:TakeDamage(w2.bal.phase2Bomb, DamageFlag.DAMAGE_EXPLOSION, EntityRef(npc), 0)
 			end
 			
@@ -1096,7 +1098,7 @@ function mod:War2AI(npc)
 					distance = math.sqrt(((target.Position.X-d.minionPos.X)^2)+((target.Position.Y-d.minionPos.Y)^2))
 				end
 			else
-				while distance > w2.bal.armyDistMin-30 and distance < w2.bal.armyDistMax-30 do
+				while distance < w2.bal.armyDistMin+30 or distance > w2.bal.armyDistMax+30 do
 					d.minionPos = Isaac.GetRandomPosition()
 					distance = math.sqrt(((target.Position.X-d.minionPos.X)^2)+((target.Position.Y-d.minionPos.Y)^2))
 				end
@@ -2105,7 +2107,9 @@ local revChance = false
 local bossEntered = false
 local bossSeen = {
 		f2 = false,
-		w2 = false
+		w2 = false,
+		d2 = false,
+		p2 = false
 	}
 local bossGen
 local tumorConstruct
@@ -2134,12 +2138,20 @@ local function FloorVerify()
 	local stageType = level:GetStageType()
 	local bossID = nil
 		
-	if (stageType == StageType.STAGETYPE_REPENTANCE or stageType == StageType.STAGETYPE_REPENTANCE_B)
-	and (stage == LevelStage.STAGE1_1 or stage == LevelStage.STAGE1_2) then
-		bossID = "Tainted Famine"
-	elseif (stageType == StageType.STAGETYPE_REPENTANCE or stageType == StageType.STAGETYPE_REPENTANCE_B)
-	and (stage == LevelStage.STAGE2_1 or stage == LevelStage.STAGE2_2) then
-		bossID = "Tainted War"
+	--normal
+	if (stageType == StageType.STAGETYPE_REPENTANCE and stageType ~= StageType.STAGETYPE_REPENTANCE_B) then
+		if (stage == LevelStage.STAGE1_1 or stage == LevelStage.STAGE1_2) and not bossSeen.f2 then
+			bossID = f2.name
+		elseif (stage == LevelStage.STAGE2_1 or stage == LevelStage.STAGE2_2) and not bossSeen.w2 then
+			bossID = w2.name
+		end
+	--alt
+	elseif (stageType ~= StageType.STAGETYPE_REPENTANCE and stageType == StageType.STAGETYPE_REPENTANCE_B) then
+		if (stage == LevelStage.STAGE1_1 or stage == LevelStage.STAGE1_2) and not bossSeen.f2 then
+			bossID = f2.nameAlt
+		elseif (stage == LevelStage.STAGE2_1 or stage == LevelStage.STAGE2_2) and not bossSeen.w2 then
+			bossID = w2.nameAlt
+		end
 	end
 	
 	--[[
@@ -2167,48 +2179,52 @@ function mod:BookOfRevelations(collectible)
 		local level = game:GetLevel()
 		local bossID = FloorVerify()
 		
-		local laby
-		if level:GetCurses() & LevelCurse.CURSE_OF_LABYRINTH ~= 0 then
-			laby = true
-		end
+		if bossID then
 		
-		local roomsList = level:GetRooms()
-        for i = 0, roomsList.Size - 1 do
-            local roomDesc = roomsList:Get(i)
-            if roomDesc and not laby then
-				local dimension = StageAPI.GetDimension(roomDesc)
-				local newRoom
-				
-				if roomDesc.Data.Type == RoomType.ROOM_BOSS and roomDesc.Data.Shape ~= RoomShape.ROOMSHAPE_2x1
-				and bossID and dimension == 0 and not backwards and i == level:GetLastBossRoomListIndex() then
-					local bossData = StageAPI.GetBossData(bossID)
-					if bossData and bossData.Rooms then
-						newRoom = StageAPI.GenerateBossRoom({
-							BossID = bossID,
-							NoPlayBossAnim = true
-						}, {
-							RoomDescriptor = roomDesc
-						})
-						
-						if roomDesc.Data.Subtype == 82 or roomDesc.Data.Subtype == 83 then
-							local overwritableRoomDesc = level:GetRoomByIdx(roomDesc.SafeGridIndex, dimension)
-							local replaceData = StageAPI.GetGotoDataForTypeShape(RoomType.ROOM_BOSS, roomDesc.Data.Shape)
-							overwritableRoomDesc.Data = replaceData
-						end
-					end
+			local laby
+			if level:GetCurses() & LevelCurse.CURSE_OF_LABYRINTH ~= 0 then
+				laby = true
+			end
+			
+			local roomsList = level:GetRooms()
+			for i = 0, roomsList.Size - 1 do
+				local roomDesc = roomsList:Get(i)
+				if roomDesc and not laby then
+					local dimension = StageAPI.GetDimension(roomDesc)
+					local newRoom
 					
-					if newRoom then
-						local listIndex = roomDesc.ListIndex
-						StageAPI.SetLevelRoom(newRoom, listIndex, dimension)
-						if roomDesc.Data.Type == RoomType.ROOM_BOSS and baseFloorInfo.HasMirrorLevel and dimension == 0 then
-							StageAPI.Log("Mirroring!")
-							local mirroredRoom = newRoom:Copy(roomDesc)
-							local mirroredDesc = level:GetRoomByIdx(roomDesc.SafeGridIndex, 1)
-							StageAPI.SetLevelRoom(mirroredRoom, mirroredDesc.ListIndex, 1)
+					if roomDesc.Data.Type == RoomType.ROOM_BOSS and roomDesc.Data.Shape ~= RoomShape.ROOMSHAPE_2x1
+					and bossID and dimension == 0 and not backwards and i == level:GetLastBossRoomListIndex() then
+						local bossData = StageAPI.GetBossData(bossID)
+						if bossData and bossData.Rooms then
+							newRoom = StageAPI.GenerateBossRoom({
+								BossID = bossID,
+								NoPlayBossAnim = true
+							}, {
+								RoomDescriptor = roomDesc
+							})
+							
+							if roomDesc.Data.Subtype == 82 or roomDesc.Data.Subtype == 83 then
+								local overwritableRoomDesc = level:GetRoomByIdx(roomDesc.SafeGridIndex, dimension)
+								local replaceData = StageAPI.GetGotoDataForTypeShape(RoomType.ROOM_BOSS, roomDesc.Data.Shape)
+								overwritableRoomDesc.Data = replaceData
+							end
+						end
+						
+						if newRoom then
+							local listIndex = roomDesc.ListIndex
+							StageAPI.SetLevelRoom(newRoom, listIndex, dimension)
+							if roomDesc.Data.Type == RoomType.ROOM_BOSS and baseFloorInfo.HasMirrorLevel and dimension == 0 then
+								StageAPI.Log("Mirroring!")
+								local mirroredRoom = newRoom:Copy(roomDesc)
+								local mirroredDesc = level:GetRoomByIdx(roomDesc.SafeGridIndex, 1)
+								StageAPI.SetLevelRoom(mirroredRoom, mirroredDesc.ListIndex, 1)
+							end
 						end
 					end
 				end
 			end
+		
 		end
 		revChance = true
 		end
@@ -2219,7 +2235,7 @@ mod:AddCallback(ModCallbacks.MC_USE_ITEM,mod.BookOfRevelations)
 --post mod update
 function mod:ILoveHorses()
 	local room = game:GetRoom()
-	
+
 	if room:GetType() == RoomType.ROOM_BOSS then
 		if doHorseDrop then
 			for i, entity in ipairs(Isaac.FindByType(5, 100)) do
@@ -2255,42 +2271,45 @@ mod:AddCallback(ModCallbacks.MC_POST_UPDATE, mod.ILoveHorses)
 local firstLoaded = true
 
 if StageAPI and firstLoaded then	
-	local setupCheck = true
-	local floorInfo = StageAPI.GetBaseFloorInfo(LevelStage.STAGE1_1,StageType.STAGETYPE_REPENTANCE, false)
-	for k, v in pairs(floorInfo.Bosses.Pool) do 
-		if v.BossID == "Tainted Famine" then
-			setupCheck = false
-			break
-		end
-	end
-
-	if setupCheck then
-		mod.StageAPIBosses = {
-			f2 = StageAPI.AddBossData("Tainted Famine", {
-				Name = f2.name,
-				Portrait = f2.portrait,
-				Offset = Vector(0,-15),
-				Bossname = f2.bossName,
-				Weight = 2,
-				Horseman = true,
-				Rooms = StageAPI.RoomsList("BossRooms", require("resources.luarooms.boss_famine2")),
-			}),
-			w2 = StageAPI.AddBossData("Tainted War", {
-				Name = w2.name,
-				Portrait = w2.portrait,
-				Offset = Vector(0,-15),
-				Bossname = w2.bossName,
-				Weight = 5,
-				Horseman = true,
-				Rooms = StageAPI.RoomsList("BossRooms", require("resources.luarooms.boss_war2")),
-			})
-		}
-		
-		StageAPI.AddBossToBaseFloorPool({BossID = "Tainted Famine"},LevelStage.STAGE1_1,StageType.STAGETYPE_REPENTANCE)
-		StageAPI.AddBossToBaseFloorPool({BossID = "Tainted Famine"},LevelStage.STAGE1_1,StageType.STAGETYPE_REPENTANCE_B)
-		StageAPI.AddBossToBaseFloorPool({BossID = "Tainted War"},LevelStage.STAGE2_1,StageType.STAGETYPE_REPENTANCE)
-		StageAPI.AddBossToBaseFloorPool({BossID = "Tainted War"},LevelStage.STAGE2_1,StageType.STAGETYPE_REPENTANCE_B)
-	end
+	mod.StageAPIBosses = {
+		f2 = StageAPI.AddBossData(f2.name, {
+			Name = f2.name,
+			Portrait = f2.portrait,
+			Offset = Vector(0,-15),
+			Bossname = f2.bossName,
+			Weight = 1,
+			Rooms = StageAPI.RoomsList("BossRooms", require("resources.luarooms.boss_famine2")),
+		}),
+		f2alt = StageAPI.AddBossData(f2.nameAlt, {
+			Name = f2.name,
+			Portrait = f2.portraitAlt,
+			Offset = Vector(0,-15),
+			Bossname = f2.bossName,
+			Weight = 1,
+			Rooms = StageAPI.RoomsList("BossRooms", require("resources.luarooms.boss_famine2_alt")),
+		}),
+		w2 = StageAPI.AddBossData(w2.name, {
+			Name = w2.name,
+			Portrait = w2.portrait,
+			Offset = Vector(0,-15),
+			Bossname = w2.bossName,
+			Weight = 1,
+			Rooms = StageAPI.RoomsList("BossRooms", require("resources.luarooms.boss_war2")),
+		}),
+		w2alt = StageAPI.AddBossData(w2.nameAlt, {
+			Name = w2.name,
+			Portrait = w2.portraitAlt,
+			Offset = Vector(0,-15),
+			Bossname = w2.bossName,
+			Weight = 1,
+			Rooms = StageAPI.RoomsList("BossRooms", require("resources.luarooms.boss_war2_alt")),
+		})
+	}
+	
+	StageAPI.AddBossToBaseFloorPool({BossID = f2.name},LevelStage.STAGE1_1,StageType.STAGETYPE_REPENTANCE)
+	StageAPI.AddBossToBaseFloorPool({BossID = f2.nameAlt},LevelStage.STAGE1_1,StageType.STAGETYPE_REPENTANCE_B)
+	StageAPI.AddBossToBaseFloorPool({BossID = w2.name},LevelStage.STAGE2_1,StageType.STAGETYPE_REPENTANCE)
+	StageAPI.AddBossToBaseFloorPool({BossID = w2.nameAlt},LevelStage.STAGE2_1,StageType.STAGETYPE_REPENTANCE_B)
 end
 
 --New Game
@@ -2310,9 +2329,16 @@ mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, function(_, isContinue)
 			firstLoaded = false
 		end
 		
+		--make all bosses unseen
 		for k, v in pairs(bossSeen) do
 			v = false
 		end
+		
+		--affect weights
+		StageAPI.GetBossData(f2.name).Weight = 10
+		StageAPI.GetBossData(f2.nameAlt).Weight = 10
+		StageAPI.GetBossData(w2.name).Weight = 10
+		StageAPI.GetBossData(w2.nameAlt).Weight = 10
 	end
 end
 )
@@ -2339,18 +2365,24 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function(_)
 			end
 			
 			local bossGet
-			for i, entity in ipairs(Isaac.FindInRadius(Vector(640, 580), 875, EntityPartition.ENEMY)) do
+			for i, entity in ipairs(Isaac.FindInRadius(room:GetCenterPos(), 1000, EntityPartition.ENEMY)) do
 				--FAMINE
 				if entity.Type == f2.id and entity.Variant == f2.variant then
 					bossGet = f2.name
 					bossSeen.f2 = true
 					doHorseDrop = true
+					
+					StageAPI.GetBossData(f2.name).Weight = 0
+					StageAPI.GetBossData(f2.nameAlt).Weight = 0
 					break
 				--WAR
 				elseif entity.Type == w2.id and entity.Variant == w2.variant then
 					bossGet = w2.name
 					bossSeen.w2 = true
 					doHorseDrop = true
+					
+					StageAPI.GetBossData(w2.name).Weight = 0
+					StageAPI.GetBossData(w2.nameAlt).Weight = 0
 					break
 				end
 			end
