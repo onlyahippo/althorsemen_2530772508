@@ -523,7 +523,7 @@ Althorsemen.War2 = {
 		walkingBombDamage = 20,
 		bombDamage = 30,
 		bombPower = 17,
-		bombCountdown = 25,
+		bombCountdown = 22,
 		speed = 3.5,
 	},
 	bal = {
@@ -550,8 +550,8 @@ Althorsemen.War2 = {
 		chargeDamage = 10,
 		rockPower = 9,
 		rockDist = 10,
-		phase2Health = 0.5,
-		phase2Bomb = 50,
+		phase2Health = 0.45,
+		phase2Bomb = 20,
 		walkArmor = 0.3,
 		walkWait = 140,
 		walkMax = 7.2,
@@ -928,8 +928,11 @@ function mod:War2AI(npc)
 			for i, entity in ipairs(Isaac.FindByType(EntityType.ENTITY_PLAYER)) do
 				entity.Velocity = (entity.Position-npc.Position):Normalized()*15
 			end
-			for i, entity in ipairs(Isaac.FindInRadius(npc.Position, 150, EntityPartition.ENEMY)) do
+			for i, entity in ipairs(Isaac.FindInRadius(npc.Position, 180, EntityPartition.ENEMY)) do
 				entity:TakeDamage(w2.bal.phase2Bomb, DamageFlag.DAMAGE_EXPLOSION, EntityRef(npc), 0)
+			end
+			for i, entity in ipairs(Isaac.FindInRadius(npc.Position, 120, EntityPartition.PLAYER)) do
+				entity:TakeDamage(2, DamageFlag.DAMAGE_EXPLOSION, EntityRef(npc), 0)
 			end
 			
 			npc:BloodExplode()
@@ -994,7 +997,7 @@ function mod:War2AI(npc)
 		--step fire
 		if sprite:IsEventTriggered("Flame") then
 			local fire = Isaac.Spawn(33, 10, 0,npc.Position, -(target.Position - npc.Position):Normalized(), npc)
-			fire.HitPoints = 3
+			fire.HitPoints = 4
 			fire.EntityCollisionClass = EntityCollisionClass.ENTCOLL_PLAYERONLY
 			fire:GetSprite():Load("gfx/grid/effect_005_fire.anm2", true)
 			
@@ -1470,6 +1473,10 @@ mod:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, function(_, npc,amount,flag,sou
 				amount = amount * w2.bal.walkArmor
 				npc:GetData().armorDamage = amount
 				npc:TakeDamage(npc:GetData().armorDamage, 0, source, 0)
+				npc:ToNPC():PlaySound(SoundEffect.SOUND_FIREDEATH_HISS, 0.18, 0, false, 2)
+				local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector(0,0), player):ToEffect()
+				poof.SpriteScale = Vector(0.3,0.3)
+				poof.Color = Color(0.8,0.6,0.4,1)
 				return false
 			end
 		end
@@ -1484,15 +1491,6 @@ mod:AddCallback(ModCallbacks.MC_PRE_TEAR_COLLISION, function(_, tear, npc)
 		if dice == 1 then
 			tear.Velocity = (tear.Velocity * -0.8):Rotated(-20 + math.random(40))
 			return false
-		end
-	end
-	
-	if npc.Type == w2.id and npc.Variant == w2.variant then
-		if npc:GetData().phase2 then
-			local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, tear.Position, Vector(0,0), player):ToEffect()
-			poof.SpriteScale = Vector(0.3,0.3)
-			poof.Color = Color(0.8,0.6,0.4,1)
-			npc:ToNPC():PlaySound(SoundEffect.SOUND_FIREDEATH_HISS, 0.18, 0, false, 2)
 		end
 	end
 end
@@ -2105,14 +2103,16 @@ local bandageCheck
 
 local revChance = false
 local bossEntered = false
+local bossGen
+local tumorConstruct
+
+--boss encounters
 local bossSeen = {
 		f2 = false,
 		w2 = false,
 		d2 = false,
 		p2 = false
 	}
-local bossGen
-local tumorConstruct
 
 --meat check
 local function CheckThatMeat()
@@ -2170,7 +2170,7 @@ local function FloorVerify()
 end
 
 --book of revelations
-function mod:BookOfRevelations(collectible)
+mod:AddCallback(ModCallbacks.MC_USE_ITEM,function(_,collectible)
 	if collectible == CollectibleType.COLLECTIBLE_BOOK_OF_REVELATIONS then
 		if not revChance and not bossEntered and StageAPI then
 		
@@ -2229,11 +2229,10 @@ function mod:BookOfRevelations(collectible)
 		revChance = true
 		end
 	end
-end
-mod:AddCallback(ModCallbacks.MC_USE_ITEM,mod.BookOfRevelations)
+end,CollectibleType.COLLECTIBLE_BOOK_OF_REVELATIONS)
 
 --post mod update
-function mod:ILoveHorses()
+mod:AddCallback(ModCallbacks.MC_POST_UPDATE,function(_)
 	local room = game:GetRoom()
 
 	if room:GetType() == RoomType.ROOM_BOSS then
@@ -2263,7 +2262,7 @@ function mod:ILoveHorses()
 		end
 	end
 end
-mod:AddCallback(ModCallbacks.MC_POST_UPDATE, mod.ILoveHorses)
+)
 
 -------------------------SYSTEMS--------------------------
 ----------------------------------------------------------
@@ -2334,11 +2333,9 @@ mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, function(_, isContinue)
 			v = false
 		end
 		
-		--affect weights
-		StageAPI.GetBossData(f2.name).Weight = 10
-		StageAPI.GetBossData(f2.nameAlt).Weight = 10
-		StageAPI.GetBossData(w2.name).Weight = 10
-		StageAPI.GetBossData(w2.nameAlt).Weight = 10
+		--affect weights change this
+		StageAPI.GetBossData(w2.name).Weight = 2
+		StageAPI.GetBossData(w2.nameAlt).Weight = 2
 	end
 end
 )
@@ -2354,7 +2351,7 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL ,function(_)
 end
 )
 
---New Room
+--New Room (StageAPI stuff)
 mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function(_)
 	if StageAPI and StageAPI.Loaded and not StageAPI.InTestMode then
 	
