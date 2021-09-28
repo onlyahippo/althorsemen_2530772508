@@ -981,10 +981,12 @@ function mod:War2AI(npc)
 		end
 		
 		--increasing speed
-		if target ~= nil and target:ToPlayer().MoveSpeed < 1 then
-			d.walkMax = (w2.bal.walkMax / 2) + (4 * target:ToPlayer().MoveSpeed)
-		else
-			d.walkMax = w2.bal.walkMax
+		if target:ToPlayer() ~= nil then
+			if target:ToPlayer().MoveSpeed < 1 then
+				d.walkMax = (w2.bal.walkMax / 2) + (4 * target:ToPlayer().MoveSpeed)
+			else
+				d.walkMax = w2.bal.walkMax
+			end
 		end
 		
 		--sprite direction
@@ -1185,8 +1187,10 @@ function mod:ArmyAI(npc)
 		npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
 		d.staticPos = npc.Position
 		
-		if target:ToPlayer().Damage < (npc.MaxHitPoints / 2) then
-			npc.HitPoints = target:ToPlayer().Damage * 2
+		if target:ToPlayer() ~= nil then
+			if target:ToPlayer().Damage < (npc.MaxHitPoints / 2) then
+				npc.HitPoints = target:ToPlayer().Damage * 2
+			end
 		end
 		
 		if npc.Variant == w2.army.variant then
@@ -1611,7 +1615,7 @@ local dirtovect = {
 	[Direction.RIGHT] = Vector(1, 0),
 }
 
---tumor spur
+--tumor spurs
 function mod:TumorSpur(tumor,limit)
 	local spurCount = 0
 	

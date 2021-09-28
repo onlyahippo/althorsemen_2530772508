@@ -2,7 +2,7 @@
 	<Info CreatedBy="vinh" CreatedOn="7/12/2021 12:30:08 AM" Version="3" Fps="30"/>
 	<Content>
 		<Spritesheets>
-			<Spritesheet Path="familiar_tumorspurs.png" Id="0"/>
+			<Spritesheet Path="familiar/familiar_tumorspurs.png" Id="0"/>
 		</Spritesheets>
 		<Layers>
 			<Layer Name="body" Id="0" SpritesheetId="0"/>

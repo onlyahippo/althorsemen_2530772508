@@ -2,8 +2,8 @@
 	<Info CreatedBy="robot" CreatedOn="7/8/2021 6:04:01 PM" Version="115" Fps="60"/>
 	<Content>
 		<Spritesheets>
-			<Spritesheet Path="familiar_wadoftumorslevel1.png" Id="0"/>
-			<Spritesheet Path="effect_blooddrip.png" Id="1"/>
+			<Spritesheet Path="familiar/familiar_wadoftumorslevel1.png" Id="0"/>
+			<Spritesheet Path="familiar/effect_blooddrip.png" Id="1"/>
 		</Spritesheets>
 		<Layers>
 			<Layer Name="body" Id="0" SpritesheetId="0"/>

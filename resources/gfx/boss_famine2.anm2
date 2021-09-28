@@ -2,7 +2,7 @@
 	<Info CreatedBy="robot" CreatedOn="7/24/2021 7:10:35 PM" Version="251" Fps="40"/>
 	<Content>
 		<Spritesheets>
-			<Spritesheet Path="boss_famine2.png" Id="0"/>
+			<Spritesheet Path="bosses/famine2/boss_famine2.png" Id="0"/>
 		</Spritesheets>
 		<Layers>
 			<Layer Name="body" Id="0" SpritesheetId="0"/>

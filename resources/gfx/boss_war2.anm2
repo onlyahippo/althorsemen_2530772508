@@ -2,10 +2,10 @@
 	<Info CreatedBy="robot" CreatedOn="9/25/2021 4:35:21 PM" Version="419" Fps="45"/>
 	<Content>
 		<Spritesheets>
-			<Spritesheet Path="boss_war2.png" Id="0"/>
-			<Spritesheet Path="pickup_016_bomb.png" Id="1"/>
-			<Spritesheet Path="pickup_016_bomb2.png" Id="2"/>
-			<Spritesheet Path="boss_war2_body.png" Id="3"/>
+			<Spritesheet Path="bosses/war2/boss_war2.png" Id="0"/>
+			<Spritesheet Path="items/pick ups/pickup_016_bomb.png" Id="1"/>
+			<Spritesheet Path="items/pick ups/pickup_016_bomb2.png" Id="2"/>
+			<Spritesheet Path="bosses/war2/boss_war2_body.png" Id="3"/>
 		</Spritesheets>
 		<Layers>
 			<Layer Name="body" Id="0" SpritesheetId="0"/>

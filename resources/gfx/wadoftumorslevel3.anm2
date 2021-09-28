@@ -2,7 +2,7 @@
 	<Info CreatedBy="robot" CreatedOn="7/11/2021 1:10:15 AM" Version="122" Fps="60"/>
 	<Content>
 		<Spritesheets>
-			<Spritesheet Path="familiar_wadoftumorslevel3.png" Id="0"/>
+			<Spritesheet Path="familiar/familiar_wadoftumorslevel3.png" Id="0"/>
 		</Spritesheets>
 		<Layers>
 			<Layer Name="head" Id="0" SpritesheetId="0"/>
