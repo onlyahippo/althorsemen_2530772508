@@ -554,7 +554,7 @@ Althorsemen.War2 = {
 		phase2Bomb = 20,
 		walkArmor = 0.3,
 		walkWait = 140,
-		walkMax = 7.2,
+		walkMax = 7,
 		armyDistMin = 150,
 		armyDistMax = 170,
 		deathArmyDist = 120,
@@ -2183,12 +2183,16 @@ mod:AddCallback(ModCallbacks.MC_USE_ITEM,function(_,collectible)
 		local level = game:GetLevel()
 		local bossID = FloorVerify()
 		
+		--print(bossID)
+		
 		if bossID then
 		
 			local laby
 			if level:GetCurses() & LevelCurse.CURSE_OF_LABYRINTH ~= 0 then
 				laby = true
 			end
+			
+			--print("detected possible boss")
 			
 			local roomsList = level:GetRooms()
 			for i = 0, roomsList.Size - 1 do
@@ -2207,6 +2211,8 @@ mod:AddCallback(ModCallbacks.MC_USE_ITEM,function(_,collectible)
 							}, {
 								RoomDescriptor = roomDesc
 							})
+							
+							print("Horseman generated!")
 							
 							if roomDesc.Data.Subtype == 82 or roomDesc.Data.Subtype == 83 then
 								local overwritableRoomDesc = level:GetRoomByIdx(roomDesc.SafeGridIndex, dimension)
@@ -2334,10 +2340,10 @@ mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, function(_, isContinue)
 		
 		--make all bosses unseen
 		for k, v in pairs(bossSeen) do
-			v = false
+			bossSeen[k] = false
 		end
 		
-		--affect weights change this
+		--temporary weight inflation so people get a chance to actually see the dang boss
 		StageAPI.GetBossData(w2.name).Weight = 2
 		StageAPI.GetBossData(w2.nameAlt).Weight = 2
 	end
