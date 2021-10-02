@@ -3,7 +3,7 @@ local mod = Althorsemen
 local game = Game()
 local sfx = SFXManager()
 
-local loadText = "Alt Horsemen v2.0 (War Update)"
+local loadText = "Alt Horsemen v3.01 (+War)"
 local loadTextFailed = "Alt Horsemen load failed (STAGEAPI Disabled)"
 
 ------------------------BOSSES------------------------
@@ -16,6 +16,8 @@ Althorsemen.Famine2 = {
 	portrait = "gfx/bosses/famine2/portrait_famine2.png",
 	portraitAlt = "gfx/bosses/famine2/portrait_famine2_dross.png",
 	bossName = "gfx/bosses/famine2/bossname_famine2.png",
+	weight = 1,
+	weightAlt = 1,
 	id = 630,
 	variant = 101,
 	bal = {
@@ -512,6 +514,8 @@ Althorsemen.War2 = {
 	portrait = "gfx/bosses/war2/portrait_war2.png",
 	portraitAlt = "gfx/bosses/war2/portrait_war2_ashpit.png",
 	bossName = "gfx/bosses/war2/bossname_war2.png",
+	weight = 2,
+	weightAlt = 2,
 	id = 650,
 	variant = 101,
 	army = {
@@ -2182,60 +2186,66 @@ mod:AddCallback(ModCallbacks.MC_USE_ITEM,function(_,collectible)
 		local backwards = game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH_INIT) or game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH)
 		local level = game:GetLevel()
 		local bossID = FloorVerify()
+		local successCheck = false
 		
 		--print(bossID)
 		
-		if bossID then
-		
-			local laby
-			if level:GetCurses() & LevelCurse.CURSE_OF_LABYRINTH ~= 0 then
-				laby = true
-			end
+			if bossID then
 			
-			--print("detected possible boss")
-			
-			local roomsList = level:GetRooms()
-			for i = 0, roomsList.Size - 1 do
-				local roomDesc = roomsList:Get(i)
-				if roomDesc and not laby then
-					local dimension = StageAPI.GetDimension(roomDesc)
-					local newRoom
-					
-					if roomDesc.Data.Type == RoomType.ROOM_BOSS and roomDesc.Data.Shape ~= RoomShape.ROOMSHAPE_2x1
-					and bossID and dimension == 0 and not backwards and i == level:GetLastBossRoomListIndex() then
-						local bossData = StageAPI.GetBossData(bossID)
-						if bossData and bossData.Rooms then
-							newRoom = StageAPI.GenerateBossRoom({
-								BossID = bossID,
-								NoPlayBossAnim = true
-							}, {
-								RoomDescriptor = roomDesc
-							})
-							
-							print("Horseman generated!")
-							
-							if roomDesc.Data.Subtype == 82 or roomDesc.Data.Subtype == 83 then
-								local overwritableRoomDesc = level:GetRoomByIdx(roomDesc.SafeGridIndex, dimension)
-								local replaceData = StageAPI.GetGotoDataForTypeShape(RoomType.ROOM_BOSS, roomDesc.Data.Shape)
-								overwritableRoomDesc.Data = replaceData
-							end
-						end
+				local laby
+				if level:GetCurses() & LevelCurse.CURSE_OF_LABYRINTH ~= 0 then
+					laby = true
+				end
+				
+				--print("detected possible boss")
+				
+				local roomsList = level:GetRooms()
+				for i = 0, roomsList.Size - 1 do
+					local roomDesc = roomsList:Get(i)
+					if roomDesc and not laby then
+						local dimension = StageAPI.GetDimension(roomDesc)
+						local newRoom
 						
-						if newRoom then
-							local listIndex = roomDesc.ListIndex
-							StageAPI.SetLevelRoom(newRoom, listIndex, dimension)
-							if roomDesc.Data.Type == RoomType.ROOM_BOSS and baseFloorInfo.HasMirrorLevel and dimension == 0 then
-								StageAPI.Log("Mirroring!")
-								local mirroredRoom = newRoom:Copy(roomDesc)
-								local mirroredDesc = level:GetRoomByIdx(roomDesc.SafeGridIndex, 1)
-								StageAPI.SetLevelRoom(mirroredRoom, mirroredDesc.ListIndex, 1)
+						if roomDesc.Data.Type == RoomType.ROOM_BOSS and roomDesc.Data.Shape ~= RoomShape.ROOMSHAPE_2x1 and (roomDesc.Data.Subtype ~= 82 and roomDesc.Data.Subtype ~= 83)
+						and dimension == 0 and not backwards and i == level:GetLastBossRoomListIndex() then
+							local bossData = StageAPI.GetBossData(bossID)
+							if bossData and not bossData.BaseGameBoss and bossData.Rooms then
+								newRoom = StageAPI.GenerateBossRoom({
+									BossID = bossID,
+									NoPlayBossAnim = true
+								}, {
+									RoomDescriptor = roomDesc
+								})
+								
+								successCheck = true
+								print("Horseman generation: Success!")
+								
+								--[[if roomDesc.Data.Subtype == 82 or roomDesc.Data.Subtype == 83 then
+									print("jk this ons gonna be monstro")
+									local overwritableRoomDesc = level:GetRoomByIdx(roomDesc.SafeGridIndex, dimension)
+									local replaceData = StageAPI.GetGotoDataForTypeShape(RoomType.ROOM_BOSS, roomDesc.Data.Shape)
+									overwritableRoomDesc.Data = replaceData
+								end]]
+							end
+							
+							if newRoom then						
+								local listIndex = roomDesc.ListIndex
+								StageAPI.SetLevelRoom(newRoom, listIndex, dimension)
+								if roomDesc.Data.Type == RoomType.ROOM_BOSS and baseFloorInfo.HasMirrorLevel and dimension == 0 then
+									StageAPI.Log("Mirroring!")
+									local mirroredRoom = newRoom:Copy(roomDesc)
+									local mirroredDesc = level:GetRoomByIdx(roomDesc.SafeGridIndex, 1)
+									StageAPI.SetLevelRoom(mirroredRoom, mirroredDesc.ListIndex, 1)
+								end
 							end
 						end
 					end
 				end
 			end
-		
-		end
+			
+		if not successCheck then
+			print("Horseman generation: Failed (Invalid Room)")
+		end	
 		revChance = true
 		end
 	end
@@ -2286,32 +2296,32 @@ if StageAPI and firstLoaded then
 			Portrait = f2.portrait,
 			Offset = Vector(0,-15),
 			Bossname = f2.bossName,
-			Weight = 1,
-			Rooms = StageAPI.RoomsList("BossRooms", require("resources.luarooms.boss_famine2")),
+			Weight = f2.weight,
+			Rooms = StageAPI.RoomsList("Famine Rooms", require("resources.luarooms.boss_famine2")),
 		}),
 		f2alt = StageAPI.AddBossData(f2.nameAlt, {
 			Name = f2.name,
 			Portrait = f2.portraitAlt,
 			Offset = Vector(0,-15),
 			Bossname = f2.bossName,
-			Weight = 1,
-			Rooms = StageAPI.RoomsList("BossRooms", require("resources.luarooms.boss_famine2_alt")),
+			Weight = f2.weightAlt,
+			Rooms = StageAPI.RoomsList("Famine Alt Rooms", require("resources.luarooms.boss_famine2_alt")),
 		}),
 		w2 = StageAPI.AddBossData(w2.name, {
 			Name = w2.name,
 			Portrait = w2.portrait,
 			Offset = Vector(0,-15),
 			Bossname = w2.bossName,
-			Weight = 1,
-			Rooms = StageAPI.RoomsList("BossRooms", require("resources.luarooms.boss_war2")),
+			Weight = w2.weight,
+			Rooms = StageAPI.RoomsList("War Rooms", require("resources.luarooms.boss_war2")),
 		}),
 		w2alt = StageAPI.AddBossData(w2.nameAlt, {
 			Name = w2.name,
 			Portrait = w2.portraitAlt,
 			Offset = Vector(0,-15),
 			Bossname = w2.bossName,
-			Weight = 1,
-			Rooms = StageAPI.RoomsList("BossRooms", require("resources.luarooms.boss_war2_alt")),
+			Weight = w2.weightAlt,
+			Rooms = StageAPI.RoomsList("War Alt Rooms", require("resources.luarooms.boss_war2_alt")),
 		})
 	}
 	
@@ -2343,9 +2353,11 @@ mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, function(_, isContinue)
 			bossSeen[k] = false
 		end
 		
-		--temporary weight inflation so people get a chance to actually see the dang boss
-		StageAPI.GetBossData(w2.name).Weight = 2
-		StageAPI.GetBossData(w2.nameAlt).Weight = 2
+		--reset weights
+		StageAPI.GetBossData(f2.name).Weight = f2.weight
+		StageAPI.GetBossData(f2.nameAlt).Weight = f2.weightAlt
+		StageAPI.GetBossData(w2.name).Weight = w2.weight
+		StageAPI.GetBossData(w2.nameAlt).Weight = w2.weightAlt
 	end
 end
 )
@@ -2361,7 +2373,7 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL ,function(_)
 end
 )
 
---New Room (StageAPI stuff)
+--New Room
 mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function(_)
 	if StageAPI and StageAPI.Loaded and not StageAPI.InTestMode then
 	
