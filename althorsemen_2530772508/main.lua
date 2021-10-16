@@ -2,8 +2,9 @@ Althorsemen = RegisterMod("Alt Horsemen",1)
 local mod = Althorsemen
 local game = Game()
 local sfx = SFXManager()
+local rng = RNG()
 
-local loadText = "Alt Horsemen v3.01 (+War)"
+local loadText = "Alt Horsemen v3.13 (+War)"
 local loadTextFailed = "Alt Horsemen load failed (STAGEAPI Disabled)"
 
 ------------------------BOSSES------------------------
@@ -950,6 +951,8 @@ function mod:War2AI(npc)
 			
 			d.phase2 = true
 			mod:SpritePlay(sprite, "Inferno")
+			sprite:SetOverlayRenderPriority(true)
+			mod:OverlayPlay(sprite,"Fire")
 			sprite:SetFrame(10)
 		end
 		
@@ -965,7 +968,6 @@ function mod:War2AI(npc)
 		
 		if sprite:IsFinished("Inferno") then
 			d.substate = nil
-			sprite:SetOverlayRenderPriority(true)
 			d.minions = true
 			d.minionDelay = 20
 			d.idleWait = nil
@@ -978,7 +980,6 @@ function mod:War2AI(npc)
 	if d.state == "idle2" then
 		npc.Friction = 1
 		npc.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_GROUND
-		mod:OverlayPlay(sprite,"Fire")
 		
 		if not d.idleWait then
 			d.idleWait = w2.bal.walkWait
@@ -1032,7 +1033,6 @@ function mod:War2AI(npc)
 			if d.idleWait <= 0 then
 				d.idleWait = nil
 				d.walkSpeed = nil
-				sprite:RemoveOverlay()
 				d.state = "inferno"
 			else
 				d.idleWait = d.idleWait - 1
@@ -1233,27 +1233,28 @@ function mod:ArmyAI(npc)
 			end
 			
 			--war death animation
-			if sprite:GetFrame() == d.frameToPop and d.popoff > 1 then
-			d.minionPos = Isaac.GetRandomPosition()
-			local distance = 0
-			while distance < w2.bal.deathArmyDist do
+			if sprite:GetFrame() == d.frameToPop and d.popoff > 1 and d.spawnOne == nil then
+				d.spawnOne = true
 				d.minionPos = Isaac.GetRandomPosition()
-				distance = math.sqrt(((target.Position.X-d.minionPos.X)^2)+((target.Position.Y-d.minionPos.Y)^2))
+				local distance = 0
+				while distance < w2.bal.deathArmyDist do
+					d.minionPos = Isaac.GetRandomPosition()
+					distance = math.sqrt(((target.Position.X-d.minionPos.X)^2)+((target.Position.Y-d.minionPos.Y)^2))
+				end
+				local posGrid = room:GetGridIndex(d.minionPos)
+				d.minionPos = room:GetGridPosition(posGrid)
+				minionDice = math.random(1,4)
+				
+				local nextFrame = d.frameToPop
+				if d.popoff < 7 then nextFrame = nextFrame + 2 end
+				if d.popoff < 5 then nextFrame = nextFrame + 4 end
+				if d.popoff < 3 then nextFrame = nextFrame + 10 end
+				
+				local army = Isaac.Spawn(w2.army.id, w2.army.variant, minionDice, d.minionPos, Vector(0,0), npc)
+				army:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
+				army:GetData().popoff = d.popoff - 1
+				army:GetData().frameToPop = nextFrame
 			end
-			local posGrid = room:GetGridIndex(d.minionPos)
-			d.minionPos = room:GetGridPosition(posGrid)
-			minionDice = math.random(1,4)
-			
-			local nextFrame = d.frameToPop
-			if d.popoff < 7 then nextFrame = nextFrame + 2 end
-			if d.popoff < 5 then nextFrame = nextFrame + 4 end
-			if d.popoff < 3 then nextFrame = nextFrame + 10 end
-			
-			local army = Isaac.Spawn(w2.army.id, w2.army.variant, minionDice, d.minionPos, Vector(0,0), npc)
-			army:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
-			army:GetData().popoff = d.popoff - 1
-			army:GetData().frameToPop = nextFrame
-		end
 		elseif d.spawnSeq == 1 then
 			mod:SpritePlay(sprite, "JumpOut")
 			
@@ -1419,10 +1420,25 @@ function mod:HorseChargeSetup(direction, cWrap)
 end
 
 --tears up
-local function TearsUp(firedelay, val)
+local function TearsUp(firedelay, val, mult)
     local currentTears = 30 / (firedelay + 1)
-    local newTears = currentTears + val
+	
+	local newTears = currentTears + val
+	if mult then
+		newTears = currentTears * val
+	end
     return math.max((30 / newTears) - 1, -0.99)
+end
+
+--mirror check
+local function IsMirror()
+    for i=0,168 do
+        local data=Game():GetLevel():GetRoomByIdx(i).Data
+        if data and data.Name=='Knife Piece Room' then
+            return true
+        end
+    end
+    return false
 end
 
 --npc flag functions
@@ -1518,7 +1534,6 @@ Althorsemen.Tumorcube = {
 	bal = {
 		orbitSpeed = 0.035,
 		orbitDistance = Vector(30, 30),
-		tearsUp = 0.4,
 		slowDuration = 40,
 		slowAmount = 0.5,
 		creepMin = 50,
@@ -1595,11 +1610,12 @@ function mod:CacheUpdate(player, flag)
 	if flag == CacheFlag.CACHE_FIREDELAY then
 		if player:HasCollectible(tc.id) then
 			local tumorNum = player:GetCollectibleNum(tc.id, true)
+			local tearsUp = 1.15
 			local tearAmp = 0
-			if tumorNum == 2 then tearAmp = 0.3
-			elseif tumorNum == 3 then tearAmp = 0.5
-			elseif tumorNum >= 4 then tearAmp = 0.6 end
-			local tearCalculate = TearsUp(player.MaxFireDelay, tc.bal.tearsUp + tearAmp)
+			if tumorNum == 2 then tearAmp = 0.1
+			elseif tumorNum == 3 then tearAmp = 0.2
+			elseif tumorNum >= 4 then tearAmp = 0.25 end
+			local tearCalculate = TearsUp(player.MaxFireDelay, tearsUp + tearAmp, true)
 			player.MaxFireDelay = tearCalculate
 		end
 	end
@@ -2389,7 +2405,17 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function(_)
 				if entity.Type == f2.id and entity.Variant == f2.variant then
 					bossGet = f2.name
 					bossSeen.f2 = true
-					doHorseDrop = true
+					
+					--50% chance tumor drop in the mirror
+					if (IsMirror()) then
+						local tumorChance = rng:RandomInt(2)
+						print(tumorChance)
+						if (tumorChance == 0) then
+							doHorseDrop = true
+						end
+					else
+						doHorseDrop = true
+					end
 					
 					StageAPI.GetBossData(f2.name).Weight = 0
 					StageAPI.GetBossData(f2.nameAlt).Weight = 0
