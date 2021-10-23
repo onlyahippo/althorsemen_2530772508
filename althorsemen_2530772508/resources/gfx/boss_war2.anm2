@@ -1,5 +1,5 @@
 <AnimatedActor>
-	<Info CreatedBy="robot" CreatedOn="10/12/2021 11:57:44 AM" Version="420" Fps="45"/>
+	<Info CreatedBy="robot" CreatedOn="10/23/2021 2:50:26 PM" Version="421" Fps="45"/>
 	<Content>
 		<Spritesheets>
 			<Spritesheet Path="bosses/war2/boss_war2.png" Id="0"/>
@@ -1022,7 +1022,7 @@
 			</NullAnimations>
 			<Triggers/>
 		</Animation>
-		<Animation Name="WalkHori" FrameNum="22" Loop="true">
+		<Animation Name="P2_WalkHori" FrameNum="22" Loop="true">
 			<RootAnimation>
 				<Frame XPosition="0" YPosition="0" XScale="100" YScale="100" Delay="1" Visible="true" RedTint="255" GreenTint="255" BlueTint="255" AlphaTint="255" RedOffset="0" GreenOffset="0" BlueOffset="0" Rotation="0" Interpolated="false"/>
 			</RootAnimation>
@@ -1068,7 +1068,7 @@
 				<Trigger EventId="2" AtFrame="8"/>
 			</Triggers>
 		</Animation>
-		<Animation Name="WalkVert" FrameNum="22" Loop="true">
+		<Animation Name="P2_WalkVert" FrameNum="22" Loop="true">
 			<RootAnimation>
 				<Frame XPosition="0" YPosition="0" XScale="100" YScale="100" Delay="1" Visible="true" RedTint="255" GreenTint="255" BlueTint="255" AlphaTint="255" RedOffset="0" GreenOffset="0" BlueOffset="0" Rotation="0" Interpolated="false"/>
 			</RootAnimation>
@@ -1114,7 +1114,7 @@
 				<Trigger EventId="2" AtFrame="8"/>
 			</Triggers>
 		</Animation>
-		<Animation Name="Fire" FrameNum="9" Loop="true">
+		<Animation Name="P2_Fire" FrameNum="9" Loop="true">
 			<RootAnimation>
 				<Frame XPosition="0" YPosition="0" XScale="100" YScale="100" Delay="1" Visible="true" RedTint="255" GreenTint="255" BlueTint="255" AlphaTint="255" RedOffset="0" GreenOffset="0" BlueOffset="0" Rotation="0" Interpolated="false"/>
 			</RootAnimation>
@@ -1139,7 +1139,7 @@
 			</NullAnimations>
 			<Triggers/>
 		</Animation>
-		<Animation Name="Inferno" FrameNum="75" Loop="false">
+		<Animation Name="P2_Inferno" FrameNum="75" Loop="false">
 			<RootAnimation>
 				<Frame XPosition="0" YPosition="0" XScale="100" YScale="100" Delay="1" Visible="true" RedTint="255" GreenTint="255" BlueTint="255" AlphaTint="255" RedOffset="0" GreenOffset="0" BlueOffset="0" Rotation="0" Interpolated="false"/>
 			</RootAnimation>

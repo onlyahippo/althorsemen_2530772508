@@ -4,7 +4,7 @@ local game = Game()
 local sfx = SFXManager()
 local rng = RNG()
 
-local loadText = "Alt Horsemen v3.13 (+War)"
+local loadText = "Alt Horsemen v3.14 (+War)"
 local loadTextFailed = "Alt Horsemen load failed (STAGEAPI Disabled)"
 
 ------------------------BOSSES------------------------
@@ -950,9 +950,9 @@ function mod:War2AI(npc)
 			npc.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_GROUND
 			
 			d.phase2 = true
-			mod:SpritePlay(sprite, "Inferno")
+			mod:SpritePlay(sprite, "P2_Inferno")
 			sprite:SetOverlayRenderPriority(true)
-			mod:OverlayPlay(sprite,"Fire")
+			mod:OverlayPlay(sprite,"P2_Fire")
 			sprite:SetFrame(10)
 		end
 		
@@ -966,7 +966,7 @@ function mod:War2AI(npc)
 			game:ShakeScreen(5)
 		end
 		
-		if sprite:IsFinished("Inferno") then
+		if sprite:IsFinished("P2_Inferno") then
 			d.substate = nil
 			d.minions = true
 			d.minionDelay = 20
@@ -996,9 +996,9 @@ function mod:War2AI(npc)
 		
 		--sprite direction
 		if npc.Velocity:Length() > 0.1 then
-			npc:AnimWalkFrame("WalkHori","WalkVert",0)
+			npc:AnimWalkFrame("P2_WalkHori","P2_WalkVert",0)
 		else
-			sprite:SetFrame("WalkVert", 0)
+			sprite:SetFrame("P2_WalkVert", 0)
 		end
 		
 		--step fire
@@ -1042,9 +1042,9 @@ function mod:War2AI(npc)
 	
 	--inferno
 	if d.state == "inferno" then
-		mod:SpritePlay(sprite, "Inferno")
+		mod:SpritePlay(sprite, "P2_Inferno")
 		
-		if sprite:IsFinished("Inferno") then
+		if sprite:IsFinished("P2_Inferno") then
 			d.state = "idle2"
 		elseif sprite:IsEventTriggered("Shoot") then
 			npc:PlaySound(SoundEffect.SOUND_MONSTER_GRUNT_4, 1, 0, false, 1)
@@ -2435,6 +2435,28 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function(_)
 	end
 end
 )
+
+--enhanced boss bar mod support
+if HPBars then
+	f2id = tostring(f2.id) .. "." .. tostring(f2.variant)
+	w2id = tostring(w2.id) .. "." .. tostring(w2.variant)
+
+    HPBars.BossDefinitions[f2id] = {
+        sprite = "gfx/bosses/famine2/small_famine_head.png",
+		conditionalSprites = {
+			{"isStageType","gfx/bosses/famine2/small_famine_head_dross.png", {StageType.STAGETYPE_REPENTANCE_B}}
+		},
+        offset = Vector(-4, 0)
+    }
+	HPBars.BossDefinitions[w2id] = {
+        sprite = "gfx/bosses/war2/small_war_head.png",
+		conditionalSprites = {
+			{"animationNameStartsWith","gfx/bosses/war2/small_war_head_fire.png", {"P2"}},
+			{"isStageType","gfx/bosses/war2/small_war_head_ashpit.png", {StageType.STAGETYPE_REPENTANCE_B}},
+		},
+        offset = Vector(-4, 0)
+    }
+end
 
 --[[
 mod:AddCallback(ModCallbacks.MC_POST_RENDER, function()
