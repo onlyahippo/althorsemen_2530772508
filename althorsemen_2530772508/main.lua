@@ -4,7 +4,7 @@ local game = Game()
 local sfx = SFXManager()
 local rng = RNG()
 
-local loadText = "Alt Horsemen v3.14 (+War)"
+local loadText = "Alt Horsemen v3.25 (+War)"
 local loadTextFailed = "Alt Horsemen load failed (STAGEAPI Disabled)"
 
 ------------------------BOSSES------------------------
@@ -547,9 +547,11 @@ Althorsemen.War2 = {
 		minionSmallTotalLimit = 12, --limit in small rooms
 		minionBigTotalLimit = 18, --limit in big rooms
 		bombDamage = 20,
-		bombPowerMin = 10,
+		bombPowerMin = 12,
 		bombPowerMax = 15,
 		bombCountdown = 25,
+		bombThrowsMin = 2,
+		bombThrowsMax = 3,
 		scatterCountdown = 40,
 		chargeSpeed = 3,
 		chargeDamage = 10,
@@ -697,7 +699,7 @@ function mod:War2AI(npc)
 			d.bombType = math.random(1,3)
 			
 			if not d.bombMoves then
-				d.bombMoves = math.random(0,2)
+				d.bombMoves = math.random(w2.bal.bombThrowsMin-1,w2.bal.bombThrowsMax-1)
 			--[[elseif d.bombMoves == 0 then
 				d.bombType = math.random(1,4)]]
 			end
@@ -1544,14 +1546,14 @@ Althorsemen.Tumorcube = {
 		slowColor = Color(0.15,0.15,0.15,1),
 		creepMin2 = 1,
 		creepBonus2 = 5,
-		tumorOrbChance = 2,
-		tumorBoyChance = 3,
+		tumorSmallChance = 3,
+		tumorBigChance = 2,
 		jumpCooldown = 200,
 		jumpDamage = 65,
 		jumpRange = 250,
 		stompRange = 90,
-		tumorMax1 = 4,
-		tumorMax2 = 6,
+		tumorMax1 = 5,
+		tumorMax2 = 7,
 		tumorMax3 = 15
 	}
 }
@@ -1565,10 +1567,7 @@ FamiliarVariant.WAD_OF_TUMORS_L2 = Isaac.GetEntityVariantByName("Wad of Tumors L
 FamiliarVariant.WAD_OF_TUMORS_L3 = Isaac.GetEntityVariantByName("Wad of Tumors L3")
 FamiliarVariant.WAD_OF_TUMORS_L4 = Isaac.GetEntityVariantByName("Wad of Tumors L4")
 FamiliarVariant.TUMOR_NUGGET = Isaac.GetEntityVariantByName("Tumor Nugget")
---EID--------
-if EID then
-	EID:addCollectible(CollectibleType.COLLECTIBLE_WAD_OF_TUMORS, "↑ +0.4 Tears up#LVL1: Sticky Orbital#LVL2: Shooting Orbital#LVL3: Ash LVL 1#LVL4: Ash LVL 2")
-end
+
 ------------------------------------
 
 --cache update
@@ -1610,11 +1609,11 @@ function mod:CacheUpdate(player, flag)
 	if flag == CacheFlag.CACHE_FIREDELAY then
 		if player:HasCollectible(tc.id) then
 			local tumorNum = player:GetCollectibleNum(tc.id, true)
-			local tearsUp = 1.15
+			local tearsUp = 1.12
 			local tearAmp = 0
-			if tumorNum == 2 then tearAmp = 0.1
-			elseif tumorNum == 3 then tearAmp = 0.2
-			elseif tumorNum >= 4 then tearAmp = 0.25 end
+			if tumorNum == 2 then tearAmp = 0.06
+			elseif tumorNum == 3 then tearAmp = 0.10
+			elseif tumorNum >= 4 then tearAmp = 0.13 end
 			local tearCalculate = TearsUp(player.MaxFireDelay, tearsUp + tearAmp, true)
 			player.MaxFireDelay = tearCalculate
 		end
@@ -2068,12 +2067,15 @@ end
 --t2
 function mod:TumorCollision2(tumor, entity, _)
     if entity.Type == EntityType.ENTITY_PROJECTILE then 
+		if not entity:GetData().tumorSpawned then
+			entity:GetData().tumorSpawned = true
+			mod:TumorSpur(tumor,tc.bal.tumorMax1)
+		end
 		entity:Kill()
-		mod:TumorSpur(tumor,tc.bal.tumorMax1)
     elseif entity:IsVulnerableEnemy() and not EntityRef(entity).IsFriendly and not EntityRef(entity).IsCharmed then 
 		entity:AddSlowing(EntityRef(tumors), tc.bal.slowDuration, tc.bal.slowAmount, tc.bal.slowColor) 
-		local tumorDice = math.random(1,tc.bal.tumorBoyChance)
-		if entity.HitPoints < tumor.CollisionDamage and tumorDice == 1 and not entity:GetData().tumorSpawned then
+		local tumorDice = math.random(1,tc.bal.tumorBigChance)
+		if entity.HitPoints <= tumor.CollisionDamage and tumorDice == 1 and not entity:GetData().tumorSpawned then
 			entity:GetData().tumorSpawned = true
 			mod:TumorSpur(tumor,tc.bal.tumorMax1)
 		end
@@ -2082,10 +2084,16 @@ end
 
 --t3
 function mod:TumorCollision3(tumor, entity, _)
-    if entity:IsVulnerableEnemy() and not EntityRef(entity).IsFriendly and not EntityRef(entity).IsCharmed then 
+	if entity.Type == EntityType.ENTITY_PROJECTILE then 
+		local tumorDice = math.random(1,tc.bal.tumorBigChance)
+		if tumorDice == 1 and not entity:GetData().tumorSpawned then
+			entity:GetData().tumorSpawned = true
+			mod:TumorSpur(tumor,tc.bal.tumorMax2)
+		end
+    elseif entity:IsVulnerableEnemy() and not EntityRef(entity).IsFriendly and not EntityRef(entity).IsCharmed then 
 		entity:AddSlowing(EntityRef(tumors), tc.bal.slowDuration, tc.bal.slowAmount, tc.bal.slowColor) 
-		local tumorDice = math.random(1,tc.bal.tumorOrbChance)
-		if entity.HitPoints < tumor.CollisionDamage and tumorDice == 1 and not entity:GetData().tumorSpawned then
+		local tumorDice = math.random(1,tc.bal.tumorSmallChance)
+		if entity.HitPoints <= tumor.CollisionDamage and tumorDice == 1 and not entity:GetData().tumorSpawned then
 			entity:GetData().tumorSpawned = true
 			mod:TumorSpur(tumor,tc.bal.tumorMax2)
 		end
@@ -2094,10 +2102,16 @@ end
 
 --t4
 function mod:TumorCollision4(tumor, entity, _)
-	if entity:IsVulnerableEnemy() and not EntityRef(entity).IsFriendly and not EntityRef(entity).IsCharmed then 
+	if entity.Type == EntityType.ENTITY_PROJECTILE then 
+		local tumorDice = math.random(1,tc.bal.tumorBigChance)
+		if tumorDice == 1 and not entity:GetData().tumorSpawned then
+			entity:GetData().tumorSpawned = true
+			mod:TumorSpur(tumor,tc.bal.tumorMax3)
+		end
+	elseif entity:IsVulnerableEnemy() and not EntityRef(entity).IsFriendly and not EntityRef(entity).IsCharmed then 
 		entity:AddSlowing(EntityRef(tumors), tc.bal.slowDuration, tc.bal.slowAmount, tc.bal.slowColor)
-		local tumorDice = math.random(1,tc.bal.tumorOrbChance)
-		if entity.HitPoints < tumor.CollisionDamage and tumorDice == 1 and not entity:GetData().tumorSpawned then
+		local tumorDice = math.random(1,tc.bal.tumorSmallChance)
+		if entity.HitPoints <= tumor.CollisionDamage and tumorDice == 1 and not entity:GetData().tumorSpawned then
 			entity:GetData().tumorSpawned = true
 			mod:TumorSpur(tumor,tc.bal.tumorMax3)
 		end
@@ -2409,7 +2423,7 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function(_)
 					--50% chance tumor drop in the mirror
 					if (IsMirror()) then
 						local tumorChance = rng:RandomInt(2)
-						print(tumorChance)
+						--print(tumorChance)
 						if (tumorChance == 0) then
 							doHorseDrop = true
 						end
@@ -2436,7 +2450,12 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function(_)
 end
 )
 
---enhanced boss bar mod support
+--EID--------
+if EID then
+	EID:addCollectible(CollectibleType.COLLECTIBLE_WAD_OF_TUMORS, "↑ +0.4 Tears up#LVL1: Sticky Orbital#LVL2: Shooting Orbital#LVL3: Ash LVL 1#LVL4: Ash LVL 2")
+end
+
+--Enhanced Boss Bars
 if HPBars then
 	f2id = tostring(f2.id) .. "." .. tostring(f2.variant)
 	w2id = tostring(w2.id) .. "." .. tostring(w2.variant)
