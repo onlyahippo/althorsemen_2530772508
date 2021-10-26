@@ -10,6 +10,11 @@
         <gibs amount="25" blood="1" bone="1" eye="1" gut="1" large="1" poop="0" />
     </entity>
 	
+	<!-- Death2 -->
+	<entity anm2path="boss_death2.anm2" baseHP="600" boss="1" champion="0" id="660" variant="101" name="Tainted Death" hasFloorAlts="true" collisionDamage="1" collisionMass="50" collisionRadius="20" friction="1" numGridCollisionPoints="24" shadowSize="20" stageHP="0" portrait="31" bestiary="true" bestiaryTransform="0,0,1" bestiaryAnim="Idle" tags="nodelirium">
+        <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0"/>
+    </entity>
+	
 	<!-- Army -->
 	<entity anm2path="monster_army1.anm2" baseHP="10" id="651" variant="101" subtype="0" name="Army" hasFloorAlts="true" reroll="true" boss="0" champion="1" collisionDamage="1" collisionMass="5" collisionRadius="13" friction="1" numGridCollisionPoints="12" shadowSize="0" stageHP="0" portrait="0" bestiary="true" bestiaryTransform="0,0,1" bestiaryAnim="JumpOut">
         <gibs amount="6" blood="1" bone="1" eye="1" gut="1" large="0" />

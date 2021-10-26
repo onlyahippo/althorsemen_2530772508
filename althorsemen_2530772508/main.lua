@@ -68,10 +68,10 @@ function mod:Famine2AI(npc)
 		
 		if (level:GetStage() == LevelStage.STAGE1_1 or level:GetStage() == LevelStage.STAGE1_2)
 		and level:GetStageType() == StageType.STAGETYPE_REPENTANCE_B then
-			d.dross = true
+			d.altSkin = true
 		end
 		
-		if d.dross == true then
+		if d.altSkin == true then
 			d.tearType = ProjectileVariant.PROJECTILE_PUKE
 			d.waterColor = Color(0.6,0.5,0.3)
 		else
@@ -587,7 +587,7 @@ function mod:War2AI(npc)
 		
 		if (level:GetStage() == LevelStage.STAGE2_1 or level:GetStage() == LevelStage.STAGE2_2)
 		and level:GetStageType() == StageType.STAGETYPE_REPENTANCE_B then
-			d.ashpit = true
+			d.altSkin = true
 		end
 		
 		local roomShape = room:GetRoomShape()
@@ -1345,6 +1345,146 @@ function mod:ArmyAI(npc)
 end
 
 mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.ArmyAI, w2.army.id)
+
+--DEATH2--------------------
+
+Althorsemen.Death2 = {
+	name = "Tainted Death",
+	nameAlt = "Tainted Death Alt",
+	portrait = "gfx/bosses/death2/portrait_death2.png",
+	portraitAlt = "gfx/bosses/death2/portrait_death2_gehenna.png",
+	bossName = "gfx/bosses/death2/bossname_death2.png",
+	weight = 1,
+	weightAlt = 1,
+	id = 660,
+	variant = 101,
+	bal = {
+		idleWaitMin = 40,
+		idleWaitMax = 70,
+		moveWaitMin = 20,
+		moveWaitMax = 30,
+		attackFriction = 0.85,
+		speed = 1.2,
+		phase2Health = 0.5,
+	}
+}
+local d2 = Althorsemen.Death2
+
+function mod:Death2AI(npc)
+	local sprite = npc:GetSprite()
+	local d = npc:GetData()
+	local path = npc.Pathfinder
+	local target = npc:GetPlayerTarget()
+	local level = game:GetLevel()
+	local room = game:GetRoom()
+	
+	--INIT
+	if not d.init then
+		d.init = true
+		
+		npc.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_WALLS
+		
+		if (level:GetStage() == LevelStage.STAGE2_1 or level:GetStage() == LevelStage.STAGE2_2)
+		and level:GetStageType() == StageType.STAGETYPE_REPENTANCE_B then
+			d.altSkin = true
+		end
+
+		d.state = "idle"
+	end
+	
+	--IDLE
+	if d.state == "idle" then
+		
+		mod:SpritePlay(sprite, "Idle")
+		
+		if not d.idleWait then
+			d.idleWait = math.random(d2.bal.idleWaitMin,d2.bal.idleWaitMax)
+		end
+		
+		if d.idleWait <= 0 then
+			--idle time finish
+			d.idleWait = nil
+			d.moveWait = nil
+			
+			d.dice = math.random(1,2)
+			
+			if d.dice == 1 then
+				d.state = "scythewall"
+			elseif d.dice == 2 then
+				d.state = "slash"
+			end
+			
+			--[[phase 2 begin
+			if npc.HitPoints <= npc.MaxHitPoints*w2.bal.phase2Health and not d.phase2 then
+				d.state = "bigboom"
+			end]]
+		else
+			d.idleWait = d.idleWait - 1
+		end
+		
+		--float move
+		if not d.moveWait then
+			d.moveWait = math.random(d2.bal.moveWaitMin,d2.bal.moveWaitMax)
+			d.targetvelocity = ((target.Position - npc.Position):Normalized()*2):Rotated(-50+math.random(100))
+		end
+		
+		if d.moveWait <= 0 and d.moveWait ~= nil then
+			d.moveWait = nil
+		else
+			d.moveWait = d.moveWait - 1
+		end
+		
+		npc.Friction = 1
+		npc.Velocity = ((d.targetvelocity * 0.3) + (npc.Velocity * 0.7)) * d2.bal.speed
+		d.targetvelocity = d.targetvelocity * 0.99
+		
+		if npc.Velocity.X < -2 then
+			sprite.FlipX = true
+		elseif npc.Velocity.X > 2 then
+			sprite.FlipX = false
+		end
+	end
+	
+	--SUMMON SCYTHEWALL
+	if d.state == "scythewall" then
+		mod:SpritePlay(sprite, "Summon")
+		
+		if sprite:IsFinished("Summon") then
+			d.state = "idle"
+
+		end
+		npc.Friction = d2.bal.attackFriction
+	end
+	
+	--HORSE SLASH
+	if d.state == "slash" then
+		if not d.substate then
+			mod:SpritePlay(sprite, "SlashCharge")
+			d.substate = 1
+		elseif d.substate == 1 then
+			if sprite:IsFinished("SlashCharge") then
+				if target.Position.Y >= npc.Position.Y then mod:SpritePlay(sprite, "SlashDashA")
+				else mod:SpritePlay(sprite, "SlashDashB") end
+				
+				if npc.Position.X > target.Position.X then
+					sprite.FlipX = true
+				elseif npc.Position.X < target.Position.X then
+					sprite.FlipX = false
+				end
+			
+				d.substate = 2
+			end
+		elseif d.substate == 2 then
+			if sprite:IsFinished("SlashDashA") or sprite:IsFinished("SlashDashB") then
+				d.substate = nil
+				d.state = "idle"
+			end
+		end
+		npc.Friction = d2.bal.attackFriction
+	end
+end
+
+mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.Death2AI, d2.id)
 
 ------------------------COOL FUNCTIONS------------------------
 --------------------------------------------------------------
