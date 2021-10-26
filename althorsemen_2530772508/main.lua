@@ -1609,11 +1609,11 @@ function mod:CacheUpdate(player, flag)
 	if flag == CacheFlag.CACHE_FIREDELAY then
 		if player:HasCollectible(tc.id) then
 			local tumorNum = player:GetCollectibleNum(tc.id, true)
-			local tearsUp = 1.12
+			local tearsUp = 1.14
 			local tearAmp = 0
-			if tumorNum == 2 then tearAmp = 0.06
-			elseif tumorNum == 3 then tearAmp = 0.10
-			elseif tumorNum >= 4 then tearAmp = 0.13 end
+			if tumorNum == 2 then tearAmp = 0.08
+			elseif tumorNum == 3 then tearAmp = 0.14
+			elseif tumorNum >= 4 then tearAmp = 0.18 end
 			local tearCalculate = TearsUp(player.MaxFireDelay, tearsUp + tearAmp, true)
 			player.MaxFireDelay = tearCalculate
 		end
