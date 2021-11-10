@@ -4,7 +4,8 @@ local game = Game()
 local sfx = SFXManager()
 local rng = RNG()
 
-local loadText = "Alt Horsemen v3.25 (+War)"
+local firstLoaded = true
+local loadText = "Alt Horsemen v4 (+Death)"
 local loadTextFailed = "Alt Horsemen load failed (STAGEAPI Disabled)"
 
 ------------------------BOSSES------------------------
@@ -1358,13 +1359,32 @@ Althorsemen.Death2 = {
 	weightAlt = 1,
 	id = 660,
 	variant = 101,
+	scythe = {
+		name = "Gas Scythe",
+		id = 660,
+		variant = 103,
+		gasTime = 10,
+		accel = 0.3,
+		fastAccel = 0.48,
+	},
 	bal = {
-		idleWaitMin = 40,
-		idleWaitMax = 70,
+		scytheIdleTail = 24,
+		scytheIdleFast = 14,
+		scytheIdleSlow = 34,
+		slashIdleHead = 30,
+		slashIdleTail = 1,
 		moveWaitMin = 20,
 		moveWaitMax = 30,
 		attackFriction = 0.85,
 		speed = 1.2,
+		slashSpeed = 60,
+		slashCurve = 20,
+		slashFriction = 0.82,
+		slashCircle = 60,
+		slashTime = 7,
+		boneShotDist = 15,
+		boneShotSpeed = 6.5,
+		boneShotAmount = 6,
 		phase2Health = 0.5,
 	}
 }
@@ -1382,14 +1402,43 @@ function mod:Death2AI(npc)
 	if not d.init then
 		d.init = true
 		
-		npc.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_WALLS
-		
-		if (level:GetStage() == LevelStage.STAGE2_1 or level:GetStage() == LevelStage.STAGE2_2)
+		if (level:GetStage() == LevelStage.STAGE3_1 or level:GetStage() == LevelStage.STAGE3_2)
 		and level:GetStageType() == StageType.STAGETYPE_REPENTANCE_B then
 			d.altSkin = true
 		end
+		
+		for playerNum = 1, game:GetNumPlayers() do
+			local player = game:GetPlayer(playerNum)
+			if Isaac.GetPlayer(playerNum):GetPlayerType() == PlayerType.PLAYER_EVE_B then
+				d.tpSafe = true
+			end
+		end
 
-		d.state = "idle"
+		--add safespots because this isnt a boss room
+		if room:GetType() ~= RoomType.ROOM_BOSS then
+			--d.tpSafe = true
+		end
+		
+		local roomShape = room:GetRoomShape()
+		d.roomSize = "odd"
+		if roomShape == 1 then
+			d.roomSize = "normal"
+		end
+		
+		d.poofColor = Color(0.9,0.7,1,1)
+
+		if npc.Variant == d2.scythe.variant then
+			--GAS SCYTHE
+			npc.GridCollisionClass = GridCollisionClass.COLLISION_NONE
+			npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
+			d.state = "scythe"
+		else
+			--DEATH
+			npc.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_WALLS
+			d.movesBeforeSlash = math.random(2,3)
+			d.theManHimself = true
+			d.state = "idle"
+		end
 	end
 	
 	--IDLE
@@ -1398,21 +1447,42 @@ function mod:Death2AI(npc)
 		mod:SpritePlay(sprite, "Idle")
 		
 		if not d.idleWait then
-			d.idleWait = math.random(d2.bal.idleWaitMin,d2.bal.idleWaitMax)
+			d.idleWait = d2.bal.scytheIdleTail
 		end
 		
-		if d.idleWait <= 0 then
+		if not d.stateDecide then
+		
+			d.dice = 1
+			if d.movesBeforeSlash <= 0 or d.roomSize == "odd" then
+				d.dice = 2
+			end
+			
+			--beginning of idle
+			if d.dice == 1 then
+				d.stateDecide = "scythewall"
+			elseif d.dice == 2 then
+				d.idleWait = d2.bal.slashIdleHead
+				d.stateDecide = "slash"
+			end
+		end
+		
+		if d.idleWait <= 0 and d.stateDecide then
 			--idle time finish
 			d.idleWait = nil
 			d.moveWait = nil
 			
-			d.dice = math.random(1,2)
-			
+			--before next idle
 			if d.dice == 1 then
-				d.state = "scythewall"
+				d.idleWait = d2.bal.scytheIdleTail
+				d.movesBeforeSlash = d.movesBeforeSlash - 1
 			elseif d.dice == 2 then
-				d.state = "slash"
+				d.idleWait = d2.bal.slashIdleTail
+				d.movesBeforeSlash = math.random(2,5)
 			end
+			
+			d.state = d.stateDecide
+			
+			d.stateDecide = nil
 			
 			--[[phase 2 begin
 			if npc.HitPoints <= npc.MaxHitPoints*w2.bal.phase2Health and not d.phase2 then
@@ -1425,7 +1495,14 @@ function mod:Death2AI(npc)
 		--float move
 		if not d.moveWait then
 			d.moveWait = math.random(d2.bal.moveWaitMin,d2.bal.moveWaitMax)
-			d.targetvelocity = ((target.Position - npc.Position):Normalized()*2):Rotated(-50+math.random(100))
+			
+			local distance = math.sqrt(((room:GetCenterPos().X-npc.Position.X)^2)+((room:GetCenterPos().Y-npc.Position.Y)^2))
+			
+			if distance > 100 then
+				d.targetvelocity = ((room:GetCenterPos() - npc.Position):Normalized()*2):Rotated(-10+math.random(20))
+			else
+				d.targetvelocity = ((target.Position - npc.Position):Normalized()*2):Rotated(-50+math.random(100))
+			end
 		end
 		
 		if d.moveWait <= 0 and d.moveWait ~= nil then
@@ -1449,11 +1526,201 @@ function mod:Death2AI(npc)
 	if d.state == "scythewall" then
 		mod:SpritePlay(sprite, "Summon")
 		
-		if sprite:IsFinished("Summon") then
+		if not d.wallType then
+			d.wallType = math.random(1,9)
+			
+			if d.lastWallType then
+				while d.lastWallType == d.wallType do
+					d.wallType = math.random(1,9)
+				end
+			end
+			
+			if d.movesBeforeSlash then
+				if d.movesBeforeSlash <= 0 and d.wallType == 9 then
+					d.wallType = math.random(1,8)
+				end
+			end
+		end
+		
+		if d.wallType and sprite:IsEventTriggered("Shoot") then
+			if not d.spawnBegin then
+				d.spawnBegin = true
+				
+				if d.wallType <= 2 then 
+					d.scytheNum = 13
+				elseif d.wallType <= 6 then
+					d.scytheNum = 7
+				elseif d.wallType <= 8 then
+					d.scytheNum = 3
+				else
+					d.scytheNum = 7
+				end
+				
+				if d.wallType == 5 or d.wallType == 6 then
+					if target.Position.X <= room:GetCenterPos().X then
+						d.wallType = 5
+					else
+						d.wallType = 6
+					end
+				end
+				
+				d.scytheGap = -1
+				
+				if d.wallType <= 6 then
+					if d.wallType <= 4 or d.tpSafe then
+						d.scytheGap = math.random(1,d.scytheNum)
+					end
+				end
+				
+				npc:PlaySound(SoundEffect.SOUND_BLACK_POOF, 1, 0, false, 1)
+				d.lastWallType = d.wallType
+			end
+		end
+		
+		if d.spawnBegin and d.scytheNum then
+			if d.scytheNum >= 0 then
+				local posx = 0
+				local posy = 0
+				local scythePos = Vector(0,0) 
+				local getDir = "down"
+				local scytheSpeed = d2.scythe.accel
+				
+				--TOP WALL
+				if d.wallType == 1 then
+					posx = 70+(d.scytheNum*38)
+					posy = 0
+					getDir = "down"
+				--BOTTOM WALL
+				elseif d.wallType == 2 then
+					posx = 70+(d.scytheNum*38)
+					posy = 560
+					getDir = "up"
+				--LEFT WALL
+				elseif d.wallType == 3 then
+					posx = 70
+					posy = 150+(d.scytheNum*38)
+					getDir = "right"
+				--RIGHT WALL
+				elseif d.wallType == 4 then
+					posx = 570
+					posy = 150+(d.scytheNum*38)
+					getDir = "left"
+				--MIDDLE LEFT
+				elseif d.wallType == 5 then
+					posx = 320 + 40
+					posy = 150+(d.scytheNum*38)
+					getDir = "left"
+					scytheSpeed = d2.scythe.fastAccel
+				--MIDDLE RIGHT
+				elseif d.wallType == 6 then
+					posx = 320 - 40
+					posy = 150+(d.scytheNum*38)
+					getDir = "right"
+					scytheSpeed = d2.scythe.fastAccel
+				--4 SIDES CLOCKWISE
+				elseif d.wallType == 7 then
+					if d.scytheNum == 3 then
+						posx = 70
+						posy = 150+(3*38)
+						getDir = "right"
+					elseif d.scytheNum == 2 then
+						posx = 70+(5*38)
+						posy = 560
+						getDir = "up"
+					elseif d.scytheNum == 1 then
+						posx = 570
+						posy = 150+(4*38)
+						getDir = "left"
+					elseif d.scytheNum == 0 then
+						posx = 70+(8*38)
+						posy = 0
+						getDir = "down"
+						d.idleWait = d2.bal.scytheIdleFast
+					end
+					scytheSpeed = d2.scythe.fastAccel
+				--4 SIDES COUNTERCLOCKWISE
+				elseif d.wallType == 8 then
+					if d.scytheNum == 3 then
+						posx = 70
+						posy = 150+(5*38)
+						getDir = "right"
+					elseif d.scytheNum == 2 then
+						posx = 70+(10*38)
+						posy = 560
+						getDir = "up"
+					elseif d.scytheNum == 1 then
+						posx = 570
+						posy = 150+(2*38)
+						getDir = "left"
+					elseif d.scytheNum == 0 then
+						posx = 70+(3*38)
+						posy = 0
+						getDir = "down"
+						d.idleWait = d2.bal.scytheIdleFast
+					end
+					scytheSpeed = d2.scythe.fastAccel
+				--4 CORNERS
+				elseif d.wallType == 9 then
+					if not d.subScytheNum then d.subScytheNum = 0 end
+					if d.scytheNum == 7 or d.scytheNum == 3 then
+						posx = 70
+						posy = 150+((7-d.subScytheNum)*38) - 20
+						getDir = "right"
+					elseif d.scytheNum == 6 or d.scytheNum == 2 then
+						posx = 70+((13-d.subScytheNum)*38) - 20
+						posy = 560
+						getDir = "up"
+					elseif d.scytheNum == 5 or d.scytheNum == 1 then
+						posx = 570
+						posy = 150+((0+d.subScytheNum)*38) + 20
+						getDir = "left"
+					elseif d.scytheNum == 4 or d.scytheNum == 0 then
+						posx = 70+((0+d.subScytheNum)*38) + 20
+						posy = 0
+						getDir = "down"
+						d.subScytheNum = d.subScytheNum + 1
+						d.idleWait = d2.bal.scytheIdleSlow
+					end
+					scytheSpeed = d2.scythe.fastAccel
+				end
+				
+				scythePos = Vector(posx,posy)
+				local scythe = Isaac.Spawn(d2.scythe.id, d2.scythe.variant, 0, scythePos, Vector(0,0), npc)
+				scythe:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
+				scythe:GetData().scytheDir = getDir
+				scythe:GetData().scythePause = d.scytheNum
+				scythe:GetData().scytheSpeed = scytheSpeed
+				scythe.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
+				if scythe:GetData().scytheDir == "left" then scythe:GetSprite().FlipX = true end
+				if d.scytheNum == d.scytheGap or d.scytheNum == d.scytheGap-1 then scythe:Remove() end
+				
+				d.scytheNum = d.scytheNum-1
+			else
+				d.scytheNum = nil
+				d.subScytheNum = nil
+			end
+		end
+		
+		if sprite:IsFinished("Summon") and not d.scytheNum then
+			d.spawnBegin = nil
+			d.scytheGap = nil
+			d.wallType = nil
+			
 			d.state = "idle"
-
 		end
 		npc.Friction = d2.bal.attackFriction
+	end
+
+	--DEATH (ACTUALLY DEATH AND NOT THE BOSS)
+	if npc:IsDead() and d.theManHimself then
+		d.dice = rng:RandomInt(2)
+		if d.dice == 0 then
+			local trinket = Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, TrinketType.TRINKET_YOUR_SOUL, npc.Position, Vector(0,0), npc)
+		end
+		
+		for i, entity in ipairs(Isaac.FindByType(d2.scythe.id, d2.scythe.variant)) do
+			entity:Kill()
+		end
 	end
 	
 	--HORSE SLASH
@@ -1461,26 +1728,153 @@ function mod:Death2AI(npc)
 		if not d.substate then
 			mod:SpritePlay(sprite, "SlashCharge")
 			d.substate = 1
+		--charge up
 		elseif d.substate == 1 then
+		
+			npc.Friction = d2.bal.attackFriction
+			
+			if sprite:IsEventTriggered("Flash") then
+				npc:PlaySound(SoundEffect.SOUND_BEEP, 1, 0, false, 1)
+			end
+			
+			if sprite:IsEventTriggered("Target") then
+				d.shootVec = (target.Position - npc.Position):Resized(d2.bal.slashSpeed)
+			end
+			
 			if sprite:IsFinished("SlashCharge") then
-				if target.Position.Y >= npc.Position.Y then mod:SpritePlay(sprite, "SlashDashA")
-				else mod:SpritePlay(sprite, "SlashDashB") end
-				
-				if npc.Position.X > target.Position.X then
-					sprite.FlipX = true
-				elseif npc.Position.X < target.Position.X then
-					sprite.FlipX = false
+
+				if not d.tpSafe then
+					d.shootVec = d.shootVec + target.Velocity:Resized(d2.bal.slashCurve)
 				end
 			
+				targetPos = d.shootVec + npc.Position
+				if targetPos.Y >= npc.Position.Y then mod:SpritePlay(sprite, "SlashDashA")
+				else mod:SpritePlay(sprite, "SlashDashB") end
+				
+				if targetPos.X < npc.Position.X then
+					sprite.FlipX = true
+				else
+					sprite.FlipX = false
+				end
+				
+				npc.Friction = 1
+				npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
+				
 				d.substate = 2
 			end
+		--slash
 		elseif d.substate == 2 then
+
+			if sprite:IsEventTriggered("Shoot") then
+				npc.Velocity = d.shootVec
+				npc:PlaySound(SoundEffect.SOUND_TOOTH_AND_NAIL, 1, 0, false, 1)
+				d.stateTimer = d2.bal.slashTime
+			end
+			
+			if sprite:IsEventTriggered("Unwind") then
+				npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_ALL
+			end
+			
+			if d.stateTimer then 
+
+				if d.stateTimer == d2.bal.slashTime-1 then
+					local params = ProjectileParams()
+					params.Variant = ProjectileVariant.PROJECTILE_BONE
+					params.BulletFlags = ProjectileFlags.WIGGLE|ProjectileFlags.ACCELERATE
+					params.FallingAccelModifier = 0.1-(0.01*d2.bal.boneShotDist)
+					npc:FireProjectiles(npc.Position, Vector(d2.bal.boneShotSpeed,d2.bal.boneShotAmount), 9, params)
+				end
+
+				if d.stateTimer > 0 then
+					local distance = math.sqrt(((target.Position.X-npc.Position.X)^2)+((target.Position.Y-npc.Position.Y)^2))
+					if distance < d2.bal.slashCircle then
+						target:TakeDamage(1, 0, EntityRef(npc), 0)
+						target.Velocity = npc.Velocity*0.5*-1
+						d.stateTimer = 0
+					end
+				
+					d.stateTimer = d.stateTimer - 1 
+				end
+			end
+			
+			npc.Friction = npc.Friction * d2.bal.slashFriction
+			
 			if sprite:IsFinished("SlashDashA") or sprite:IsFinished("SlashDashB") then
+				npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_ALL
 				d.substate = nil
+				d.stateTimer = nil
+				npc.Friction = d2.bal.attackFriction
 				d.state = "idle"
 			end
 		end
-		npc.Friction = d2.bal.attackFriction
+	end
+	
+	--SCYTHE---------
+	
+	if d.state == "scythe" then
+		--init
+		if not d.substate then
+			mod:SpritePlay(sprite, "Idle")
+			npc.Friction = 0
+			
+			if not d.stateTimer then
+				d.stateTimer = d2.scythe.gasTime
+			elseif d.stateTimer > 0 then
+				d.stateTimer = d.stateTimer - 1 
+			else
+				if d.scythePause == 0 then
+					npc:PlaySound(SoundEffect.SOUND_SUMMON_POOF, 1, 0, false, 1)
+				end
+				mod:SpritePlay(sprite, "Transform")
+				d.stateTimer = nil
+				d.substate = 1
+			end
+		--transform
+		elseif d.substate == 1 then
+			if sprite:IsEventTriggered("Effect") then
+				local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector(0,0), player):ToEffect()
+				poof.Color = d.poofColor
+				npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_PLAYERONLY
+				
+				if not d.scytheDir then d.scytheDir = "down" end
+				if not d.pause then d.pause = 0 end
+				
+				local accel = d.scytheSpeed
+				
+				if d.scytheDir == "left" then d.scytheVel = Vector(-1,0)*accel
+				elseif d.scytheDir == "right" then d.scytheVel = Vector(1,0)*accel
+				elseif d.scytheDir == "up" then d.scytheVel = Vector(0,-1)*accel
+				elseif d.scytheDir == "down" then d.scytheVel = Vector(0,1)*accel end
+			end
+		
+			if sprite:IsFinished("Transform") then
+				mod:SpritePlay(sprite, "Throw")
+				d.substate = 2
+			end
+		--movement
+		elseif d.substate == 2 then
+		
+			if not d.scythePause then
+				npc.Velocity = npc.Velocity + d.scytheVel
+			else
+				if d.scythePause > 0 then
+					d.scythePause = d.scythePause - 1
+				else
+					d.scythePause = nil
+				end
+			end
+			
+			sprite.PlaybackSpeed = 0.8
+			npc.Friction = 1
+			
+			if not d.stateTimer then
+				d.stateTimer = 80
+			elseif d.stateTimer > 0 then
+				d.stateTimer = d.stateTimer - 1 
+			else
+				npc:Remove()
+			end
+		end
 	end
 end
 
@@ -1619,11 +2013,21 @@ end
 
 --npc collisions
 mod:AddCallback(ModCallbacks.MC_PRE_NPC_COLLISION, function(_, npc, npc2)
+	--war
 	if npc2.Type == w2.id and npc2.Variant == w2.variant and npc2:GetData().state == "charge" then
 		if npc.Type == w2.army.id and npc.Variant == w2.army.variant then
 			npc:Kill()
 		end
 		npc:TakeDamage(w2.bal.chargeDamage, 0, EntityRef(npc2), 0)
+	end
+	
+	--gas scythe
+	if npc.Type == d2.scythe.id and npc.Variant == d2.scythe.variant then
+		if npc2.Type == EntityType.ENTITY_PLAYER then
+			local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector(0,0), player):ToEffect()
+			poof.Color = npc:GetData().poofColor
+			npc:Remove()
+		end
 	end
 end
 )
@@ -2322,6 +2726,8 @@ local function FloorVerify()
 			bossID = f2.name
 		elseif (stage == LevelStage.STAGE2_1 or stage == LevelStage.STAGE2_2) and not bossSeen.w2 then
 			bossID = w2.name
+		elseif (stage == LevelStage.STAGE3_1 or stage == LevelStage.STAGE3_2) and not bossSeen.d2 then
+			bossID = d2.name
 		end
 	--alt
 	elseif (stageType ~= StageType.STAGETYPE_REPENTANCE and stageType == StageType.STAGETYPE_REPENTANCE_B) then
@@ -2329,15 +2735,12 @@ local function FloorVerify()
 			bossID = f2.nameAlt
 		elseif (stage == LevelStage.STAGE2_1 or stage == LevelStage.STAGE2_2) and not bossSeen.w2 then
 			bossID = w2.nameAlt
+		elseif (stage == LevelStage.STAGE3_1 or stage == LevelStage.STAGE3_2) and not bossSeen.d2 then
+			bossID = d2.nameAlt
 		end
 	end
 	
 	--[[
-	if (stageType == StageType.STAGETYPE_REPENTANCE or stageType == StageType.STAGETYPE_REPENTANCE_B)
-	and (stage == LevelStage.STAGE3_1 or stage == LevelStage.STAGE3_2) then
-		bossID = "Tainted Death"
-	end
-	
 	if (stageType == StageType.STAGETYPE_REPENTANCE or stageType == StageType.STAGETYPE_REPENTANCE_B)
 	and (stage == LevelStage.STAGE4_1) then
 		bossID = "Tainted Pestilence"
@@ -2457,8 +2860,6 @@ end
 -------------------------SYSTEMS--------------------------
 ----------------------------------------------------------
 
-local firstLoaded = true
-
 if StageAPI and firstLoaded then	
 	mod.StageAPIBosses = {
 		f2 = StageAPI.AddBossData(f2.name, {
@@ -2492,6 +2893,22 @@ if StageAPI and firstLoaded then
 			Bossname = w2.bossName,
 			Weight = w2.weightAlt,
 			Rooms = StageAPI.RoomsList("War Alt Rooms", require("resources.luarooms.boss_war2_alt")),
+		}),
+		d2 = StageAPI.AddBossData(d2.name, {
+			Name = d2.name,
+			Portrait = d2.portrait,
+			Offset = Vector(0,-15),
+			Bossname = d2.bossName,
+			Weight = d2.weight,
+			Rooms = StageAPI.RoomsList("Death Rooms", require("resources.luarooms.boss_death2")),
+		}),
+		d2alt = StageAPI.AddBossData(d2.nameAlt, {
+			Name = d2.name,
+			Portrait = d2.portraitAlt,
+			Offset = Vector(0,-15),
+			Bossname = d2.bossName,
+			Weight = d2.weightAlt,
+			Rooms = StageAPI.RoomsList("Death Rooms", require("resources.luarooms.boss_death2_alt")),
 		})
 	}
 	
@@ -2499,6 +2916,8 @@ if StageAPI and firstLoaded then
 	StageAPI.AddBossToBaseFloorPool({BossID = f2.nameAlt},LevelStage.STAGE1_1,StageType.STAGETYPE_REPENTANCE_B)
 	StageAPI.AddBossToBaseFloorPool({BossID = w2.name},LevelStage.STAGE2_1,StageType.STAGETYPE_REPENTANCE)
 	StageAPI.AddBossToBaseFloorPool({BossID = w2.nameAlt},LevelStage.STAGE2_1,StageType.STAGETYPE_REPENTANCE_B)
+	StageAPI.AddBossToBaseFloorPool({BossID = d2.name},LevelStage.STAGE3_1,StageType.STAGETYPE_REPENTANCE)
+	StageAPI.AddBossToBaseFloorPool({BossID = d2.nameAlt},LevelStage.STAGE3_1,StageType.STAGETYPE_REPENTANCE)
 end
 
 --New Game
@@ -2528,6 +2947,8 @@ mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, function(_, isContinue)
 		StageAPI.GetBossData(f2.nameAlt).Weight = f2.weightAlt
 		StageAPI.GetBossData(w2.name).Weight = w2.weight
 		StageAPI.GetBossData(w2.nameAlt).Weight = w2.weightAlt
+		StageAPI.GetBossData(d2.name).Weight = d2.weight
+		StageAPI.GetBossData(d2.nameAlt).Weight = d2.weightAlt
 	end
 end
 )
@@ -2582,6 +3003,15 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function(_)
 					
 					StageAPI.GetBossData(w2.name).Weight = 0
 					StageAPI.GetBossData(w2.nameAlt).Weight = 0
+					break
+				--DEATH
+				elseif entity.Type == d2.id and entity.Variant == d2.variant then
+					bossGet = d2.name
+					bossSeen.d2 = true
+					doHorseDrop = true
+					
+					StageAPI.GetBossData(d2.name).Weight = 0
+					StageAPI.GetBossData(d2.nameAlt).Weight = 0
 					break
 				end
 			end
