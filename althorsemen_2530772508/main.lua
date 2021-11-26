@@ -556,7 +556,7 @@ Althorsemen.War2 = {
 		scatterCountdown = 40,
 		chargeSpeed = 3,
 		chargeDamage = 10,
-		rockPower = 9,
+		rockPower = 10,
 		rockDist = 10,
 		phase2Health = 0.45,
 		phase2Bomb = 20,
@@ -1368,10 +1368,10 @@ Althorsemen.Death2 = {
 		fastAccel = 0.48,
 	},
 	bal = {
-		scytheIdleTail = 24,
+		scytheIdleTail = 30,
 		scytheIdleFast = 14,
-		scytheIdleSlow = 34,
-		slashIdleHead = 30,
+		scytheIdleSlow = 40,
+		slashIdleHead = 34,
 		slashIdleTail = 1,
 		moveWaitMin = 20,
 		moveWaitMax = 30,
@@ -2117,7 +2117,8 @@ FamiliarVariant.TUMOR_NUGGET = Isaac.GetEntityVariantByName("Tumor Nugget")
 --cache update
 function mod:CacheUpdate(player, flag)
     if flag == CacheFlag.CACHE_FAMILIARS then
-		local tumorNum = player:GetCollectibleNum(tc.id, true)
+		local boxOfFriends = player:GetEffects():GetCollectibleEffectNum(CollectibleType.COLLECTIBLE_BOX_OF_FRIENDS)
+		local tumorNum = player:GetCollectibleNum(tc.id) + boxOfFriends
 		local tumorSub = tumorNum
 		local tumorFull = 0
 		while tumorSub > 4 do
@@ -2129,7 +2130,7 @@ function mod:CacheUpdate(player, flag)
 		local tumorS3 = 0
 		local tumorS4 = 0
 		
-		local helperNum = player:GetCollectibleNum(tc.helperid, true)
+		local helperNum = player:GetCollectibleNum(tc.helperid) --just in case you have the actual item
 		local helper = 0
 		if tumorSub == 1 then
 			tumorS1 = 1
