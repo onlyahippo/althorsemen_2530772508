@@ -1,0 +1,16 @@
+<data>
+	<entity Group="Bosses" ID="630" Image="icons/AH/famine2.png" Kind="Alt Horsemen" Name="Tainted Famine" Subtype="0" Variant="101" />
+	<entity Group="Bosses" ID="650" Image="icons/AH/war2.png" Kind="Alt Horsemen" Name="Tainted War" Subtype="0" Variant="101" />
+	
+    <entity Group="Monsters" ID="651" Image="icons/AH/army.png" Kind="Alt Horsemen" Name="Army (Random)" Subtype="0" Variant="101" />
+	<entity Group="Monsters" ID="651" Image="icons/AH/army.png" Kind="Alt Horsemen" Name="Army" Subtype="1" Variant="101" />
+	<entity Group="Monsters" ID="651" Image="icons/AH/army2.png" Kind="Alt Horsemen" Name="Army" Subtype="2" Variant="101" />
+	<entity Group="Monsters" ID="651" Image="icons/AH/army3.png" Kind="Alt Horsemen" Name="Army" Subtype="3" Variant="101" />
+	<entity Group="Monsters" ID="651" Image="icons/AH/army4.png" Kind="Alt Horsemen" Name="Army" Subtype="4" Variant="101" />
+	
+	<entity Group="Monsters" ID="651" Image="icons/AH/army.png" Kind="Alt Horsemen" Name="Army Bomb Thrower (Random)" Subtype="0" Variant="102" />
+	<entity Group="Monsters" ID="651" Image="icons/AH/army.png" Kind="Alt Horsemen" Name="Army Bomb Thrower" Subtype="1" Variant="102" />
+	<entity Group="Monsters" ID="651" Image="icons/AH/army2.png" Kind="Alt Horsemen" Name="Army Bomb Thrower" Subtype="2" Variant="102" />
+	<entity Group="Monsters" ID="651" Image="icons/AH/army3.png" Kind="Alt Horsemen" Name="Army Bomb Thrower" Subtype="3" Variant="102" />
+	<entity Group="Monsters" ID="651" Image="icons/AH/army4.png" Kind="Alt Horsemen" Name="Army Bomb Thrower" Subtype="4" Variant="102" />
+</data>
