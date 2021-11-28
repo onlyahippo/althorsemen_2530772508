@@ -2223,6 +2223,12 @@ function mod:TumorUpdate1(tumor)
 		end
 	end
 	
+	if sprite:IsEventTriggered("Drip") then
+		local effect = Isaac.Spawn(1000, 7, 0, tumor.Position, Vector(0,0), tumor):ToEffect()
+		effect.Color = Color(0,0,0,0.6)
+		effect.Scale = 0.4  
+	end
+	
     tumor.OrbitDistance = tc.bal.orbitDistance
     tumor.OrbitSpeed = tc.bal.orbitSpeed
     tumor.Velocity = tumor:GetOrbitPosition(player.Position + player.Velocity) - tumor.Position
@@ -2240,12 +2246,20 @@ function mod:TumorUpdate2(tumor)
 	local animdir = dirtostring[dir]
 	d.animpre = d.animpre or "Float"
 	
+	local shootMultiplier
+	
+	if player:HasTrinket(TrinketType.TRINKET_FORGOTTEN_LULLABY) then
+		shootMultiplier = 0.5
+	else
+		shootMultiplier = 1
+	end
+	
 	if not d.cooldown then
-		d.cooldown = tumor.FrameCount + tc.bal.shootDelay
+		d.cooldown = tumor.FrameCount + (tc.bal.shootDelay * shootMultiplier)
 	else
 		if not (player:GetShootingInput().X == 0 and player:GetShootingInput().Y == 0) and d.cooldown - tumor.FrameCount <= 0 then
 			d.animpre = "FloatShoot"
-			d.cooldown = tumor.FrameCount + tc.bal.shootDelay
+			d.cooldown = tumor.FrameCount + (tc.bal.shootDelay * shootMultiplier)
 			local tear = tumor:FireProjectile(dirtovect[dir]):ToTear()
 			tear.CollisionDamage = tc.bal.shootDamage
 			tear.Scale = tc.bal.shootSize
@@ -2753,74 +2767,76 @@ end
 
 --book of revelations
 mod:AddCallback(ModCallbacks.MC_USE_ITEM,function(_,collectible)
-	if collectible == CollectibleType.COLLECTIBLE_BOOK_OF_REVELATIONS then
+	local level = game:GetLevel()
+	local stage = level:GetStage()
+	local stageType = level:GetStageType()
+
+	if (stageType == StageType.STAGETYPE_REPENTANCE or stageType == StageType.STAGETYPE_REPENTANCE_B) then
 		if not revChance and not bossEntered and StageAPI then
-		
-		local baseFloorInfo = StageAPI.GetBaseFloorInfo()
-		local backwards = game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH_INIT) or game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH)
-		local level = game:GetLevel()
-		local bossID = FloorVerify()
-		local successCheck = false
-		
-		--print(bossID)
-		
-			if bossID then
-			
-				local laby
-				if level:GetCurses() & LevelCurse.CURSE_OF_LABYRINTH ~= 0 then
-					laby = true
-				end
+			local baseFloorInfo = StageAPI.GetBaseFloorInfo()
+			local backwards = game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH_INIT) or game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH)
+			local bossID = FloorVerify()
+			local successCheck = false
+
+			--print(bossID)
+
+				if bossID then
 				
-				--print("detected possible boss")
-				
-				local roomsList = level:GetRooms()
-				for i = 0, roomsList.Size - 1 do
-					local roomDesc = roomsList:Get(i)
-					if roomDesc and not laby then
-						local dimension = StageAPI.GetDimension(roomDesc)
-						local newRoom
-						
-						if roomDesc.Data.Type == RoomType.ROOM_BOSS and roomDesc.Data.Shape ~= RoomShape.ROOMSHAPE_2x1 and (roomDesc.Data.Subtype ~= 82 and roomDesc.Data.Subtype ~= 83)
-						and dimension == 0 and not backwards and i == level:GetLastBossRoomListIndex() then
-							local bossData = StageAPI.GetBossData(bossID)
-							if bossData and not bossData.BaseGameBoss and bossData.Rooms then
-								newRoom = StageAPI.GenerateBossRoom({
-									BossID = bossID,
-									NoPlayBossAnim = true
-								}, {
-									RoomDescriptor = roomDesc
-								})
-								
-								successCheck = true
-								print("Horseman generation: Success!")
-								
-								--[[if roomDesc.Data.Subtype == 82 or roomDesc.Data.Subtype == 83 then
-									print("jk this ons gonna be monstro")
-									local overwritableRoomDesc = level:GetRoomByIdx(roomDesc.SafeGridIndex, dimension)
-									local replaceData = StageAPI.GetGotoDataForTypeShape(RoomType.ROOM_BOSS, roomDesc.Data.Shape)
-									overwritableRoomDesc.Data = replaceData
-								end]]
-							end
+					local laby
+					if level:GetCurses() & LevelCurse.CURSE_OF_LABYRINTH ~= 0 then
+						laby = true
+					end
+					
+					--print("detected possible boss")
+					
+					local roomsList = level:GetRooms()
+					for i = 0, roomsList.Size - 1 do
+						local roomDesc = roomsList:Get(i)
+						if roomDesc and not laby then
+							local dimension = StageAPI.GetDimension(roomDesc)
+							local newRoom
 							
-							if newRoom then						
-								local listIndex = roomDesc.ListIndex
-								StageAPI.SetLevelRoom(newRoom, listIndex, dimension)
-								if roomDesc.Data.Type == RoomType.ROOM_BOSS and baseFloorInfo.HasMirrorLevel and dimension == 0 then
-									StageAPI.Log("Mirroring!")
-									local mirroredRoom = newRoom:Copy(roomDesc)
-									local mirroredDesc = level:GetRoomByIdx(roomDesc.SafeGridIndex, 1)
-									StageAPI.SetLevelRoom(mirroredRoom, mirroredDesc.ListIndex, 1)
+							if roomDesc.Data.Type == RoomType.ROOM_BOSS and roomDesc.Data.Shape ~= RoomShape.ROOMSHAPE_2x1 and (roomDesc.Data.Subtype ~= 82 and roomDesc.Data.Subtype ~= 83)
+							and dimension == 0 and not backwards and i == level:GetLastBossRoomListIndex() then
+								local bossData = StageAPI.GetBossData(bossID)
+								if bossData and not bossData.BaseGameBoss and bossData.Rooms then
+									newRoom = StageAPI.GenerateBossRoom({
+										BossID = bossID,
+										NoPlayBossAnim = true
+									}, {
+										RoomDescriptor = roomDesc
+									})
+									
+									successCheck = true
+									print("Horseman generation: Success!")
+									
+									--[[if roomDesc.Data.Subtype == 82 or roomDesc.Data.Subtype == 83 then
+										print("jk this ons gonna be monstro")
+										local overwritableRoomDesc = level:GetRoomByIdx(roomDesc.SafeGridIndex, dimension)
+										local replaceData = StageAPI.GetGotoDataForTypeShape(RoomType.ROOM_BOSS, roomDesc.Data.Shape)
+										overwritableRoomDesc.Data = replaceData
+									end]]
+								end
+								
+								if newRoom then						
+									local listIndex = roomDesc.ListIndex
+									StageAPI.SetLevelRoom(newRoom, listIndex, dimension)
+									if roomDesc.Data.Type == RoomType.ROOM_BOSS and baseFloorInfo.HasMirrorLevel and dimension == 0 then
+										StageAPI.Log("Mirroring!")
+										local mirroredRoom = newRoom:Copy(roomDesc)
+										local mirroredDesc = level:GetRoomByIdx(roomDesc.SafeGridIndex, 1)
+										StageAPI.SetLevelRoom(mirroredRoom, mirroredDesc.ListIndex, 1)
+									end
 								end
 							end
 						end
 					end
 				end
-			end
-			
-		if not successCheck then
-			print("Horseman generation: Failed (Invalid Room)")
-		end	
-		revChance = true
+				
+			if not successCheck then
+				print("Horseman generation: Failed (Invalid Room)")
+			end	
+			revChance = true
 		end
 	end
 end,CollectibleType.COLLECTIBLE_BOOK_OF_REVELATIONS)
