@@ -1360,19 +1360,30 @@ Althorsemen.Death2 = {
 	id = 660,
 	variant = 101,
 	scythe = {
-		name = "Gas Scythe",
+		name = "Purple Scythe",
 		id = 660,
 		variant = 103,
 		gasTime = 10,
 		accel = 0.3,
 		fastAccel = 0.48,
 	},
+	shadow = {
+		name = "Purple Shadow",
+		id = 660,
+		variant = 104,
+		accel = 8,
+		velocity = 12,
+		hitSphere = 32,
+		slowValue = 0.93,
+		slowHandicap = 0.04, --added slowness for higher speeds
+		slowTime = 330,
+	},
 	bal = {
 		scytheIdleTail = 30,
 		scytheIdleFast = 14,
-		scytheIdleSlow = 40,
+		scytheIdleSlow = 38,
 		slashIdleHead = 34,
-		slashIdleTail = 1,
+		slashIdleTail = 10,
 		moveWaitMin = 20,
 		moveWaitMax = 30,
 		attackFriction = 0.85,
@@ -1383,8 +1394,8 @@ Althorsemen.Death2 = {
 		slashCircle = 60,
 		slashTime = 7,
 		boneShotDist = 15,
-		boneShotSpeed = 6.5,
-		boneShotAmount = 6,
+		boneShotSpeed = 9,
+		boneShotAmount = 5,
 		phase2Health = 0.5,
 	}
 }
@@ -1415,8 +1426,8 @@ function mod:Death2AI(npc)
 		end
 
 		--add safespots because this isnt a boss room
-		if room:GetType() ~= RoomType.ROOM_BOSS then
-			--d.tpSafe = true
+		if npc.SubType == 1 then
+			d.tpSafe = true
 		end
 		
 		local roomShape = room:GetRoomShape()
@@ -1428,10 +1439,15 @@ function mod:Death2AI(npc)
 		d.poofColor = Color(0.9,0.7,1,1)
 
 		if npc.Variant == d2.scythe.variant then
-			--GAS SCYTHE
+			--PURPLE SCYTHE
 			npc.GridCollisionClass = GridCollisionClass.COLLISION_NONE
 			npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
 			d.state = "scythe"
+		elseif npc.Variant == d2.shadow.variant then
+			--PURPLE SHADOW
+			npc.GridCollisionClass = GridCollisionClass.COLLISION_NONE
+			npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
+			d.state = "shadow"
 		else
 			--DEATH
 			npc.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_WALLS
@@ -1450,11 +1466,19 @@ function mod:Death2AI(npc)
 			d.idleWait = d2.bal.scytheIdleTail
 		end
 		
+		--decide state
 		if not d.stateDecide then
 		
 			d.dice = 1
-			if d.movesBeforeSlash <= 0 or d.roomSize == "odd" then
+			if d.movesBeforeSlash == 0 or d.roomSize == "odd" then
 				d.dice = 2
+			elseif d.movesBeforeSlash < 0 then
+				local q = math.random(1,2)
+				if q == 1 then
+					d.dice = 3
+				else
+					d.dice = 4
+				end
 			end
 			
 			--beginning of idle
@@ -1463,6 +1487,10 @@ function mod:Death2AI(npc)
 			elseif d.dice == 2 then
 				d.idleWait = d2.bal.slashIdleHead
 				d.stateDecide = "slash"
+			elseif d.dice == 3 then
+				d.stateDecide = "slowghost"
+			elseif d.dice == 4 then
+				d.stateDecide = "bigbone"
 			end
 		end
 		
@@ -1477,6 +1505,9 @@ function mod:Death2AI(npc)
 				d.movesBeforeSlash = d.movesBeforeSlash - 1
 			elseif d.dice == 2 then
 				d.idleWait = d2.bal.slashIdleTail
+				d.movesBeforeSlash = -1
+			elseif d.dice >= 3 then
+				d.idleWait = d2.bal.scytheIdleTail
 				d.movesBeforeSlash = math.random(2,5)
 			end
 			
@@ -1710,18 +1741,6 @@ function mod:Death2AI(npc)
 		end
 		npc.Friction = d2.bal.attackFriction
 	end
-
-	--DEATH (ACTUALLY DEATH AND NOT THE BOSS)
-	if npc:IsDead() and d.theManHimself then
-		d.dice = rng:RandomInt(2)
-		if d.dice == 0 then
-			local trinket = Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, TrinketType.TRINKET_YOUR_SOUL, npc.Position, Vector(0,0), npc)
-		end
-		
-		for i, entity in ipairs(Isaac.FindByType(d2.scythe.id, d2.scythe.variant)) do
-			entity:Kill()
-		end
-	end
 	
 	--HORSE SLASH
 	if d.state == "slash" then
@@ -1780,7 +1799,8 @@ function mod:Death2AI(npc)
 				if d.stateTimer == d2.bal.slashTime-1 then
 					local params = ProjectileParams()
 					params.Variant = ProjectileVariant.PROJECTILE_BONE
-					params.BulletFlags = ProjectileFlags.WIGGLE|ProjectileFlags.ACCELERATE
+					if (npc.Velocity.X > 0) then params.BulletFlags = ProjectileFlags.CURVE_LEFT
+					else params.BulletFlags = ProjectileFlags.CURVE_RIGHT end
 					params.FallingAccelModifier = 0.1-(0.01*d2.bal.boneShotDist)
 					npc:FireProjectiles(npc.Position, Vector(d2.bal.boneShotSpeed,d2.bal.boneShotAmount), 9, params)
 				end
@@ -1809,7 +1829,66 @@ function mod:Death2AI(npc)
 		end
 	end
 	
-	--SCYTHE---------
+	--slow ghost
+	if d.state == "slowghost" then
+		mod:SpritePlay(sprite, "QuickCharge")
+		
+		if sprite:IsFinished("QuickCharge") then
+			d.state = "idle"
+		elseif sprite:IsEventTriggered("Shoot") then
+		
+			if targetPos.X < npc.Position.X then
+				sprite.FlipX = true
+			else
+				sprite.FlipX = false
+			end
+		
+			local shadow = Isaac.Spawn(d2.shadow.id, d2.shadow.variant, 0, npc.Position, Vector(0,0), npc)
+			shadow:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
+			
+			npc:PlaySound(SoundEffect.SOUND_BLACK_POOF, 1, 0, false, 1)
+		end
+		npc.Friction = d2.bal.attackFriction
+	end
+	
+	--big bone
+	if d.state == "bigbone" then
+		mod:SpritePlay(sprite, "QuickSummon")
+		
+		if sprite:IsFinished("QuickSummon") then
+			d.state = "idle"
+		elseif sprite:IsEventTriggered("Shoot") then
+		
+			if targetPos.X < npc.Position.X then
+				sprite.FlipX = true
+			else
+				sprite.FlipX = false
+			end
+		
+			d.shootVec = (target.Position - npc.Position):Normalized()*3
+		
+			local bigbone = Isaac.Spawn(EntityType.ENTITY_BIG_BONY, 10, 0, npc.Position+d.shootVec, d.shootVec, npc)
+			--bigbone:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
+			
+			game:SpawnParticles(npc.Position+d.shootVec,EffectVariant.SCYTHE_BREAK,1,1)
+			npc:PlaySound(SoundEffect.SOUND_BONE_SNAP, 1, 0, false, 1)
+		end
+		npc.Friction = d2.bal.attackFriction
+	end
+	
+	--DEATH (ACTUALLY DEATH AND NOT THE BOSS)
+	if npc:IsDead() and d.theManHimself then
+		d.dice = rng:RandomInt(2)
+		if d.dice == 0 then
+			local trinket = Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, TrinketType.TRINKET_YOUR_SOUL, npc.Position, Vector(0,0), npc)
+		end
+		
+		for i, entity in ipairs(Isaac.FindByType(d2.scythe.id, d2.scythe.variant)) do
+			entity:Kill()
+		end
+	end
+	
+	--ENTITY SCYTHE---------
 	
 	if d.state == "scythe" then
 		--init
@@ -1874,6 +1953,53 @@ function mod:Death2AI(npc)
 			else
 				npc:Remove()
 			end
+		end
+	end
+	
+	--ENTITY SHADOW---------
+	
+	if d.state == "shadow" then
+	
+		if sprite:IsFinished("Appear") then
+			mod:SpritePlay(sprite, "Idle")
+		end
+		
+		if not d.touched then
+			local distance = math.sqrt(((target.Position.X-npc.Position.X)^2)+((target.Position.Y-npc.Position.Y)^2))
+			if distance < d2.shadow.hitSphere then
+				local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, target.Position, Vector(0,0), npc):ToEffect()
+				poof.Color = npc:GetData().poofColor
+				
+				local slowValue = d2.shadow.slowValue
+				if target:ToPlayer() then
+					local handicap = 0
+					if target:ToPlayer().MoveSpeed > 1 then
+						handicap = d2.shadow.slowHandicap*target:ToPlayer().MoveSpeed
+					end
+					slowValue = d2.shadow.slowValue - handicap
+				end
+				
+				target:AddSlowing(EntityRef(npc), d2.shadow.slowTime, slowValue, npc:GetData().poofColor)
+				npc:PlaySound(SoundEffect.SOUND_SUMMON_POOF, 1, 0, false, 1)
+				d.touched = true
+			end
+		end
+		
+		if not d.stateTimer then
+			d.stateTimer = 80
+			d.shootVec = (target.Position - npc.Position):Resized(d2.shadow.velocity)
+			npc.Velocity = d.shootVec
+			
+		elseif d.stateTimer > 0 then
+			if d.stateTimer > 50 and not d.touched then
+				mod:RubberbandRun(npc, d, target.Position, d2.shadow.accel*(d.stateTimer/80), d2.shadow.velocity)
+			end
+			
+			d.stateTimer = d.stateTimer - 1 
+		else
+			local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector(0,0), npc):ToEffect()
+			poof.Color = npc:GetData().poofColor
+			npc:Remove()
 		end
 	end
 end
@@ -2021,7 +2147,7 @@ mod:AddCallback(ModCallbacks.MC_PRE_NPC_COLLISION, function(_, npc, npc2)
 		npc:TakeDamage(w2.bal.chargeDamage, 0, EntityRef(npc2), 0)
 	end
 	
-	--gas scythe
+	--purple scythe
 	if npc.Type == d2.scythe.id and npc.Variant == d2.scythe.variant then
 		if npc2.Type == EntityType.ENTITY_PLAYER then
 			local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector(0,0), player):ToEffect()
