@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <metadata>
-    <name>Alt Horsemen (+War)</name>
+    <name>Alt Horsemen (+Death)</name>
     <directory>althorsemen</directory>
     <id>2530772508</id>
     <description>This mod adds a completely new set of harbingers for the alternate path!
@@ -15,8 +15,8 @@ get it -&gt;  [url=https://steamcommunity.com/sharedfiles/filedetails/?id=134803
 [list]
     [*]Famine (Downpour/Dross) ✓
     [*]War (Mines/Ashpit) ✓
-
-    [*]Death ✗
+    [*]Death (Mausoleum/Gehenna) ✓
+	
     [*]Pestilence ✗
     [*]Conquest (?)
     [*]Headless Horseman (?)

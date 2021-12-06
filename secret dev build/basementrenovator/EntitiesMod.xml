@@ -2,6 +2,7 @@
 	<entity Group="Bosses" ID="630" Image="icons/AH/famine2.png" Kind="Alt Horsemen" Name="Tainted Famine" Subtype="0" Variant="101" />
 	<entity Group="Bosses" ID="650" Image="icons/AH/war2.png" Kind="Alt Horsemen" Name="Tainted War" Subtype="0" Variant="101" />
 	<entity Group="Bosses" ID="660" Image="icons/AH/death2.png" Kind="Alt Horsemen" Name="Tainted Death" Subtype="0" Variant="101" />
+	<entity Group="Bosses" ID="660" Image="icons/AH/death2.png" Kind="Alt Horsemen" Name="Tainted Death (tp safe)" Subtype="1" Variant="101" />
 	
     <entity Group="Monsters" ID="651" Image="icons/AH/army.png" Kind="Alt Horsemen" Name="Army (Random)" Subtype="0" Variant="101" />
 	<entity Group="Monsters" ID="651" Image="icons/AH/army.png" Kind="Alt Horsemen" Name="Army" Subtype="1" Variant="101" />

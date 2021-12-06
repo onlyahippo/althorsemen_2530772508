@@ -80,7 +80,7 @@ function mod:Famine2AI(npc)
 			d.waterColor = Color.Default
 		end
 
-		d.movesBeforeCharge = 1 + math.random(1,3)	
+		d.movesBeforeCharge = 1 + mod:RandomInt(3)	
 		d.state = "idle"
 	end
 	
@@ -90,7 +90,7 @@ function mod:Famine2AI(npc)
 		mod:SpritePlay(sprite, "Idle")
 		
 		if not d.idleWait then
-			d.idleWait = math.random(f2.bal.idleWaitMin,f2.bal.idleWaitMax)
+			d.idleWait = mod:RandomInt(f2.bal.idleWaitMin,f2.bal.idleWaitMax)
 		end
 		
 		if d.idleWait <= 0 then
@@ -99,7 +99,7 @@ function mod:Famine2AI(npc)
 			d.moveWait = nil
 			d.movesBeforeCharge = d.movesBeforeCharge - 1
 			
-			d.dice = math.random(1,2)
+			d.dice = mod:RandomInt(2)
 			if d.movesBeforeCharge <= 0 then
 				d.dice = 3
 			end
@@ -123,8 +123,8 @@ function mod:Famine2AI(npc)
 		
 		--float move
 		if not d.moveWait then
-			d.moveWait = math.random(f2.bal.moveWaitMin,f2.bal.moveWaitMax)
-			d.targetvelocity = ((target.Position - npc.Position):Normalized()*2):Rotated(-50+math.random(100))
+			d.moveWait = mod:RandomInt(f2.bal.moveWaitMin,f2.bal.moveWaitMax)
+			d.targetvelocity = ((target.Position - npc.Position):Normalized()*2):Rotated(-50+mod:RandomInt(100))
 		end
 		
 		if d.moveWait <= 0 and d.moveWait ~= nil then
@@ -146,13 +146,13 @@ function mod:Famine2AI(npc)
 			d.state = "idle"
 		elseif sprite:IsEventTriggered("Shoot") then
 			
-			d.dice = math.random(2)
+			d.dice = mod:RandomInt(2)
 			if d.dice == 1 then
-				local spider = EntityNPC.ThrowSpider(npc.Position, npc, npc.Position + Vector(math.random(-50, 50), math.random(50, 80)), false, -40)
+				local spider = EntityNPC.ThrowSpider(npc.Position, npc, npc.Position + Vector(mod:RandomInt(-50, 50), mod:RandomInt(50, 80)), false, -40)
 				spider:ToNPC():Morph(810,0,0,-1)
 			elseif d.dice == 2 then
 				for i=1,2 do
-					local spider = EntityNPC.ThrowSpider(npc.Position, npc, npc.Position + Vector(math.random(-50, 50), math.random(50, 80)), false, -40)
+					local spider = EntityNPC.ThrowSpider(npc.Position, npc, npc.Position + Vector(mod:RandomInt(-50, 50), mod:RandomInt(50, 80)), false, -40)
 					spider:ToNPC():Morph(810,0,0,-1)
 				end
 			end
@@ -171,15 +171,15 @@ function mod:Famine2AI(npc)
 		
 		if sprite:IsEventTriggered("Shoot") then
 		
-			d.spewR = math.random(1,60)
-			d.spewD = math.random(1,2)
+			d.spewR = mod:RandomInt(60)
+			d.spewD = mod:RandomInt(2)
 			d.spewAction = true
 		end
 		
 		if d.spewAction ~= nil then
 		
 			if not d.shootSeq then
-				d.shootSeq = 24 + math.random(1,6)
+				d.shootSeq = 24 + mod:RandomInt(6)
 			end
 			
 			if d.shootSeq % 2 == 0 then
@@ -254,13 +254,13 @@ function mod:Famine2AI(npc)
 			local params = ProjectileParams()
 			params.HeightModifier = 15
 			params.Variant = d.tearType
-			npc:FireBossProjectiles(1,Vector(npc.Position.X-(f2.bal.splashForce*d.dir),npc.Position.Y+math.random(-f2.bal.splashRange,f2.bal.splashRange)), 0,params)
+			npc:FireBossProjectiles(1,Vector(npc.Position.X-(f2.bal.splashForce*d.dir),npc.Position.Y+mod:RandomInt(-f2.bal.splashRange,f2.bal.splashRange)), 0,params)
 			--npc:FireBossProjectiles(1,target.Position, 0,params)
 			
 			if (npc.Position.X > d.roomEnd and d.dir == 1) or (npc.Position.X < d.roomEnd and d.dir == -1) then
 				mod:SpritePlay(sprite,"AttackDash")
-				npc.Position = Vector(d.roomBegin,target.Position.Y + math.random(-10,10))
-				d.targetPos = (room:GetGridWidth() * 40)/2 + (math.random(f2.bal.chargeDistMin,f2.bal.chargeDistMax)*d.dir)
+				npc.Position = Vector(d.roomBegin,target.Position.Y + mod:RandomInt(-10,10))
+				d.targetPos = (room:GetGridWidth() * 40)/2 + (mod:RandomInt(f2.bal.chargeDistMin,f2.bal.chargeDistMax)*d.dir)
 				d.substate = 4
 			end	
 		--charge end
@@ -282,8 +282,8 @@ function mod:Famine2AI(npc)
 					d.roomEnd = nil
 					d.roomBegin = nil
 					d.dir = nil
-					d.movesBeforeCharge = 2 + math.random(1,4)	
-					d.idleWait = math.random(2,6)
+					d.movesBeforeCharge = 2 + mod:RandomInt(4)	
+					d.idleWait = mod:RandomInt(2,6)
 					d.state = "idle"
 				end
 			end	
@@ -302,7 +302,7 @@ function mod:Famine2AI(npc)
 		for i=1, 3 do			
 			enemyNum = mod:CountRoom(EntityType.ENTITY_SMALL_LEECH,0)
 			if enemyNum <= 4 then
-				local spider = EntityNPC.ThrowSpider(npc.Position, npc, npc.Position + Vector(math.random(-50, 50), math.random(20, 40)), false, -80)
+				local spider = EntityNPC.ThrowSpider(npc.Position, npc, npc.Position + Vector(mod:RandomInt(-50, 50), mod:RandomInt(20, 40)), false, -80)
 				spider:ToNPC():Morph(810,0,0,-1)
 			end
 		end
@@ -332,7 +332,7 @@ function mod:Famine2AI(npc)
 			
 			if not d.chaseSeq then
 				npc.Friction = 1
-				d.chaseSeq = f2.bal.subchaseTime + math.random(1,f2.bal.subchasePlus)
+				d.chaseSeq = f2.bal.subchaseTime + mod:RandomInt(f2.bal.subchasePlus)
 			end
 			
 			if d.chaseSeq % 2 == 0 then
@@ -343,7 +343,7 @@ function mod:Famine2AI(npc)
 				params.VelocityMulti = 1
 				params.CircleAngle = 60
 				params.FallingAccelModifier = 1.2
-				params.PositionOffset = Vector(math.random(-20,20),15)
+				params.PositionOffset = Vector(mod:RandomInt(-20,20),15)
 				npc:FireBossProjectiles(1,npc.Position, 0,params)
 				npc:PlaySound(SoundEffect.SOUND_BOSS2_BUBBLES, 1, 0, false, 1)
 			end
@@ -425,7 +425,7 @@ function mod:Famine2AI(npc)
 				npc.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_WALLS
 				
 				if not d.watergunSeq then
-					d.watergunSeq = f2.bal.watergunTime + math.random(1,f2.bal.watergunPlus)
+					d.watergunSeq = f2.bal.watergunTime + mod:RandomInt(f2.bal.watergunPlus)
 					d.watergunShots = 0
 					d.watergunPause = f2.bal.watergunShotPause
 				end
@@ -455,9 +455,9 @@ function mod:Famine2AI(npc)
 						local params = ProjectileParams()
 						params.Variant = d.tearType
 						params.HeightModifier = -18
-						params.Scale = math.random(f2.bal.watergunShotScale, f2.bal.watergunShotScale+5)/10
-						--params.FallingAccelModifier = math.random(1,10)/100
-						local scatter = Vector(math.random(-f2.bal.watergunScatter,f2.bal.watergunScatter),math.random(-f2.bal.watergunScatter,f2.bal.watergunScatter))
+						params.Scale = mod:RandomInt(f2.bal.watergunShotScale, f2.bal.watergunShotScale+5)/10
+						--params.FallingAccelModifier = mod:RandomInt(10)/100
+						local scatter = Vector(mod:RandomInt(-f2.bal.watergunScatter,f2.bal.watergunScatter),mod:RandomInt(-f2.bal.watergunScatter,f2.bal.watergunScatter))
 						
 						npc:FireProjectiles(npc.Position,(tarDir + scatter):Normalized() * f2.bal.watergunShotStrength,0,params)
 						npc:PlaySound(SoundEffect.SOUND_BLOODSHOOT, 1, 0, false, 1)
@@ -491,17 +491,27 @@ function mod:Famine2AI(npc)
 				npc:FireBossProjectiles(10,target.Position, 0,params)
 				npc:PlaySound(SoundEffect.SOUND_MONSTER_GRUNT_4, 1, 0, false, 1)
 				
-				d.dice = math.random(3)
+				d.dice = mod:RandomInt(3)
 				if d.dice == 1 then
-					local spider = EntityNPC.ThrowSpider(npc.Position, npc, npc.Position + Vector(math.random(-20, 20), math.random(20, 40)), false, -80)
+					local spider = EntityNPC.ThrowSpider(npc.Position, npc, npc.Position + Vector(mod:RandomInt(-20, 20), mod:RandomInt(20, 40)), false, -80)
 					spider:ToNPC():Morph(810,0,0,-1)
 				elseif d.dice == 2 then
 					for i=1,2 do
-						local spider = EntityNPC.ThrowSpider(npc.Position, npc, npc.Position + Vector(math.random(-20, 20), math.random(20, 40)), false, -80)
+						local spider = EntityNPC.ThrowSpider(npc.Position, npc, npc.Position + Vector(mod:RandomInt(-20, 20), mod:RandomInt(20, 40)), false, -80)
 						spider:ToNPC():Morph(810,0,0,-1)
 					end
 				end
 			end
+		end
+	end
+	
+	--death
+	if npc:IsDead() then
+		if d.state == "watergun" or d.chaseSeq then
+			local params = ProjectileParams()
+			params.HeightModifier = 10
+			params.Variant = d.tearType
+			npc:FireBossProjectiles(20,Vector(0,0),0,params)
 		end
 	end
 end
@@ -551,7 +561,7 @@ Althorsemen.War2 = {
 		bombPowerMin = 12,
 		bombPowerMax = 15,
 		bombCountdown = 25,
-		bombThrowsMin = 2,
+		bombThrowsMin = 1,
 		bombThrowsMax = 3,
 		scatterCountdown = 40,
 		chargeSpeed = 3,
@@ -599,7 +609,7 @@ function mod:War2AI(npc)
 		end
 		
 		d.movesBeforeHorn = 0
-		d.movesBeforeCharge = math.random(4,5)
+		d.movesBeforeCharge = mod:RandomInt(4,5)
 		d.idleWait = 10
 		d.state = "idle"
 	end
@@ -610,7 +620,7 @@ function mod:War2AI(npc)
 		mod:SpritePlay(sprite, "Idle")
 		
 		if not d.idleWait then
-			d.idleWait = math.random(w2.bal.idleWaitMin,w2.bal.idleWaitMax)
+			d.idleWait = mod:RandomInt(w2.bal.idleWaitMin,w2.bal.idleWaitMax)
 		end
 		
 		if d.idleWait <= 0 then
@@ -625,7 +635,7 @@ function mod:War2AI(npc)
 			--horn timer
 			if d.movesBeforeHorn <= 0 then
 				if not d.hornMoment then
-					d.movesBeforeHorn = math.random(3,5)
+					d.movesBeforeHorn = mod:RandomInt(3,5)
 					d.dice = 2
 				else
 					d.hornMoment = nil
@@ -634,7 +644,7 @@ function mod:War2AI(npc)
 			--charge timer
 			if d.movesBeforeCharge <= 0 then
 				if not d.chargeMoment then
-					d.movesBeforeCharge = math.random(4,6)
+					d.movesBeforeCharge = mod:RandomInt(4,6)
 					d.dice = 3
 				else
 					d.chargeMoment = nil
@@ -659,8 +669,8 @@ function mod:War2AI(npc)
 		
 		--float move
 		if not d.moveWait then
-			d.moveWait = math.random(w2.bal.moveWaitMin,w2.bal.moveWaitMax)
-			d.targetvelocity = ((target.Position - npc.Position):Normalized()*2):Rotated(-50+math.random(100))
+			d.moveWait = mod:RandomInt(w2.bal.moveWaitMin,w2.bal.moveWaitMax)
+			d.targetvelocity = ((target.Position - npc.Position):Normalized()*2):Rotated(-50+mod:RandomInt(100))
 		end
 		
 		if d.moveWait <= 0 and d.moveWait ~= nil then
@@ -697,12 +707,12 @@ function mod:War2AI(npc)
 	--THROW BOMB
 	if d.state == "throwbomb" then
 		if not d.bombType then
-			d.bombType = math.random(1,3)
+			d.bombType = mod:RandomInt(3)
 			
 			if not d.bombMoves then
-				d.bombMoves = math.random(w2.bal.bombThrowsMin-1,w2.bal.bombThrowsMax-1)
+				d.bombMoves = mod:RandomInt(w2.bal.bombThrowsMin-1,w2.bal.bombThrowsMax-1)
 			--[[elseif d.bombMoves == 0 then
-				d.bombType = math.random(1,4)]]
+				d.bombType = mod:RandomInt(4)]]
 			end
 
 			if d.bombType == 1 then
@@ -728,11 +738,11 @@ function mod:War2AI(npc)
 			d.state = "idle"
 			
 		elseif sprite:IsEventTriggered("Target") then
-			d.shootVec = (target.Position - npc.Position):Resized(math.random(w2.bal.bombPowerMin,w2.bal.bombPowerMax))
+			d.shootVec = (target.Position - npc.Position):Resized(mod:RandomInt(w2.bal.bombPowerMin,w2.bal.bombPowerMax))
 		elseif sprite:IsEventTriggered("Shoot") then
 			
 			if d.bombType == 1 then
-				d.shootVec = (target.Position - npc.Position):Resized(math.random(w2.bal.bombPowerMin,w2.bal.bombPowerMax))
+				d.shootVec = (target.Position - npc.Position):Resized(mod:RandomInt(w2.bal.bombPowerMin,w2.bal.bombPowerMax))
 			end
 		
 			npc:PlaySound(SoundEffect.SOUND_SHELLGAME, 1, 0, false, 1)
@@ -894,7 +904,7 @@ function mod:War2AI(npc)
 			end	
 			
 			if d.flameyFlame and npc.FrameCount % 3 == 0 then
-				local dirRand = math.random(-40,40)
+				local dirRand = mod:RandomInt(-40,40)
 				local fire = Isaac.Spawn(9, ProjectileVariant.PROJECTILE_FIRE,0,Vector(npc.Position.X-(d.dir*7),npc.Position.Y), Vector(-d.dir*4,0):Rotated(dirRand), npc):ToProjectile()
 			end
 		end
@@ -903,7 +913,7 @@ function mod:War2AI(npc)
 			d.flameyFlame = nil
 			
 			if npc.FrameCount % 3 == 0 then
-				local bombe = Isaac.Spawn(4, 14, 0, npc.Position-Vector(d.dir,0), Vector(-d.dir,math.random(-1,1)), npc):ToBomb()
+				local bombe = Isaac.Spawn(4, 14, 0, npc.Position-Vector(d.dir,0), Vector(-d.dir,mod:RandomInt(-1,1)), npc):ToBomb()
 				bombe.ExplosionDamage = 5
 				bombe:SetExplosionCountdown(5)
 				bombe.RadiusMultiplier = 0.5
@@ -960,7 +970,7 @@ function mod:War2AI(npc)
 		end
 		
 		if sprite:IsEventTriggered("Flame") then
-			local dirRand = math.random(180)
+			local dirRand = mod:RandomInt(180)
 			local times = 360/w2.bal.fireAmount
 			for i=0,360,times do
 				local fire = Isaac.Spawn(9, ProjectileVariant.PROJECTILE_FIRE, 0,npc.Position, Vector(w2.bal.firePower,0):Rotated(i+dirRand), npc):ToProjectile()
@@ -1053,7 +1063,7 @@ function mod:War2AI(npc)
 			npc:PlaySound(SoundEffect.SOUND_MONSTER_GRUNT_4, 1, 0, false, 1)
 			npc:PlaySound(SoundEffect.SOUND_FLAMETHROWER_START, 1, 0, false, 1)
 		elseif sprite:IsEventTriggered("Flame") then
-			local dirRand = math.random(180)
+			local dirRand = mod:RandomInt(180)
 			local times = 360/w2.bal.fireAmount
 			for i=0,360,times do
 				local fire = Isaac.Spawn(9, ProjectileVariant.PROJECTILE_FIRE, 0,npc.Position, Vector(w2.bal.firePower,0):Rotated(i+dirRand), npc):ToProjectile()
@@ -1090,7 +1100,7 @@ function mod:War2AI(npc)
 					d.minionDelay = d.minionDelay * w2.bal.minionBigDelay
 				end
 			else
-				d.minionDelay = math.random(w2.bal.minionDelayMin,w2.bal.minionDelayMax)
+				d.minionDelay = mod:RandomInt(w2.bal.minionDelayMin,w2.bal.minionDelayMax)
 				
 				if d.roomSize == "big" then
 					d.minionDelay = d.minionDelay * w2.bal.minionBigDelay
@@ -1128,9 +1138,9 @@ function mod:War2AI(npc)
 			if minionCount < minionLimit then
 				local minionDice = 0
 				if minionCount >= w2.bal.minionBombLimit then
-					minionDice = math.random(1,4)
+					minionDice = mod:RandomInt(4)
 				else
-					minionDice = math.random(1,3)
+					minionDice = mod:RandomInt(3)
 				end
 				
 				if not d.phase2 then
@@ -1167,7 +1177,7 @@ function mod:War2AI(npc)
 		end
 		local posGrid = room:GetGridIndex(d.minionPos)
 		d.minionPos = room:GetGridPosition(posGrid)
-		minionDice = math.random(1,4)
+		minionDice = mod:RandomInt(4)
 		
 		local army = Isaac.Spawn(w2.army.id, w2.army.variant, minionDice, d.minionPos, Vector(0,0), npc)
 		army:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
@@ -1202,12 +1212,12 @@ function mod:ArmyAI(npc)
 		
 		if npc.Variant == w2.army.variant then
 			if npc.SubType == 0 then
-				npc:ToNPC():Morph(w2.army.id, w2.army.variant, math.random(1,4), -1)
+				npc:ToNPC():Morph(w2.army.id, w2.army.variant, mod:RandomInt(4), -1)
 			end
 			d.state = "spawn"
 		elseif npc.Variant == w2.army.variantBomb then
 			if npc.SubType == 0 then
-				npc:ToNPC():Morph(w2.army.id, w2.army.variantBomb, math.random(1,3), -1)
+				npc:ToNPC():Morph(w2.army.id, w2.army.variantBomb, mod:RandomInt(3), -1)
 			end
 			d.state = "bombspawn"
 		end
@@ -1246,7 +1256,7 @@ function mod:ArmyAI(npc)
 				end
 				local posGrid = room:GetGridIndex(d.minionPos)
 				d.minionPos = room:GetGridPosition(posGrid)
-				minionDice = math.random(1,4)
+				minionDice = mod:RandomInt(4)
 				
 				local nextFrame = d.frameToPop
 				if d.popoff < 7 then nextFrame = nextFrame + 2 end
@@ -1267,7 +1277,7 @@ function mod:ArmyAI(npc)
 				else
 					npc:PlaySound(SoundEffect.SOUND_MOTHER_ISAAC_RISE, 0.4, 0, false, 2)
 					for i=1,3 do
-						local dirt = Isaac.Spawn(1000, EffectVariant.ROCK_PARTICLE, 0, npc.Position, Vector(math.random(-2,2),math.random(-2,2)), npc)
+						local dirt = Isaac.Spawn(1000, EffectVariant.ROCK_PARTICLE, 0, npc.Position, Vector(mod:RandomInt(-2,2),mod:RandomInt(-2,2)), npc)
 					end
 				end
 			end
@@ -1367,16 +1377,16 @@ Althorsemen.Death2 = {
 		accel = 0.3,
 		fastAccel = 0.48,
 	},
-	shadow = {
-		name = "Purple Shadow",
+	cloud = {
+		name = "Death Cloud",
 		id = 660,
 		variant = 104,
-		accel = 8,
-		velocity = 12,
+		accel = 7,
+		velocity = 10,
 		hitSphere = 32,
 		slowValue = 0.93,
-		slowHandicap = 0.04, --added slowness for higher speeds
-		slowTime = 330,
+		slowHandicap = 0.03, --added slowness for higher speeds
+		slowTime = 350,
 	},
 	bal = {
 		scytheIdleTail = 30,
@@ -1436,22 +1446,37 @@ function mod:Death2AI(npc)
 			d.roomSize = "normal"
 		end
 		
-		d.poofColor = Color(0.9,0.7,1,1)
+		if not d.altSkin then
+		--MAUSOLEUM COLORS
+		d.poofColor = Color(0.9,0.6,1,1)
+		
+		d.floorColor = Color(1,1,1,1)
+        d.floorColor:SetColorize(4,1,6,1)
+		else
+		--GEHENNA COLORS
+		d.poofColor = Color(0.6,0.2,0,2)
+		
+		d.floorColor = Color(1,1,1,1)
+        d.floorColor:SetColorize(4,0,0,1)
+		end
 
 		if npc.Variant == d2.scythe.variant then
 			--PURPLE SCYTHE
 			npc.GridCollisionClass = GridCollisionClass.COLLISION_NONE
 			npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
+			if d.altSkin then
+				sprite:Load("gfx/redscythe.anm2", true)
+			end
 			d.state = "scythe"
-		elseif npc.Variant == d2.shadow.variant then
+		elseif npc.Variant == d2.cloud.variant then
 			--PURPLE SHADOW
 			npc.GridCollisionClass = GridCollisionClass.COLLISION_NONE
 			npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
-			d.state = "shadow"
+			d.state = "cloud"
 		else
 			--DEATH
 			npc.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_WALLS
-			d.movesBeforeSlash = math.random(2,3)
+			d.movesBeforeSlash = mod:RandomInt(2,3)
 			d.theManHimself = true
 			d.state = "idle"
 		end
@@ -1470,10 +1495,10 @@ function mod:Death2AI(npc)
 		if not d.stateDecide then
 		
 			d.dice = 1
-			if d.movesBeforeSlash == 0 or d.roomSize == "odd" then
+			if d.movesBeforeSlash == 0 then
 				d.dice = 2
 			elseif d.movesBeforeSlash < 0 then
-				local q = math.random(1,2)
+				local q = mod:RandomInt(2)
 				if q == 1 then
 					d.dice = 3
 				else
@@ -1488,7 +1513,7 @@ function mod:Death2AI(npc)
 				d.idleWait = d2.bal.slashIdleHead
 				d.stateDecide = "slash"
 			elseif d.dice == 3 then
-				d.stateDecide = "slowghost"
+				d.stateDecide = "slowcloud"
 			elseif d.dice == 4 then
 				d.stateDecide = "bigbone"
 			end
@@ -1507,8 +1532,8 @@ function mod:Death2AI(npc)
 				d.idleWait = d2.bal.slashIdleTail
 				d.movesBeforeSlash = -1
 			elseif d.dice >= 3 then
-				d.idleWait = d2.bal.scytheIdleTail
-				d.movesBeforeSlash = math.random(2,5)
+				d.idleWait = d2.bal.slashIdleTail*2
+				d.movesBeforeSlash = mod:RandomInt(2,5)
 			end
 			
 			d.state = d.stateDecide
@@ -1525,14 +1550,14 @@ function mod:Death2AI(npc)
 		
 		--float move
 		if not d.moveWait then
-			d.moveWait = math.random(d2.bal.moveWaitMin,d2.bal.moveWaitMax)
+			d.moveWait = mod:RandomInt(d2.bal.moveWaitMin,d2.bal.moveWaitMax)
 			
 			local distance = math.sqrt(((room:GetCenterPos().X-npc.Position.X)^2)+((room:GetCenterPos().Y-npc.Position.Y)^2))
 			
 			if distance > 100 then
-				d.targetvelocity = ((room:GetCenterPos() - npc.Position):Normalized()*2):Rotated(-10+math.random(20))
+				d.targetvelocity = ((room:GetCenterPos() - npc.Position):Normalized()*2):Rotated(-10+mod:RandomInt(20))
 			else
-				d.targetvelocity = ((target.Position - npc.Position):Normalized()*2):Rotated(-50+math.random(100))
+				d.targetvelocity = ((target.Position - npc.Position):Normalized()*2):Rotated(-50+mod:RandomInt(100))
 			end
 		end
 		
@@ -1558,17 +1583,17 @@ function mod:Death2AI(npc)
 		mod:SpritePlay(sprite, "Summon")
 		
 		if not d.wallType then
-			d.wallType = math.random(1,9)
+			d.wallType = mod:RandomInt(9)
 			
 			if d.lastWallType then
 				while d.lastWallType == d.wallType do
-					d.wallType = math.random(1,9)
+					d.wallType = mod:RandomInt(9)
 				end
 			end
 			
 			if d.movesBeforeSlash then
 				if d.movesBeforeSlash <= 0 and d.wallType == 9 then
-					d.wallType = math.random(1,8)
+					d.wallType = mod:RandomInt(8)
 				end
 			end
 		end
@@ -1599,7 +1624,7 @@ function mod:Death2AI(npc)
 				
 				if d.wallType <= 6 then
 					if d.wallType <= 4 or d.tpSafe then
-						d.scytheGap = math.random(1,d.scytheNum)
+						d.scytheGap = mod:RandomInt(d.scytheNum)
 					end
 				end
 				
@@ -1616,54 +1641,61 @@ function mod:Death2AI(npc)
 				local getDir = "down"
 				local scytheSpeed = d2.scythe.accel
 				
+				local xStart = room:GetTopLeftPos().X + 10 --70
+				local yStart = room:GetTopLeftPos().Y + 10 --150
+				local xEnd = room:GetBottomRightPos().X - 10 --570
+				local yEnd = room:GetBottomRightPos().Y - 10 --560
+				local sDist = math.floor(room:GetGridSize()/9)+23 --38
+				local mid = room:GetCenterPos().X
+				
 				--TOP WALL
 				if d.wallType == 1 then
-					posx = 70+(d.scytheNum*38)
+					posx = xStart+(d.scytheNum*sDist)
 					posy = 0
 					getDir = "down"
 				--BOTTOM WALL
 				elseif d.wallType == 2 then
-					posx = 70+(d.scytheNum*38)
-					posy = 560
+					posx = xStart+(d.scytheNum*sDist)
+					posy = yEnd
 					getDir = "up"
 				--LEFT WALL
 				elseif d.wallType == 3 then
-					posx = 70
-					posy = 150+(d.scytheNum*38)
+					posx = xStart
+					posy = yStart+(d.scytheNum*sDist)
 					getDir = "right"
 				--RIGHT WALL
 				elseif d.wallType == 4 then
-					posx = 570
-					posy = 150+(d.scytheNum*38)
+					posx = xEnd
+					posy = yStart+(d.scytheNum*sDist)
 					getDir = "left"
 				--MIDDLE LEFT
 				elseif d.wallType == 5 then
-					posx = 320 + 40
-					posy = 150+(d.scytheNum*38)
+					posx = mid + 40
+					posy = yStart+(d.scytheNum*sDist)
 					getDir = "left"
 					scytheSpeed = d2.scythe.fastAccel
 				--MIDDLE RIGHT
 				elseif d.wallType == 6 then
-					posx = 320 - 40
-					posy = 150+(d.scytheNum*38)
+					posx = mid - 40
+					posy = yStart+(d.scytheNum*sDist)
 					getDir = "right"
 					scytheSpeed = d2.scythe.fastAccel
 				--4 SIDES CLOCKWISE
 				elseif d.wallType == 7 then
 					if d.scytheNum == 3 then
-						posx = 70
-						posy = 150+(3*38)
+						posx = xStart
+						posy = yStart+(3*sDist)
 						getDir = "right"
 					elseif d.scytheNum == 2 then
-						posx = 70+(5*38)
-						posy = 560
+						posx = xStart+(5*sDist)
+						posy = yEnd
 						getDir = "up"
 					elseif d.scytheNum == 1 then
-						posx = 570
-						posy = 150+(4*38)
+						posx = xEnd
+						posy = yStart+(4*sDist)
 						getDir = "left"
 					elseif d.scytheNum == 0 then
-						posx = 70+(8*38)
+						posx = xStart+(8*sDist)
 						posy = 0
 						getDir = "down"
 						d.idleWait = d2.bal.scytheIdleFast
@@ -1672,19 +1704,19 @@ function mod:Death2AI(npc)
 				--4 SIDES COUNTERCLOCKWISE
 				elseif d.wallType == 8 then
 					if d.scytheNum == 3 then
-						posx = 70
-						posy = 150+(5*38)
+						posx = xStart
+						posy = yStart+(5*sDist)
 						getDir = "right"
 					elseif d.scytheNum == 2 then
-						posx = 70+(10*38)
-						posy = 560
+						posx = xStart+(10*sDist)
+						posy = yEnd
 						getDir = "up"
 					elseif d.scytheNum == 1 then
-						posx = 570
-						posy = 150+(2*38)
+						posx = xEnd
+						posy = yStart+(2*sDist)
 						getDir = "left"
 					elseif d.scytheNum == 0 then
-						posx = 70+(3*38)
+						posx = xStart+(3*sDist)
 						posy = 0
 						getDir = "down"
 						d.idleWait = d2.bal.scytheIdleFast
@@ -1694,19 +1726,19 @@ function mod:Death2AI(npc)
 				elseif d.wallType == 9 then
 					if not d.subScytheNum then d.subScytheNum = 0 end
 					if d.scytheNum == 7 or d.scytheNum == 3 then
-						posx = 70
-						posy = 150+((7-d.subScytheNum)*38) - 20
+						posx = xStart
+						posy = yStart+((7-d.subScytheNum)*sDist) - 20
 						getDir = "right"
 					elseif d.scytheNum == 6 or d.scytheNum == 2 then
-						posx = 70+((13-d.subScytheNum)*38) - 20
-						posy = 560
+						posx = xStart+((13-d.subScytheNum)*sDist) - 20
+						posy = yEnd
 						getDir = "up"
 					elseif d.scytheNum == 5 or d.scytheNum == 1 then
-						posx = 570
-						posy = 150+((0+d.subScytheNum)*38) + 20
+						posx = xEnd
+						posy = yStart+((0+d.subScytheNum)*sDist) + 20
 						getDir = "left"
 					elseif d.scytheNum == 4 or d.scytheNum == 0 then
-						posx = 70+((0+d.subScytheNum)*38) + 20
+						posx = xStart+((0+d.subScytheNum)*sDist) + 20
 						posy = 0
 						getDir = "down"
 						d.subScytheNum = d.subScytheNum + 1
@@ -1715,15 +1747,16 @@ function mod:Death2AI(npc)
 					scytheSpeed = d2.scythe.fastAccel
 				end
 				
-				scythePos = Vector(posx,posy)
-				local scythe = Isaac.Spawn(d2.scythe.id, d2.scythe.variant, 0, scythePos, Vector(0,0), npc)
-				scythe:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
-				scythe:GetData().scytheDir = getDir
-				scythe:GetData().scythePause = d.scytheNum
-				scythe:GetData().scytheSpeed = scytheSpeed
-				scythe.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
-				if scythe:GetData().scytheDir == "left" then scythe:GetSprite().FlipX = true end
-				if d.scytheNum == d.scytheGap or d.scytheNum == d.scytheGap-1 then scythe:Remove() end
+				if d.scytheNum ~= d.scytheGap and d.scytheNum ~= d.scytheGap-1 then 
+					scythePos = Vector(posx,posy)
+					local scythe = Isaac.Spawn(d2.scythe.id, d2.scythe.variant, 0, scythePos, Vector(0,0), npc)
+					scythe:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
+					scythe:GetData().scytheDir = getDir
+					scythe:GetData().scythePause = d.scytheNum
+					scythe:GetData().scytheSpeed = scytheSpeed
+					scythe.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
+					if scythe:GetData().scytheDir == "left" then scythe:GetSprite().FlipX = true end
+				end
 				
 				d.scytheNum = d.scytheNum-1
 			else
@@ -1829,8 +1862,8 @@ function mod:Death2AI(npc)
 		end
 	end
 	
-	--slow ghost
-	if d.state == "slowghost" then
+	--slow cloud
+	if d.state == "slowcloud" then
 		mod:SpritePlay(sprite, "QuickCharge")
 		
 		if sprite:IsFinished("QuickCharge") then
@@ -1843,8 +1876,8 @@ function mod:Death2AI(npc)
 				sprite.FlipX = false
 			end
 		
-			local shadow = Isaac.Spawn(d2.shadow.id, d2.shadow.variant, 0, npc.Position, Vector(0,0), npc)
-			shadow:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
+			local cloud = Isaac.Spawn(d2.cloud.id, d2.cloud.variant, 0, npc.Position, Vector(0,0), npc)
+			cloud:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
 			
 			npc:PlaySound(SoundEffect.SOUND_BLACK_POOF, 1, 0, false, 1)
 		end
@@ -1866,20 +1899,35 @@ function mod:Death2AI(npc)
 			end
 		
 			d.shootVec = (target.Position - npc.Position):Normalized()*3
-		
-			local bigbone = Isaac.Spawn(EntityType.ENTITY_BIG_BONY, 10, 0, npc.Position+d.shootVec, d.shootVec, npc)
-			--bigbone:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
 			
+			if d.bigbone then
+				d.bigbone:Kill()
+			end
+		
+			d.bigbone = Isaac.Spawn(EntityType.ENTITY_BIG_BONY, 10, 0, npc.Position+d.shootVec, d.shootVec, npc)
+
 			game:SpawnParticles(npc.Position+d.shootVec,EffectVariant.SCYTHE_BREAK,1,1)
 			npc:PlaySound(SoundEffect.SOUND_BONE_SNAP, 1, 0, false, 1)
 		end
 		npc.Friction = d2.bal.attackFriction
 	end
 	
+	if d.bigbone then
+		if d.bigbone.FrameCount % 3 == 0 then
+			local trail = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.HAEMO_TRAIL, 0, d.bigbone.Position+Vector(0,-15), Vector(0,0), d.bigbone):ToEffect()
+			trail.Color = d.floorColor
+			trail.Scale = 0.7
+		end
+		
+		if not d.bigbone:Exists() then
+			d.bigbone = nil
+		end
+	end
+
 	--DEATH (ACTUALLY DEATH AND NOT THE BOSS)
 	if npc:IsDead() and d.theManHimself then
-		d.dice = rng:RandomInt(2)
-		if d.dice == 0 then
+		d.dice = mod:RandomInt(2)
+		if d.dice == 1 then
 			local trinket = Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, TrinketType.TRINKET_YOUR_SOUL, npc.Position, Vector(0,0), npc)
 		end
 		
@@ -1934,6 +1982,9 @@ function mod:Death2AI(npc)
 		elseif d.substate == 2 then
 		
 			if not d.scythePause then
+				if not d.scytheVel then
+					d.scytheVel = Vector(-1,0)*accel
+				end
 				npc.Velocity = npc.Velocity + d.scytheVel
 			else
 				if d.scythePause > 0 then
@@ -1951,6 +2002,8 @@ function mod:Death2AI(npc)
 			elseif d.stateTimer > 0 then
 				d.stateTimer = d.stateTimer - 1 
 			else
+				local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector(0,0), npc):ToEffect()
+				poof.Color = npc:GetData().poofColor
 				npc:Remove()
 			end
 		end
@@ -1958,7 +2011,7 @@ function mod:Death2AI(npc)
 	
 	--ENTITY SHADOW---------
 	
-	if d.state == "shadow" then
+	if d.state == "cloud" then
 	
 		if sprite:IsFinished("Appear") then
 			mod:SpritePlay(sprite, "Idle")
@@ -1966,20 +2019,22 @@ function mod:Death2AI(npc)
 		
 		if not d.touched then
 			local distance = math.sqrt(((target.Position.X-npc.Position.X)^2)+((target.Position.Y-npc.Position.Y)^2))
-			if distance < d2.shadow.hitSphere then
+			if distance < d2.cloud.hitSphere then
 				local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, target.Position, Vector(0,0), npc):ToEffect()
 				poof.Color = npc:GetData().poofColor
 				
-				local slowValue = d2.shadow.slowValue
+				local slowValue = d2.cloud.slowValue
 				if target:ToPlayer() then
 					local handicap = 0
 					if target:ToPlayer().MoveSpeed > 1 then
-						handicap = d2.shadow.slowHandicap*target:ToPlayer().MoveSpeed
+						handicap = d2.cloud.slowHandicap*target:ToPlayer().MoveSpeed
 					end
-					slowValue = d2.shadow.slowValue - handicap
+					slowValue = d2.cloud.slowValue - handicap
 				end
 				
-				target:AddSlowing(EntityRef(npc), d2.shadow.slowTime, slowValue, npc:GetData().poofColor)
+				local slowColor = Color.Lerp(d.poofColor,Color(0,0,0),0.5)
+				
+				target:AddSlowing(EntityRef(npc), d2.cloud.slowTime, slowValue, slowColor)
 				npc:PlaySound(SoundEffect.SOUND_SUMMON_POOF, 1, 0, false, 1)
 				d.touched = true
 			end
@@ -1987,18 +2042,18 @@ function mod:Death2AI(npc)
 		
 		if not d.stateTimer then
 			d.stateTimer = 80
-			d.shootVec = (target.Position - npc.Position):Resized(d2.shadow.velocity)
+			d.shootVec = (target.Position - npc.Position):Resized(d2.cloud.velocity)
 			npc.Velocity = d.shootVec
 			
 		elseif d.stateTimer > 0 then
 			if d.stateTimer > 50 and not d.touched then
-				mod:RubberbandRun(npc, d, target.Position, d2.shadow.accel*(d.stateTimer/80), d2.shadow.velocity)
+				mod:RubberbandRun(npc, d, target.Position, d2.cloud.accel*(d.stateTimer/80), d2.cloud.velocity)
 			end
 			
 			d.stateTimer = d.stateTimer - 1 
 		else
 			local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector(0,0), npc):ToEffect()
-			poof.Color = npc:GetData().poofColor
+			poof.Color = d.poofColor
 			npc:Remove()
 		end
 	end
@@ -2103,6 +2158,20 @@ local function IsMirror()
     return false
 end
 
+--replaces math.random
+function mod:RandomInt(iMin, iMax)
+	if not iMax then
+		iMax = iMin
+		iMin = 1
+	end
+
+    if iMin > iMax then 
+        print("Error: Min higher than Max in mod:RandomInt()")
+    else
+        return iMin + (rng:RandomInt(iMax - iMin + 1))
+    end
+end
+
 --npc flag functions
 function mod:isFriend(npc)
 	return npc:HasEntityFlags(EntityFlag.FLAG_FRIENDLY)
@@ -2183,9 +2252,9 @@ end
 --tear collisions
 mod:AddCallback(ModCallbacks.MC_PRE_TEAR_COLLISION, function(_, tear, npc)
 	if npc.Type == w2.army.id and (npc.Variant == w2.army.variant or npc.Variant == w2.army.variantBomb) and npc.SubType == 3 then
-		local dice = math.random(w2.army.reflectChance)
+		local dice = mod:RandomInt(w2.army.reflectChance)
 		if dice == 1 then
-			tear.Velocity = (tear.Velocity * -0.8):Rotated(-20 + math.random(40))
+			tear.Velocity = (tear.Velocity * -0.8):Rotated(-20 + mod:RandomInt(40))
 			return false
 		end
 	end
@@ -2314,7 +2383,7 @@ function mod:TumorSpur(tumor,limit)
 	end
 	
 	if spurCount < limit then
-		local spur = Isaac.Spawn(EntityType.ENTITY_FAMILIAR, tc.nugget, 0, tumor.Position, Vector(math.random(-4,4),math.random(-4,4)), tumor):ToFamiliar()
+		local spur = Isaac.Spawn(EntityType.ENTITY_FAMILIAR, tc.nugget, 0, tumor.Position, Vector(mod:RandomInt(-4,4),mod:RandomInt(-4,4)), tumor):ToFamiliar()
 		spur:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
 	end
 end
@@ -2328,10 +2397,10 @@ function mod:TumorUpdate1(tumor)
 	local d = tumor:GetData()
 	
 	if not d.creeptime then
-		d.creeptime = tc.bal.creepMin + math.random(1,tc.bal.creepBonus)
+		d.creeptime = tc.bal.creepMin + mod:RandomInt(tc.bal.creepBonus)
 	else
 		if d.creeptime <= 0 then
-			d.creeptime = tc.bal.creepMin + math.random(1,tc.bal.creepBonus)
+			d.creeptime = tc.bal.creepMin + mod:RandomInt(tc.bal.creepBonus)
 			
 			local activeEnemies = false
 			for i, entity in ipairs(Isaac.FindInRadius(Vector(640, 580), 875, EntityPartition.ENEMY)) do
@@ -2463,10 +2532,10 @@ function mod:TumorUpdate3(tumor)
 			
 			--creep trail
 			if not d.creeptime then
-				d.creeptime = tc.bal.creepMin2 + math.random(1,tc.bal.creepBonus2)
+				d.creeptime = tc.bal.creepMin2 + mod:RandomInt(tc.bal.creepBonus2)
 			else
 				if d.creeptime <= 0 then
-					d.creeptime = tc.bal.creepMin2 + math.random(1,tc.bal.creepBonus2)
+					d.creeptime = tc.bal.creepMin2 + mod:RandomInt(tc.bal.creepBonus2)
 					local creep = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.PLAYER_CREEP_BLACK, 0, tumor.Position, Vector(0,0), player):ToEffect()
 					--local blackSplat = game:SpawnParticles(tumor.Position,EffectVariant.BLOOD_SPLAT,1,1,Color(0,0,0,0.3))
 				else
@@ -2550,10 +2619,10 @@ function mod:TumorUpdate4(tumor)
 				
 				--creep trail
 				if not d.creeptime then
-					d.creeptime = tc.bal.creepMin2 + math.random(1,tc.bal.creepBonus2)
+					d.creeptime = tc.bal.creepMin2 + mod:RandomInt(tc.bal.creepBonus2)
 				else
 					if d.creeptime <= 0 then
-						d.creeptime = tc.bal.creepMin2 + math.random(1,tc.bal.creepBonus2)
+						d.creeptime = tc.bal.creepMin2 + mod:RandomInt(tc.bal.creepBonus2)
 						local creep = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.PLAYER_CREEP_BLACK, 0, tumor.Position, Vector(0,0), player):ToEffect()
 						--local blackSplat = game:SpawnParticles(tumor.Position,EffectVariant.BLOOD_SPLAT,1,1,Color(0,0,0,0.3))
 					else
@@ -2712,7 +2781,7 @@ end
 --nugget
 function mod:NuggetInit(tumor)
 	sprite = tumor:GetSprite()
-	local spriteRand = math.random(1,8)
+	local spriteRand = mod:RandomInt(8)
 	tumor:GetData().hp = 2
 	tumor:GetData().currentRoom = game:GetLevel():GetCurrentRoomIndex()
 	
@@ -2759,7 +2828,7 @@ function mod:TumorCollision2(tumor, entity, _)
 		entity:Kill()
     elseif entity:IsVulnerableEnemy() and not EntityRef(entity).IsFriendly and not EntityRef(entity).IsCharmed then 
 		entity:AddSlowing(EntityRef(tumors), tc.bal.slowDuration, tc.bal.slowAmount, tc.bal.slowColor) 
-		local tumorDice = math.random(1,tc.bal.tumorBigChance)
+		local tumorDice = mod:RandomInt(tc.bal.tumorBigChance)
 		if entity.HitPoints <= tumor.CollisionDamage and tumorDice == 1 and not entity:GetData().tumorSpawned then
 			entity:GetData().tumorSpawned = true
 			mod:TumorSpur(tumor,tc.bal.tumorMax1)
@@ -2770,14 +2839,14 @@ end
 --t3
 function mod:TumorCollision3(tumor, entity, _)
 	if entity.Type == EntityType.ENTITY_PROJECTILE then 
-		local tumorDice = math.random(1,tc.bal.tumorBigChance)
+		local tumorDice = mod:RandomInt(tc.bal.tumorBigChance)
 		if tumorDice == 1 and not entity:GetData().tumorSpawned then
 			entity:GetData().tumorSpawned = true
 			mod:TumorSpur(tumor,tc.bal.tumorMax2)
 		end
     elseif entity:IsVulnerableEnemy() and not EntityRef(entity).IsFriendly and not EntityRef(entity).IsCharmed then 
 		entity:AddSlowing(EntityRef(tumors), tc.bal.slowDuration, tc.bal.slowAmount, tc.bal.slowColor) 
-		local tumorDice = math.random(1,tc.bal.tumorSmallChance)
+		local tumorDice = mod:RandomInt(tc.bal.tumorSmallChance)
 		if entity.HitPoints <= tumor.CollisionDamage and tumorDice == 1 and not entity:GetData().tumorSpawned then
 			entity:GetData().tumorSpawned = true
 			mod:TumorSpur(tumor,tc.bal.tumorMax2)
@@ -2788,14 +2857,14 @@ end
 --t4
 function mod:TumorCollision4(tumor, entity, _)
 	if entity.Type == EntityType.ENTITY_PROJECTILE then 
-		local tumorDice = math.random(1,tc.bal.tumorBigChance)
+		local tumorDice = mod:RandomInt(tc.bal.tumorBigChance)
 		if tumorDice == 1 and not entity:GetData().tumorSpawned then
 			entity:GetData().tumorSpawned = true
 			mod:TumorSpur(tumor,tc.bal.tumorMax3)
 		end
 	elseif entity:IsVulnerableEnemy() and not EntityRef(entity).IsFriendly and not EntityRef(entity).IsCharmed then 
 		entity:AddSlowing(EntityRef(tumors), tc.bal.slowDuration, tc.bal.slowAmount, tc.bal.slowColor)
-		local tumorDice = math.random(1,tc.bal.tumorSmallChance)
+		local tumorDice = mod:RandomInt(tc.bal.tumorSmallChance)
 		if entity.HitPoints <= tumor.CollisionDamage and tumorDice == 1 and not entity:GetData().tumorSpawned then
 			entity:GetData().tumorSpawned = true
 			mod:TumorSpur(tumor,tc.bal.tumorMax3)
@@ -2978,7 +3047,7 @@ mod:AddCallback(ModCallbacks.MC_POST_UPDATE,function(_)
 					doHorseDrop = false
 					local thisDrop = tc.id 
 					
-					--local dice = math.random(2)
+					--local dice = mod:RandomInt(2)
 					
 					--[[if dice == 1 then
 						thisDrop = CollectibleType.COLLECTIBLE_CUBE_OF_MEAT
@@ -3126,7 +3195,7 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function(_)
 					
 					--50% chance tumor drop in the mirror
 					if (IsMirror()) then
-						local tumorChance = rng:RandomInt(2)
+						local tumorChance = mod:RandomInt(2)
 						--print(tumorChance)
 						if (tumorChance == 0) then
 							doHorseDrop = true

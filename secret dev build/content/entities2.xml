@@ -1,57 +1,61 @@
-<entities anm2root="gfx/" version="5">
+<entities anm2root="gfx/" version="5" deathanm2="gfx/death_enemies.anm2" >
 
 	<!-- Famine2 -->
-	<entity anm2path="boss_famine2.anm2" baseHP="240" boss="1" champion="0" id="630" variant="101" name="Tainted Famine" hasFloorAlts="true" collisionDamage="1" collisionMass="50" collisionRadius="20" friction="1" numGridCollisionPoints="24" shadowSize="20" stageHP="0" portrait="27" bestiary="true" bestiaryTransform="0,0,1" bestiaryAnim="Cough" tags="nodelirium">
+	<entity anm2path="boss_famine2.anm2" baseHP="240" boss="1" champion="0" id="630" variant="101" name="Tainted Famine" hasFloorAlts="true" collisionDamage="1" collisionMass="50" collisionRadius="20" friction="1" numGridCollisionPoints="24" shadowSize="20" stageHP="0" portrait="0" bestiary="true" bestiaryTransform="0,0,1" bestiaryAnim="Cough" tags="nodelirium">
         <gibs amount="25" blood="1" bone="1" eye="1" gut="1" large="1" poop="0" />
     </entity>
 	
 	<!-- War2 -->
-	<entity anm2path="boss_war2.anm2" baseHP="555" boss="1" champion="0" id="650" variant="101" name="Tainted War" hasFloorAlts="true" collisionDamage="1" collisionMass="50" collisionRadius="20" friction="1" numGridCollisionPoints="24" shadowSize="20" stageHP="0" portrait="29" bestiary="true" bestiaryTransform="0,0,1" bestiaryAnim="Horn" tags="nodelirium">
+	<entity anm2path="boss_war2.anm2" baseHP="555" boss="1" champion="0" id="650" variant="101" name="Tainted War" hasFloorAlts="true" collisionDamage="1" collisionMass="50" collisionRadius="20" friction="1" numGridCollisionPoints="24" shadowSize="20" stageHP="0" portrait="1" bestiary="true" bestiaryTransform="0,0,1" bestiaryAnim="Horn" tags="nodelirium">
         <gibs amount="25" blood="1" bone="1" eye="1" gut="1" large="1" poop="0" />
     </entity>
 	
 	<!-- Death2 -->
-	<entity anm2path="boss_death2.anm2" baseHP="650" boss="1" champion="0" id="660" variant="101" name="Tainted Death" hasFloorAlts="true" collisionDamage="1" collisionMass="50" collisionRadius="20" friction="1" numGridCollisionPoints="24" shadowSize="20" stageHP="0" portrait="31" bestiary="true" bestiaryTransform="0,0,1" bestiaryAnim="Idle" tags="nodelirium">
+	<entity anm2path="boss_death2.anm2" baseHP="731" boss="1" champion="0" id="660" variant="101" subtype="0" name="Tainted Death" hasFloorAlts="true" collisionDamage="1" collisionMass="50" collisionRadius="20" friction="1" numGridCollisionPoints="24" shadowSize="20" stageHP="0" portrait="4" bestiary="true" bestiaryTransform="0,0,1" bestiaryAnim="Idle" tags="nodelirium">
         <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0"/>
+    </entity>
+	<entity anm2path="boss_death2.anm2" baseHP="731" boss="1" champion="0" id="660" variant="101" subtype="1" name="Tainted Death (tp safe)" hasFloorAlts="true" collisionDamage="1" collisionMass="50" collisionRadius="20" friction="1" numGridCollisionPoints="24" shadowSize="20" stageHP="0" portrait="4" tags="nodelirium">
+        <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0"/>
+    </entity>
+	<entity anm2path="purplescythe.anm2" baseHP="50" boss="0" champion="0" collisionDamage="1" collisionMass="30" collisionRadius="10" friction="1" id="660" name="Purple Scythe" hasFloorAlts="true" numGridCollisionPoints="12" shadowSize="18" stageHP="0" variant="103" portrait="4">
+	<gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
+    </entity>
+	<entity anm2path="thepurplecloud.anm2" baseHP="50" boss="0" champion="0" collisionDamage="0" collisionMass="50" collisionRadius="24" friction="1" id="660" name="Death Cloud" hasFloorAlts="true" numGridCollisionPoints="24" shadowSize="20" stageHP="0" variant="104" portrait="4">
+	<gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
     </entity>
 	
 	<!-- Army -->
-	<entity anm2path="monster_army1.anm2" baseHP="10" id="651" variant="101" subtype="0" name="Army" hasFloorAlts="true" reroll="true" boss="0" champion="1" collisionDamage="1" collisionMass="5" collisionRadius="13" friction="1" numGridCollisionPoints="12" shadowSize="0" stageHP="0" portrait="0" bestiary="true" bestiaryTransform="0,0,1" bestiaryAnim="JumpOut">
+	<entity anm2path="monster_army1.anm2" baseHP="10" id="651" variant="101" subtype="0" name="Army" hasFloorAlts="true" reroll="true" boss="0" champion="1" collisionDamage="1" collisionMass="5" collisionRadius="13" friction="1" numGridCollisionPoints="12" shadowSize="0" stageHP="0" portrait="2" bestiary="true" bestiaryTransform="0,0,1" bestiaryAnim="JumpOut">
         <gibs amount="6" blood="1" bone="1" eye="1" gut="1" large="0" />
     </entity>
-	<entity anm2path="monster_army1.anm2" baseHP="10" id="651" variant="101" subtype="1" name="Army" hasFloorAlts="true" reroll="true" boss="0" champion="1" collisionDamage="1" collisionMass="5" collisionRadius="13" friction="1" numGridCollisionPoints="12" shadowSize="0" stageHP="0" portrait="0">
+	<entity anm2path="monster_army1.anm2" baseHP="10" id="651" variant="101" subtype="1" name="Army" hasFloorAlts="true" reroll="true" boss="0" champion="1" collisionDamage="1" collisionMass="5" collisionRadius="13" friction="1" numGridCollisionPoints="12" shadowSize="0" stageHP="0" portrait="2">
         <gibs amount="6" blood="1" bone="1" eye="1" gut="1" large="0" />
     </entity>
-	<entity anm2path="monster_army2.anm2" baseHP="10" id="651" variant="101" subtype="2" name="Army" hasFloorAlts="true" reroll="true" boss="0" champion="1" collisionDamage="1" collisionMass="5" collisionRadius="13" friction="1" numGridCollisionPoints="12" shadowSize="0" stageHP="0" portrait="0">
+	<entity anm2path="monster_army2.anm2" baseHP="10" id="651" variant="101" subtype="2" name="Army" hasFloorAlts="true" reroll="true" boss="0" champion="1" collisionDamage="1" collisionMass="5" collisionRadius="13" friction="1" numGridCollisionPoints="12" shadowSize="0" stageHP="0" portrait="2">
         <gibs amount="6" blood="1" bone="1" eye="1" gut="1" large="0" />
     </entity>
-	<entity anm2path="monster_army3.anm2" baseHP="10" id="651" variant="101" subtype="3" name="Army" hasFloorAlts="true" reroll="true" boss="0" champion="1" collisionDamage="1" collisionMass="5" collisionRadius="13" friction="1" numGridCollisionPoints="12" shadowSize="0" stageHP="0" portrait="0">
+	<entity anm2path="monster_army3.anm2" baseHP="10" id="651" variant="101" subtype="3" name="Army" hasFloorAlts="true" reroll="true" boss="0" champion="1" collisionDamage="1" collisionMass="5" collisionRadius="13" friction="1" numGridCollisionPoints="12" shadowSize="0" stageHP="0" portrait="2">
         <gibs amount="6" blood="1" bone="1" eye="1" gut="1" large="0" />
     </entity>
-	<entity anm2path="monster_army4.anm2" baseHP="10" id="651" variant="101" subtype="4" name="Army" hasFloorAlts="true" reroll="true" boss="0" champion="1" collisionDamage="1" collisionMass="5" collisionRadius="13" friction="1" numGridCollisionPoints="12" shadowSize="0" stageHP="0" portrait="0">
+	<entity anm2path="monster_army4.anm2" baseHP="10" id="651" variant="101" subtype="4" name="Army" hasFloorAlts="true" reroll="true" boss="0" champion="1" collisionDamage="1" collisionMass="5" collisionRadius="13" friction="1" numGridCollisionPoints="12" shadowSize="0" stageHP="0" portrait="2">
         <gibs amount="6" blood="1" bone="1" eye="1" gut="1" large="0" />
     </entity>
 	
 	<!-- Army Bomb Thrower -->
-	<entity anm2path="monster_army1.anm2" baseHP="10" id="651" variant="102" subtype="0" name="Army (Bomb Thrower)" hasFloorAlts="true" reroll="true" boss="0" champion="1" collisionDamage="1" collisionMass="5" collisionRadius="13" friction="1" numGridCollisionPoints="12" shadowSize="0" stageHP="0" portrait="0" bestiary="true" bestiaryTransform="0,0,1" bestiaryAnim="ThrowBomb">
+	<entity anm2path="monster_army1.anm2" baseHP="10" id="651" variant="102" subtype="0" name="Army Bomb Thrower" hasFloorAlts="true" reroll="true" boss="0" champion="1" collisionDamage="1" collisionMass="5" collisionRadius="13" friction="1" numGridCollisionPoints="12" shadowSize="0" stageHP="0" portrait="3" bestiary="true" bestiaryTransform="0,0,1" bestiaryAnim="ThrowBomb">
         <gibs amount="6" blood="1" bone="1" eye="1" gut="1" large="0" />
     </entity>
-	<entity anm2path="monster_army1.anm2" baseHP="10" id="651" variant="102" subtype="1" name="Army (Bomb Thrower)" hasFloorAlts="true" reroll="true" boss="0" champion="1" collisionDamage="1" collisionMass="5" collisionRadius="13" friction="1" numGridCollisionPoints="12" shadowSize="0" stageHP="0" portrait="0">
+	<entity anm2path="monster_army1.anm2" baseHP="10" id="651" variant="102" subtype="1" name="Army Bomb Thrower" hasFloorAlts="true" reroll="true" boss="0" champion="1" collisionDamage="1" collisionMass="5" collisionRadius="13" friction="1" numGridCollisionPoints="12" shadowSize="0" stageHP="0" portrait="3">
         <gibs amount="6" blood="1" bone="1" eye="1" gut="1" large="0" />
     </entity>
-	<entity anm2path="monster_army2.anm2" baseHP="10" id="651" variant="102" subtype="2" name="Army (Bomb Thrower)" hasFloorAlts="true" reroll="true" boss="0" champion="1" collisionDamage="1" collisionMass="5" collisionRadius="13" friction="1" numGridCollisionPoints="12" shadowSize="0" stageHP="0" portrait="0">
+	<entity anm2path="monster_army2.anm2" baseHP="10" id="651" variant="102" subtype="2" name="Army Bomb Thrower" hasFloorAlts="true" reroll="true" boss="0" champion="1" collisionDamage="1" collisionMass="5" collisionRadius="13" friction="1" numGridCollisionPoints="12" shadowSize="0" stageHP="0" portrait="3">
         <gibs amount="6" blood="1" bone="1" eye="1" gut="1" large="0" />
     </entity>
-	<entity anm2path="monster_army3.anm2" baseHP="10" id="651" variant="102" subtype="3" name="Army (Bomb Thrower)" hasFloorAlts="true" reroll="true" boss="0" champion="1" collisionDamage="1" collisionMass="5" collisionRadius="13" friction="1" numGridCollisionPoints="12" shadowSize="0" stageHP="0" portrait="0">
+	<entity anm2path="monster_army3.anm2" baseHP="10" id="651" variant="102" subtype="3" name="Army Bomb Thrower" hasFloorAlts="true" reroll="true" boss="0" champion="1" collisionDamage="1" collisionMass="5" collisionRadius="13" friction="1" numGridCollisionPoints="12" shadowSize="0" stageHP="0" portrait="3">
         <gibs amount="6" blood="1" bone="1" eye="1" gut="1" large="0" />
     </entity>
-	<entity anm2path="monster_army4.anm2" baseHP="10" id="651" variant="102" subtype="4" name="Army (Bomb Thrower)" hasFloorAlts="true" reroll="true" boss="0" champion="1" collisionDamage="1" collisionMass="5" collisionRadius="13" friction="1" numGridCollisionPoints="12" shadowSize="0" stageHP="0" portrait="0">
+	<entity anm2path="monster_army4.anm2" baseHP="10" id="651" variant="102" subtype="4" name="Army Bomb Thrower" hasFloorAlts="true" reroll="true" boss="0" champion="1" collisionDamage="1" collisionMass="5" collisionRadius="13" friction="1" numGridCollisionPoints="12" shadowSize="0" stageHP="0" portrait="3">
         <gibs amount="6" blood="1" bone="1" eye="1" gut="1" large="0" />
-    </entity>
-	
-	<!-- Misc -->
-	<entity anm2path="purplescythe.anm2" baseHP="50" boss="0" champion="0" collisionDamage="1" collisionMass="30" collisionRadius="10" friction="1" id="660" name="Gas Scythe" numGridCollisionPoints="12" shadowSize="18" stageHP="0" variant="103" portrait="193">
-        <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
     </entity>
 
 	<!-- Wad of Tumors -->
