@@ -541,6 +541,9 @@ Althorsemen.War2 = {
 		bombPower = 17,
 		bombCountdown = 22,
 		speed = 3.5,
+		roomSpawnDist = 100,
+		roomDelay = 50,
+		roomBombDelay = 20,
 	},
 	bal = {
 		idleWaitMin = 40,
@@ -1073,7 +1076,7 @@ function mod:War2AI(npc)
 		end
 		npc.Friction = w2.bal.attackFriction
 	end
-	
+
 	--MINION SPAWN
 	if d.minions then
 	
@@ -1201,18 +1204,20 @@ function mod:ArmyAI(npc)
 
 	--init
 	if not d.init then
+		npc:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
 		npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
 		d.staticPos = npc.Position
 		
-		if target:ToPlayer() ~= nil then
-			if target:ToPlayer().Damage < (npc.MaxHitPoints / 2) then
-				npc.HitPoints = target:ToPlayer().Damage * 2
-			end
+		if not d.popoff then
+			d.popoff = 0
+			d.frameToPop = 0
 		end
 		
 		if npc.Variant == w2.army.variant then
 			if npc.SubType == 0 then
 				npc:ToNPC():Morph(w2.army.id, w2.army.variant, mod:RandomInt(4), -1)
+			elseif npc.SubType == 10 then
+				npc:ToNPC():Morph(w2.army.id, w2.army.variant, mod:RandomInt(2), -1)
 			end
 			d.state = "spawn"
 		elseif npc.Variant == w2.army.variantBomb then
@@ -1222,10 +1227,21 @@ function mod:ArmyAI(npc)
 			d.state = "bombspawn"
 		end
 		
-		if not d.popoff then
-			d.popoff = 0
-			d.frameToPop = 0
+		if not d.roomArmy and room:GetAliveBossesCount() < 1 and d.popoff < 1 then
+			d.roomArmy = true
+			if d.state == "spawn" then 
+				d.spawnDelay = mod:RandomInt(2,w2.army.roomDelay) 
+			elseif d.state == "bombspawn" then 
+				d.spawnDelay = mod:RandomInt(2,w2.army.roomBombDelay) 
+			end
 		end
+		
+		if target:ToPlayer() ~= nil then
+			if target:ToPlayer().Damage < (npc.MaxHitPoints / 2) then
+				npc.HitPoints = target:ToPlayer().Damage * 2
+			end
+		end
+
 		d.init = true
 	elseif d.init then
 		npc.StateFrame = npc.StateFrame + 1
@@ -1235,7 +1251,19 @@ function mod:ArmyAI(npc)
 	if d.state == "spawn" then
 		npc.Friction = 0
 		npc.Position = d.staticPos
-		if not d.spawnSeq then
+		
+		if d.roomArmy and d.spawnDelay then	
+			if d.spawnDelay < 2 then
+				local distance = math.sqrt(((target.Position.X-npc.Position.X)^2)+((target.Position.Y-npc.Position.Y)^2))
+				if distance > w2.army.roomSpawnDist then
+					d.spawnDelay = nil
+				end
+			else
+				d.spawnDelay = d.spawnDelay - 1
+			end
+		end
+		
+		if not d.spawnSeq and not d.spawnDelay then
 			mod:SpritePlay(sprite, "DigOut")
 			if sprite:IsEventTriggered("Appear") then
 				npc:PlaySound(SoundEffect.SOUND_SUMMON_POOF, 1, 0, false, 1)
@@ -1295,7 +1323,19 @@ function mod:ArmyAI(npc)
 		npc.Friction = 0
 		npc.Position = d.staticPos
 		d.shootVec = (target.Position - npc.Position):Resized(w2.army.bombPower)
-		if not d.spawnSeq then
+		
+		if d.roomArmy and d.spawnDelay then	
+			if d.spawnDelay < 2 then
+				local distance = math.sqrt(((target.Position.X-npc.Position.X)^2)+((target.Position.Y-npc.Position.Y)^2))
+				if distance > w2.army.roomSpawnDist then
+					d.spawnDelay = nil
+				end
+			else
+				d.spawnDelay = d.spawnDelay - 1
+			end
+		end
+		
+		if not d.spawnSeq and not d.spawnDelay then
 			mod:SpritePlay(sprite, "ThrowBomb")
 			if sprite:IsEventTriggered("Appear") then
 				d.holdingBomb = true
@@ -2269,6 +2309,7 @@ Althorsemen.Tumorcube = {
 	variant3 = Isaac.GetEntityVariantByName("Wad of Tumors L3"),
 	variant4 = Isaac.GetEntityVariantByName("Wad of Tumors L4"),
 	nugget = Isaac.GetEntityVariantByName("Tumor Nugget"),
+	tearsUp = true,
 	helperid = 270,
 	helper = 56,
 	helperKeys = 39,
@@ -2346,7 +2387,7 @@ function mod:CacheUpdate(player, flag)
 		
 		player:CheckFamiliar(tc.helper, helper + tumorFull + helperNum, player:GetCollectibleRNG(tc.helper))
 	end
-	if flag == CacheFlag.CACHE_FIREDELAY then
+	if flag == CacheFlag.CACHE_FIREDELAY and tc.tearsUp then
 		if player:HasCollectible(tc.id) then
 			local tumorNum = player:GetCollectibleNum(tc.id, true)
 			local tearsUp = 1.14
@@ -3120,7 +3161,7 @@ if StageAPI and firstLoaded then
 			Offset = Vector(0,-15),
 			Bossname = d2.bossName,
 			Weight = d2.weightAlt,
-			Rooms = StageAPI.RoomsList("Death Rooms", require("resources.luarooms.boss_death2_alt")),
+			Rooms = StageAPI.RoomsList("Death Alt Rooms", require("resources.luarooms.boss_death2_alt")),
 		})
 	}
 	
@@ -3129,7 +3170,7 @@ if StageAPI and firstLoaded then
 	StageAPI.AddBossToBaseFloorPool({BossID = w2.name},LevelStage.STAGE2_1,StageType.STAGETYPE_REPENTANCE)
 	StageAPI.AddBossToBaseFloorPool({BossID = w2.nameAlt},LevelStage.STAGE2_1,StageType.STAGETYPE_REPENTANCE_B)
 	StageAPI.AddBossToBaseFloorPool({BossID = d2.name},LevelStage.STAGE3_1,StageType.STAGETYPE_REPENTANCE)
-	StageAPI.AddBossToBaseFloorPool({BossID = d2.nameAlt},LevelStage.STAGE3_1,StageType.STAGETYPE_REPENTANCE)
+	StageAPI.AddBossToBaseFloorPool({BossID = d2.nameAlt},LevelStage.STAGE3_1,StageType.STAGETYPE_REPENTANCE_B)
 end
 
 --New Game
@@ -3245,15 +3286,15 @@ if HPBars then
     HPBars.BossDefinitions[f2id] = {
         sprite = "gfx/bosses/famine2/small_famine_head.png",
 		conditionalSprites = {
-			{"isStageType","gfx/bosses/famine2/small_famine_head_dross.png", {StageType.STAGETYPE_REPENTANCE_B}}
+			{"isStageType","gfx/misc/small_famine_head_dross.png", {StageType.STAGETYPE_REPENTANCE_B}}
 		},
         offset = Vector(-4, 0)
     }
 	HPBars.BossDefinitions[w2id] = {
-        sprite = "gfx/bosses/war2/small_war_head.png",
+        sprite = "gfx/misc/small_war_head.png",
 		conditionalSprites = {
-			{"animationNameStartsWith","gfx/bosses/war2/small_war_head_fire.png", {"P2"}},
-			{"isStageType","gfx/bosses/war2/small_war_head_ashpit.png", {StageType.STAGETYPE_REPENTANCE_B}},
+			{"animationNameStartsWith","gfx/misc/small_war_head_fire.png", {"P2"}},
+			{"isStageType","gfx/misc/small_war_head_ashpit.png", {StageType.STAGETYPE_REPENTANCE_B}},
 		},
         offset = Vector(-4, 0)
     }
