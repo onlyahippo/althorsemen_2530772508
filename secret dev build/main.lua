@@ -544,6 +544,7 @@ Althorsemen.War2 = {
 		roomSpawnDist = 100,
 		roomDelay = 50,
 		roomBombDelay = 20,
+		hpBuffAmount = 3,
 	},
 	bal = {
 		idleWaitMin = 40,
@@ -1237,10 +1238,11 @@ function mod:ArmyAI(npc)
 		end
 		
 		if target:ToPlayer() ~= nil then
-			if target:ToPlayer().Damage < (npc.MaxHitPoints / 2) then
-				npc.HitPoints = target:ToPlayer().Damage * 2
+			if target:ToPlayer().Damage >= npc.HitPoints then
+				npc.HitPoints = npc.HitPoints + w2.army.hpBuffAmount
 			end
 		end
+		d.colDmg = npc.CollisionDamage
 
 		d.init = true
 	elseif d.init then
@@ -1268,8 +1270,10 @@ function mod:ArmyAI(npc)
 			if sprite:IsEventTriggered("Appear") then
 				npc:PlaySound(SoundEffect.SOUND_SUMMON_POOF, 1, 0, false, 1)
 				npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_ALL
+				npc.CollisionDamage = 0
 			end
 			if sprite:IsFinished("DigOut") then
+				npc.CollisionDamage = d.colDmg
 				d.spawnSeq = 1
 			end
 			

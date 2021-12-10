@@ -9,5 +9,5 @@
 	<entity Group="Monsters" ID="651" Image="icons/AH/army3.png" Kind="Alt Horsemen" Name="Army (Helmet)" Subtype="3" Variant="101" />
 	<entity Group="Monsters" ID="651" Image="icons/AH/army4.png" Kind="Alt Horsemen" Name="Army (Bomb)" Subtype="4" Variant="101" />
 	
-	<entity Group="Monsters" ID="651" Image="icons/AH/army.png" Kind="Alt Horsemen" Name="Army Bomb Thrower (Random)" Subtype="0" Variant="102" />
+	<entity Group="Monsters" ID="651" Image="icons/AH/army5.png" Kind="Alt Horsemen" Name="Army Bomb Thrower (Random)" Subtype="0" Variant="102" />
 </data>
