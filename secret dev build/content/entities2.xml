@@ -12,16 +12,22 @@
 	
 	<!-- Death2 -->
 	<entity anm2path="boss_death2.anm2" baseHP="731" boss="1" champion="0" id="660" variant="101" subtype="0" name="Tainted Death" hasFloorAlts="true" collisionDamage="1" collisionMass="50" collisionRadius="20" friction="1" numGridCollisionPoints="24" shadowSize="20" stageHP="0" portrait="4" bestiary="true" bestiaryTransform="0,0,1" bestiaryAnim="Idle" tags="nodelirium">
-        <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0"/>
+        <gibs amount="25" blood="0" bone="1" eye="0" gut="0" large="1"/>
     </entity>
 	<entity anm2path="boss_death2.anm2" baseHP="731" boss="1" champion="0" id="660" variant="101" subtype="1" name="Tainted Death (tp safe)" hasFloorAlts="true" collisionDamage="1" collisionMass="50" collisionRadius="20" friction="1" numGridCollisionPoints="24" shadowSize="20" stageHP="0" portrait="4" tags="nodelirium">
-        <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0"/>
+        <gibs amount="25" blood="0" bone="1" eye="0" gut="0" large="1"/>
+    </entity>
+	<entity anm2path="boss_death2_horse.anm2" baseHP="50" boss="0" champion="0" collisionDamage="1" collisionMass="30" collisionRadius="10" friction="1" id="660" name="Tainted Death Horse" hasFloorAlts="true" numGridCollisionPoints="12" shadowSize="18" stageHP="0" variant="102" portrait="4">
+	<gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
     </entity>
 	<entity anm2path="purplescythe.anm2" baseHP="50" boss="0" champion="0" collisionDamage="1" collisionMass="30" collisionRadius="10" friction="1" id="660" name="Purple Scythe" hasFloorAlts="true" numGridCollisionPoints="12" shadowSize="18" stageHP="0" variant="103" portrait="4">
 	<gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
     </entity>
 	<entity anm2path="thepurplecloud.anm2" baseHP="50" boss="0" champion="0" collisionDamage="0" collisionMass="50" collisionRadius="24" friction="1" id="660" name="Death Cloud" hasFloorAlts="true" numGridCollisionPoints="24" shadowSize="20" stageHP="0" variant="104" portrait="4">
 	<gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
+    </entity>
+	<entity anm2path="boss_death2_ghost.anm2" baseHP="731" boss="0" champion="0" id="660" variant="105" name="Tainted Death Ghost" hasFloorAlts="true" collisionDamage="1" collisionMass="50" collisionRadius="18" friction="1" numGridCollisionPoints="24" shadowSize="20" stageHP="0" portrait="4" tags="nodelirium">
+        <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0"/>
     </entity>
 	
 	<!-- Army -->

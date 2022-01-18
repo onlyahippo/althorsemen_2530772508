@@ -1,5 +1,5 @@
 <AnimatedActor>
-	<Info CreatedBy="robot" CreatedOn="12/3/2021 9:19:43 PM" Version="121" Fps="60"/>
+	<Info CreatedBy="robot" CreatedOn="1/17/2022 12:06:09 PM" Version="122" Fps="60"/>
 	<Content>
 		<Spritesheets>
 			<Spritesheet Path="..\..\resources\gfx\misc\death enemies.png" Id="0"/>

@@ -1413,6 +1413,17 @@ Althorsemen.Death2 = {
 	weightAlt = 1,
 	id = 660,
 	variant = 101,
+	horse = {
+		name = "Tainted Death Horse",
+		id = 660,
+		variant = 102,
+		speed = 14,
+		slowSpeed = 3.5,
+		accelRate = 0.16,
+		steerRate = 0.012,
+		scytheRate = 2,
+		scytheRateSlow = 4,
+	},
 	scythe = {
 		name = "Purple Scythe",
 		id = 660,
@@ -1426,18 +1437,34 @@ Althorsemen.Death2 = {
 		id = 660,
 		variant = 104,
 		accel = 7,
-		velocity = 10,
+		velocity = 9,
 		hitSphere = 32,
 		slowValue = 0.93,
 		slowHandicap = 0.03, --added slowness for higher speeds
 		slowTime = 350,
 	},
+	ghost = {
+		name = "Tainted Death Ghost",
+		id = 660,
+		variant = 105,
+		moveWaitMin = 10,
+		moveWaitMax = 30,
+		speed = 1.1,
+		ghostDistMin = 100,
+		lifeTimerMin = 30,
+		lifeTimerMax = 100,
+		attackDelayMin = 1,
+		attackDelayMax = 70,
+		boneAttackSpeed = 10,
+		fireAttackSpeed = 7,
+		boneLimit = 1,
+	},
 	bal = {
-		scytheIdleTail = 30,
-		scytheIdleFast = 14,
-		scytheIdleSlow = 38,
-		slashIdleHead = 34,
-		slashIdleTail = 10,
+		scytheIdleTail = 38,
+		scytheIdleFast = 24,
+		scytheIdleSlow = 46,
+		slashIdleHead = 38,
+		slashIdleTail = 14,
 		moveWaitMin = 20,
 		moveWaitMax = 30,
 		attackFriction = 0.85,
@@ -1450,7 +1477,12 @@ Althorsemen.Death2 = {
 		boneShotDist = 15,
 		boneShotSpeed = 9,
 		boneShotAmount = 5,
-		phase2Health = 0.5,
+		phase2Health = 0.4,
+		ghostRateMin = 10,
+		ghostRateMax = 60,
+		ghostMax = 3,
+		ghostCount = 7,
+		ghostExtra = 3,
 	}
 }
 local d2 = Althorsemen.Death2
@@ -1495,7 +1527,7 @@ function mod:Death2AI(npc)
 		d.poofColor = Color(0.9,0.6,1,1)
 		
 		d.floorColor = Color(1,1,1,1)
-        d.floorColor:SetColorize(4,1,6,1)
+        d.floorColor:SetColorize(1.5,1,2,1)
 		else
 		--GEHENNA COLORS
 		d.poofColor = Color(0.6,0.2,0,2)
@@ -1504,10 +1536,16 @@ function mod:Death2AI(npc)
         d.floorColor:SetColorize(4,0,0,1)
 		end
 
+		npc.SplatColor = Color(0.1, 0.05, 0.2, 1)
+		
+		d.P2text = ""
+		d.idleState = "idle"
+
 		if npc.Variant == d2.scythe.variant then
 			--PURPLE SCYTHE
 			npc.GridCollisionClass = GridCollisionClass.COLLISION_NONE
 			npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
+			npc:AddEntityFlags(EntityFlag.FLAG_NO_KNOCKBACK)
 			if d.altSkin then
 				sprite:Load("gfx/redscythe.anm2", true)
 			end
@@ -1517,11 +1555,19 @@ function mod:Death2AI(npc)
 			npc.GridCollisionClass = GridCollisionClass.COLLISION_NONE
 			npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
 			d.state = "cloud"
+		elseif npc.Variant == d2.horse.variant then
+			--HORSE
+			npc.GridCollisionClass = GridCollisionClass.COLLISION_NONE
+			d.state = "horse"
+		elseif npc.Variant == d2.ghost.variant then
+			--GHOST
+			npc.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_WALLS
+			npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
+			d.state = "ghost"
 		else
 			--DEATH
 			npc.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_WALLS
 			d.movesBeforeSlash = mod:RandomInt(2,3)
-			d.theManHimself = true
 			d.state = "idle"
 		end
 	end
@@ -1575,8 +1621,11 @@ function mod:Death2AI(npc)
 			elseif d.dice == 2 then
 				d.idleWait = d2.bal.slashIdleTail
 				d.movesBeforeSlash = -1
-			elseif d.dice >= 3 then
+			elseif d.dice == 3 then
 				d.idleWait = d2.bal.slashIdleTail*2
+				d.movesBeforeSlash = mod:RandomInt(2,5)
+			elseif d.dice >= 4 then
+				d.idleWait = d2.bal.slashIdleTail
 				d.movesBeforeSlash = mod:RandomInt(2,5)
 			end
 			
@@ -1584,10 +1633,10 @@ function mod:Death2AI(npc)
 			
 			d.stateDecide = nil
 			
-			--[[phase 2 begin
-			if npc.HitPoints <= npc.MaxHitPoints*w2.bal.phase2Health and not d.phase2 then
-				d.state = "bigboom"
-			end]]
+			--phase 2 begin
+			if npc.HitPoints <= npc.MaxHitPoints*d2.bal.phase2Health and not d.phase2 then
+				d.state = "horselaunch"
+			end
 		else
 			d.idleWait = d.idleWait - 1
 		end
@@ -1822,7 +1871,7 @@ function mod:Death2AI(npc)
 	--HORSE SLASH
 	if d.state == "slash" then
 		if not d.substate then
-			mod:SpritePlay(sprite, "SlashCharge")
+			mod:SpritePlay(sprite,d.P2text.."SlashCharge")
 			d.substate = 1
 		--charge up
 		elseif d.substate == 1 then
@@ -1831,21 +1880,26 @@ function mod:Death2AI(npc)
 			
 			if sprite:IsEventTriggered("Flash") then
 				npc:PlaySound(SoundEffect.SOUND_BEEP, 1, 0, false, 1)
+			elseif sprite:IsEventTriggered("Flash2") then
+				npc:PlaySound(SoundEffect.SOUND_BEEP, 1, 0, false, 1.2)
 			end
 			
-			if sprite:IsEventTriggered("Target") then
+			if sprite:IsEventTriggered("Target") and not d.reshoot then
 				d.shootVec = (target.Position - npc.Position):Resized(d2.bal.slashSpeed)
 			end
 			
-			if sprite:IsFinished("SlashCharge") then
-
-				if not d.tpSafe then
+			if sprite:IsFinished(d.P2text.."SlashCharge") or d.reshoot == 1 then
+				if d.reshoot then
+					d.reshoot = 2
+				end
+				
+				if not d.tpSafe and not d.reshoot then
 					d.shootVec = d.shootVec + target.Velocity:Resized(d2.bal.slashCurve)
 				end
 			
 				targetPos = d.shootVec + npc.Position
-				if targetPos.Y >= npc.Position.Y then mod:SpritePlay(sprite, "SlashDashA")
-				else mod:SpritePlay(sprite, "SlashDashB") end
+				if targetPos.Y >= npc.Position.Y then mod:SpritePlay(sprite,d.P2text.."SlashDashA")
+				else mod:SpritePlay(sprite,d.P2text.."SlashDashB") end
 				
 				if targetPos.X < npc.Position.X then
 					sprite.FlipX = true
@@ -1862,9 +1916,23 @@ function mod:Death2AI(npc)
 		elseif d.substate == 2 then
 
 			if sprite:IsEventTriggered("Shoot") then
+				if not d.reshoot and d.phase2 then
+					npc:PlaySound(SoundEffect.SOUND_TOOTH_AND_NAIL, 1, 0, false, 1.2)
+				else
+					npc:PlaySound(SoundEffect.SOUND_TOOTH_AND_NAIL, 1, 0, false, 1)
+				end
 				npc.Velocity = d.shootVec
-				npc:PlaySound(SoundEffect.SOUND_TOOTH_AND_NAIL, 1, 0, false, 1)
 				d.stateTimer = d2.bal.slashTime
+			end
+			
+			if sprite:IsEventTriggered("Target") then
+				d.shootVec = (target.Position - npc.Position):Resized(d2.bal.slashSpeed)
+			end
+			
+			if d.phase2 and sprite:IsEventTriggered("Reshoot") and d.reshoot ~= 2 then
+				sprite:SetFrame(0)
+				d.reshoot = 1
+				d.substate = 1
 			end
 			
 			if sprite:IsEventTriggered("Unwind") then
@@ -1876,9 +1944,11 @@ function mod:Death2AI(npc)
 				if d.stateTimer == d2.bal.slashTime-1 then
 					local params = ProjectileParams()
 					params.Variant = ProjectileVariant.PROJECTILE_BONE
-					if (npc.Velocity.X > 0) then params.BulletFlags = ProjectileFlags.CURVE_LEFT
-					else params.BulletFlags = ProjectileFlags.CURVE_RIGHT end
-					params.FallingAccelModifier = 0.1-(0.01*d2.bal.boneShotDist)
+					if not d.phase2 then
+						if (npc.Velocity.X > 0) then params.BulletFlags = ProjectileFlags.CURVE_LEFT
+						else params.BulletFlags = ProjectileFlags.CURVE_RIGHT end
+						params.FallingAccelModifier = 0.1-(0.01*d2.bal.boneShotDist)
+					end
 					npc:FireProjectiles(npc.Position, Vector(d2.bal.boneShotSpeed,d2.bal.boneShotAmount), 9, params)
 				end
 
@@ -1896,29 +1966,28 @@ function mod:Death2AI(npc)
 			
 			npc.Friction = npc.Friction * d2.bal.slashFriction
 			
-			if sprite:IsFinished("SlashDashA") or sprite:IsFinished("SlashDashB") then
+			if sprite:IsFinished(d.P2text.."SlashDashA") or sprite:IsFinished(d.P2text.."SlashDashB") then
 				npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_ALL
 				d.substate = nil
 				d.stateTimer = nil
+				d.reshoot = nil
 				npc.Friction = d2.bal.attackFriction
-				d.state = "idle"
+				d.state = d.idleState
 			end
 		end
 	end
 	
 	--slow cloud
 	if d.state == "slowcloud" then
-		mod:SpritePlay(sprite, "QuickCharge")
+		mod:SpritePlay(sprite,d.P2text.."QuickCharge")
 		
-		if sprite:IsFinished("QuickCharge") then
-			d.state = "idle"
+		if sprite:IsFinished(d.P2text.."QuickCharge") then
+			d.substate = nil
+			d.state = d.idleState
 		elseif sprite:IsEventTriggered("Shoot") then
 		
-			if targetPos.X < npc.Position.X then
-				sprite.FlipX = true
-			else
-				sprite.FlipX = false
-			end
+			if target.Position.X < npc.Position.X then sprite.FlipX = true
+			else sprite.FlipX = false end
 		
 			local cloud = Isaac.Spawn(d2.cloud.id, d2.cloud.variant, 0, npc.Position, Vector(0,0), npc)
 			cloud:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
@@ -1943,12 +2012,8 @@ function mod:Death2AI(npc)
 			end
 		
 			d.shootVec = (target.Position - npc.Position):Normalized()*3
-			
-			if d.bigbone then
-				d.bigbone:Kill()
-			end
-		
-			d.bigbone = Isaac.Spawn(EntityType.ENTITY_BIG_BONY, 10, 0, npc.Position+d.shootVec, d.shootVec, npc)
+			local bigbone = Isaac.Spawn(EntityType.ENTITY_BIG_BONY, 10, 0, npc.Position+d.shootVec, d.shootVec, npc)
+			bigbone:GetData().purple = true
 
 			game:SpawnParticles(npc.Position+d.shootVec,EffectVariant.SCYTHE_BREAK,1,1)
 			npc:PlaySound(SoundEffect.SOUND_BONE_SNAP, 1, 0, false, 1)
@@ -1956,27 +2021,542 @@ function mod:Death2AI(npc)
 		npc.Friction = d2.bal.attackFriction
 	end
 	
-	if d.bigbone then
-		if d.bigbone.FrameCount % 3 == 0 then
-			local trail = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.HAEMO_TRAIL, 0, d.bigbone.Position+Vector(0,-15), Vector(0,0), d.bigbone):ToEffect()
-			trail.Color = d.floorColor
-			trail.Scale = 0.7
+	--phase2 transition
+	if d.state == "horselaunch" then
+		if not d.substate then
+			if target.Position.X < npc.Position.X then
+				sprite.FlipX = true
+				d.launchDir = -1
+			else
+				sprite.FlipX = false
+				d.launchDir = 1
+			end
+		
+			d.substate = 1
+			mod:SpritePlay(sprite, "HorseLaunch")
 		end
 		
-		if not d.bigbone:Exists() then
-			d.bigbone = nil
+		if sprite:IsFinished("HorseLaunch") then
+			d.phase2 = true
+			
+			local spawnVec = Vector(npc.Position.X+10*d.launchDir,npc.Position.Y) 
+			d.horseNpc = Isaac.Spawn(d2.horse.id, d2.horse.variant, 0, spawnVec, Vector(0,0), npc)
+			d.horseNpc:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
+			d.horseNpc:GetData().parentNpc = npc
+			if d.tpSafe then d.horseNpc:GetData().tpSafe = true end
+			d.horseNpc:GetSprite().FlipX = sprite.FlipX
+			
+			npc.Velocity = Vector(npc.Velocity.X - 6*d.launchDir,0)
+			npc:PlaySound(SoundEffect.SOUND_SUMMONSOUND, 1, 0, false, 1)
+			
+			mod:SpritePlay(sprite, "HorseLaunch2")
+		end
+		
+		if sprite:IsFinished("HorseLaunch2") then
+			d.P2text = "P2_"
+			d.idleState = "realghost"
+			d.substate = nil
+			d.launchDir = nil
+			d.state = "invisible"
+		end
+		
+		npc.Friction = 0.9
+	end
+	
+	if d.phase2 then
+		--invisible
+		if d.state == "invisible" then
+			if not d.stateTimer then
+				d.stateTimer = 50
+			elseif d.stateTimer <= 0 then
+				d.stateTimer = nil
+				d.state = "waiting"
+			else
+				d.stateTimer = d.stateTimer - 1
+			end
+		
+			npc.Visible = false
+			npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
+		end
+		
+		--waiting (for horse phase to end)
+		if d.state == "waiting" then
+			if d.horseNpc then
+				if d.horseNpc:GetData().substate == 2 then
+					d.horseWait = true
+				end
+			else
+				d.horseWait = true
+			end
+			
+			if d.horseWait then
+				if not d.stateTimer then
+					d.stateTimer = 40
+				elseif d.stateTimer <= 0 then
+					d.stateTimer = nil
+					d.horseWait = nil
+					d.state = "ghosting"
+				else
+					d.stateTimer = d.stateTimer - 1
+				end
+			end
+		
+			npc.Visible = false
+			npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
+		end
+		--ghosting
+		if d.state == "ghosting" then
+			
+			if not d.ghostCount then
+				d.ghostCount = d2.bal.ghostCount + d2.bal.ghostExtra
+			end
+			if mod:CountRoom(d2.ghost.id,d2.ghost.variant) <= d2.bal.ghostMax then
+				if not d.stateTimer then
+					d.ghostPos = Isaac.GetRandomPosition()
+					local distance = 0
+					
+					while distance < d2.ghost.ghostDistMin do
+						d.ghostPos = Isaac.GetRandomPosition()
+						distance = math.sqrt(((target.Position.X-d.ghostPos.X)^2)+((target.Position.Y-d.ghostPos.Y)^2))
+					end
+					d.stateTimer = mod:RandomInt(d2.bal.ghostRateMin,d2.bal.ghostRateMax)
+					
+					if not d.ghostNum then
+						d.ghostNum = 0 + mod:RandomInt(d2.bal.ghostExtra)
+						d.stateTimer = 10
+					else
+						d.ghostNum = d.ghostNum + 1
+					end
+					
+					if d.ghostNum < d.ghostCount then
+						local ghost = Isaac.Spawn(d2.ghost.id, d2.ghost.variant, 0, d.ghostPos, Vector(0,0), npc)
+						ghost:GetData().parentNpc = npc
+						ghost:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
+						
+						if d.ghostNum%4 == 0 then
+							ghost:GetData().attackPrimed = -1
+						end
+					else
+						d.realOne = true
+					end
+					
+				elseif d.stateTimer <= 0 then
+					d.stateTimer = nil
+				else
+					d.stateTimer = d.stateTimer - 1
+				end
+			end
+			
+			if d.realOne then
+				d.stateTimer = nil
+				d.realOne = nil
+				d.ghostNum = nil
+				d.ghostCount = nil
+				d.state = "realghost"
+			else
+				npc.Visible = false
+				npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
+			end
+		end
+		--real ghost
+		if d.state == "realghost" then
+			if not d.ghoststate then 
+				d.ghostPos = Isaac.GetRandomPosition()
+				local distance = 0
+				
+				while distance < d2.ghost.ghostDistMin do
+					d.ghostPos = Isaac.GetRandomPosition()
+					distance = math.sqrt(((target.Position.X-d.ghostPos.X)^2)+((target.Position.Y-d.ghostPos.Y)^2))
+				end
+				npc.Position = d.ghostPos
+				
+				if target.Position.X < npc.Position.X then sprite.FlipX = true
+				else sprite.FlipX = false end
+			
+				npc.Visible = true
+				npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_PLAYEROBJECTS
+				mod:SpritePlay(sprite,"P2_Appear")
+				d.ghoststate = 1
+				
+			elseif d.ghoststate == 1 then
+				if sprite:IsFinished("P2_Appear") then
+					d.moveWait = nil
+					d.atkCount = 0
+					d.ghoststate = 2
+				end
+			elseif d.ghoststate == 2 then
+				mod:SpritePlay(sprite,"P2_Idle")
+				
+				--float move
+				if not d.moveWait then
+					d.moveWait = mod:RandomInt(d2.ghost.moveWaitMin,d2.ghost.moveWaitMax)
+					d.targetvelocity = ((target.Position - npc.Position):Normalized()*2):Rotated(-100+mod:RandomInt(200))
+				elseif d.moveWait <= 0 then
+					if target.Position.X < npc.Position.X then sprite.FlipX = true
+					else sprite.FlipX = false end
+					d.moveWait = nil
+				else
+					d.moveWait = d.moveWait - 1
+				end
+				
+				--attack timer
+				if not d.attackTimer then
+					d.attackTimer = 80
+				elseif d.attackTimer <= 0 then
+					if d.atkCount == 0 then --and mod:CountRoom(d2.ghost.id, d2.ghost.variant) <= 0 then
+						local rand = mod:RandomInt(2)
+						if rand == 1 then 
+							d.state = "slash"
+							d.atkCount = 1						
+						else 
+							d.state = "slowcloud"
+							d.atkCount = 2
+						end
+						d.attackTimer = 30
+					elseif d.atkCount == 1 then
+						d.state = "slowcloud"
+						d.atkCount = 3
+						d.attackTimer = 40
+					elseif d.atkCount == 2 then
+						d.state = "slash"
+						d.atkCount = 3
+						d.attackTimer = 40
+					elseif d.atkCount == 3 then
+						d.atkCount = 4
+					end
+				else
+					d.attackTimer = d.attackTimer - 1
+				end
+				
+				if d.atkCount >= 4 then
+					d.ghoststate = 3
+				end
+				
+				npc.Friction = 1
+				npc.Velocity = ((d.targetvelocity * 0.3) + (npc.Velocity * 0.7)) * d2.ghost.speed
+				d.targetvelocity = d.targetvelocity * 0.99
+			elseif d.ghoststate == 3 then
+				mod:SpritePlay(sprite,"P2_Fadeout")
+				if sprite:IsFinished("P2_Fadeout") then		
+					d.atkCount = nil
+					d.attackTimer = nil
+					d.ghoststate = nil
+					d.state = "invisible"
+				end
+				npc.Friction = npc.Friction * 0.9
+			end
 		end
 	end
-
-	--DEATH (ACTUALLY DEATH AND NOT THE BOSS)
-	if npc:IsDead() and d.theManHimself then
-		d.dice = mod:RandomInt(2)
-		if d.dice == 1 then
-			local trinket = Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, TrinketType.TRINKET_YOUR_SOUL, npc.Position, Vector(0,0), npc)
+	
+	--ENTITY HORSE---------
+	
+	if d.state == "horse" then
+		--init
+		if not d.substate then
+			d.xStart = room:GetTopLeftPos().X - 220
+			d.xEnd = room:GetBottomRightPos().X + 220
+			d.mid = room:GetCenterPos().X
+			
+			if d.parentNpc ~= nil then
+				d.hasParent = true
+			else
+				d.parentNpc = npc
+				d.hasParent = false
+			end
+			
+			if not d.hasParent or d.tpSafe then
+				d.scytheRate = d2.horse.scytheRateSlow
+				d.steerHalved = 0.5
+			else
+				d.scytheRate = d2.horse.scytheRate
+				d.steerHalved = 1
+			end
+		
+			d.substate = 1
+		else
+			if d.hasParent and not d.parentNpc:Exists() then
+				npc:Kill()
+			end
+			--Going offscreen
+			if d.substate == 1 then
+				mod:SpritePlay(sprite, "Idle")
+				if sprite.FlipX then
+					d.dir = -1
+				else
+					d.dir = 1
+				end
+				
+				if npc.Position.X > d.xEnd or npc.Position.X < d.xStart then
+					d.substate = 2
+				end
+				npc.Velocity = Vector(d.dir,0) * d2.horse.speed
+			--Waiting for action
+			elseif d.substate == 2 then
+				npc.Visible = false
+				
+				if not d.hasParent or d.parentNpc:GetData().state == "invisible" then
+					if d.dir == 1 then
+						npc.Position = Vector(d.xStart,d.mid)
+						sprite.FlipX = false
+					else
+						npc.Position = Vector(d.xEnd,d.mid)
+						sprite.FlipX = true
+					end
+					d.substate = 3
+				end
+			--Gas phase
+			elseif d.substate == 3 then
+				npc.Visible = true
+				mod:SpritePlay(sprite, "Gas")
+				if not d.horseAccel then 
+					d.horseAccel = 0.1
+					d.steerPower = 0
+				else
+					d.horseAccel = d.horseAccel + d2.horse.accelRate
+				end
+				
+				--vertical steering
+				if (d.dir == 1 and target.Position.X > npc.Position.X) 
+				or (d.dir == -1 and target.Position.X < npc.Position.X) then
+					d.steerPower = (target.Position.Y - npc.Position.Y) * d.steerHalved
+					if d.steerPower > 50 then
+						d.steerPower = 50
+					elseif d.steerPower < -50 then
+						d.steerPower = -50
+					end
+				else
+					d.steerPower = d.steerPower * 0.9
+				end
+				
+				npc.Velocity = Vector(d.dir,d2.horse.steerRate*d.steerPower) * (d2.horse.slowSpeed+d.horseAccel)
+				
+				--scythe
+				if not d.horseTimer then
+					d.horseTimer = 100
+				elseif d.horseTimer > 0 then
+					d.horseTimer = d.horseTimer - 1
+				end
+				
+				if not d.scytheTimer then
+					d.scytheTimer = d.scytheRate	
+				elseif d.scytheTimer <= 0 then
+					d.scytheTimer = d.scytheRate	
+					
+					local lightPause = (d.horseTimer*0.03)*20
+					local scythe = Isaac.Spawn(d2.scythe.id, d2.scythe.variant, 0, Vector(npc.Position.X-(d.dir*20),npc.Position.Y), Vector(d.dir*-3,mod:RandomInt(-4,4)), npc)
+					scythe:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
+					scythe:GetData().gasPause = lightPause-10
+					scythe:GetData().scytheSpeed = d2.scythe.accel
+					scythe.GridCollisionClass = GridCollisionClass.COLLISION_NONE
+					scythe.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
+				else
+					d.scytheTimer = d.scytheTimer - 1
+				end
+				
+				if d.horseTimer < 50 and (npc.Position.X > d.xEnd+10 or npc.Position.X < d.xStart-10) then
+					d.horseTimer = nil
+					d.scytheTimer = nil
+					d.steerPower = nil
+					d.horseAccel = nil
+					d.dir = d.dir*-1
+					d.substate = 2
+				end
+			end
+		end
+	end
+	
+	--ENTITY GHOST----------
+	
+	if d.state == "ghost" then
+		--init
+		if d.deathPhase then
+			d.substate = -1
+			if target.Position.X < npc.Position.X then sprite.FlipX = true
+			else sprite.FlipX = false end
+			mod:SpritePlay(sprite,"G_Phase")
+			if sprite:IsFinished("G_Phase") then
+				npc:Remove()
+			end
 		end
 		
-		for i, entity in ipairs(Isaac.FindByType(d2.scythe.id, d2.scythe.variant)) do
-			entity:Kill()
+		if not d.substate then
+			mod:SpritePlay(sprite,"G_Appear")
+			
+			if target.Position.X < npc.Position.X then
+				sprite.FlipX = true
+			else
+				sprite.FlipX = false
+			end
+			
+			if sprite:IsFinished("G_Appear") then
+				if d.parentNpc ~= nil then
+					d.hasParent = true
+				else
+					d.parentNpc = npc
+					d.hasParent = false
+				end
+				d.lastHealth = npc.HitPoints
+				npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_PLAYEROBJECTS
+				d.substate = 1
+			end
+		elseif d.substate > 0 then
+			if d.hasParent and not d.parentNpc:Exists() then
+				npc:Kill()
+			end
+			
+			if not d.lifeTimer then
+				d.lifeTimer = mod:RandomInt(d2.ghost.lifeTimerMin,d2.ghost.lifeTimerMax)
+			elseif d.lifeTimer > 0 then
+				d.lifeTimer = d.lifeTimer - 1
+			end
+			
+			if not d.attackPrimed then
+				d.attackPrimed = 1
+			end
+			
+			if npc.HitPoints < d.lastHealth then
+				if target:ToPlayer() and d.hasParent then
+					--if d.parentNpc.HitPoints > target:ToPlayer().Damage*2 then
+						local p = d.parentNpc.HitPoints / (d.parentNpc.MaxHitPoints*d2.bal.phase2Health+100)
+						if p < 0.15 then p = 0.15 end
+						local pp = p*target:ToPlayer().Damage
+						d.parentNpc:TakeDamage(pp, 0, EntityRef(target), 0)
+					--end
+				end
+			end
+			d.lastHealth = npc.HitPoints
+
+			--idle
+			if d.substate == 1 then
+				mod:SpritePlay(sprite, "G_Idle")
+				
+				--float move
+				if not d.moveWait then
+					d.moveWait = mod:RandomInt(d2.ghost.moveWaitMin,d2.ghost.moveWaitMax)
+					d.targetvelocity = ((target.Position - npc.Position):Normalized()*2):Rotated(-100+mod:RandomInt(200))
+				elseif d.moveWait <= 0 then
+					if target.Position.X < npc.Position.X then
+						sprite.FlipX = true
+					else
+						sprite.FlipX = false
+					end
+					d.moveWait = nil
+				else
+					d.moveWait = d.moveWait - 1
+				end
+				
+				if d.lifeTimer <= 0 then
+					d.substate = 2
+				elseif d.lifeTimer == 1 and d.attackPrimed == 1 then
+					d.attackPrimed = -1
+					if mod:RandomInt(4) == 1 then
+						d.substate = 5
+					elseif mod:CountRoom(EntityType.ENTITY_BIG_BONY, 10) >= d2.ghost.boneLimit then
+						d.substate = 4
+					else
+						d.substate = mod:RandomInt(3,4)
+					end
+				end
+				
+				npc.Friction = 1
+				npc.Velocity = ((d.targetvelocity * 0.3) + (npc.Velocity * 0.7)) * d2.ghost.speed
+				d.targetvelocity = d.targetvelocity * 0.99
+			--fadeout
+			elseif d.substate == 2 then
+				if not d.rand then
+					d.rand = mod:RandomInt(2)
+				elseif d.rand == 1 then
+					mod:SpritePlay(sprite, "G_Fadeout1")
+					if sprite:IsFinished("G_Fadeout1") then
+						npc:Remove()
+					end
+				else
+					mod:SpritePlay(sprite, "G_Fadeout2")
+					if sprite:IsFinished("G_Fadeout2") then
+						npc:Remove()
+					end
+				end
+				npc.Friction = npc.Friction * 0.9
+			--big bone
+			elseif d.substate == 3 then
+				mod:SpritePlay(sprite, "G_Attack1")
+				if sprite:IsFinished("G_Attack1") then
+					d.lifeTimer = d.lifeTimer + mod:RandomInt(d2.ghost.attackDelayMin,d2.ghost.attackDelayMax)
+					d.substate = 1
+				elseif sprite:IsEventTriggered("Shoot") then
+					if target.Position.X < npc.Position.X then sprite.FlipX = true
+					else sprite.FlipX = false end
+					local shootVec = (target.Position - npc.Position):Normalized()*3
+					local bigbone = Isaac.Spawn(EntityType.ENTITY_BIG_BONY, 10, 0, npc.Position+shootVec, shootVec, npc)
+					bigbone:GetData().purple = true
+
+					game:SpawnParticles(npc.Position+shootVec,EffectVariant.SCYTHE_BREAK,1,1)
+					npc:PlaySound(SoundEffect.SOUND_BONE_SNAP, 1, 0, false, 1)
+				end
+				npc.Friction = d2.bal.attackFriction
+			
+			--small bones
+			elseif d.substate == 4 then
+				mod:SpritePlay(sprite, "G_Attack2")
+				if sprite:IsFinished("G_Attack2") then
+					d.lifeTimer = d.lifeTimer + mod:RandomInt(d2.ghost.attackDelayMin,d2.ghost.attackDelayMax)
+					d.substate = 1
+				elseif sprite:IsEventTriggered("Target") then
+					d.shootVec = (target.Position - npc.Position):Normalized()*d2.ghost.boneAttackSpeed
+				elseif sprite:IsEventTriggered("Shoot") then
+					if not d.shootVec then d.shootVec = (target.Position - npc.Position):Normalized()*d2.ghost.boneAttackSpeed end
+					if npc.Position.X+d.shootVec.X < npc.Position.X then sprite.FlipX = true
+					else sprite.FlipX = false end
+					local params = ProjectileParams()
+					params.Variant = ProjectileVariant.PROJECTILE_BONE
+					npc:FireProjectiles(npc.Position, d.shootVec, 3, params)
+
+					npc:PlaySound(SoundEffect.SOUND_GHOST_SHOOT, 1, 0, false, 1)
+				end
+				npc.Friction = d2.bal.attackFriction
+			--purple fire
+			elseif d.substate == 5 then				
+				if sprite:IsFinished("G_Attack3") or sprite:IsFinished("G_Attack3B") then
+					d.lifeTimer = d.lifeTimer + mod:RandomInt(d2.ghost.attackDelayMin,d2.ghost.attackDelayMax)
+					d.currentPos = nil
+					d.substate = 1
+				elseif sprite:IsEventTriggered("Shoot") then
+					d.lastPos = target.Position
+					npc:PlaySound(SoundEffect.SOUND_GHOST_ROAR, 1, 0, false, 1)
+					npc:PlaySound(SoundEffect.SOUND_FIRE_RUSH, 1, 0, false, 1)
+					d.Firing = true
+				elseif sprite:IsEventTriggered("Stop") then
+					d.Firing = false
+				end
+				
+				if not sprite:IsPlaying("G_Attack3") and not sprite:IsPlaying("G_Attack3B") then
+					d.lastPos = target.Position
+					mod:SpritePlay(sprite, "G_Attack3")
+				elseif d.lastPos.Y < npc.Position.Y-20 then 
+					sprite:SetAnimation("G_Attack3B", false)
+				else 
+					sprite:SetAnimation("G_Attack3", false)
+				end
+				
+				if d.Firing and npc.FrameCount % 2 == 0 then
+					if d.lastPos.X < npc.Position.X then sprite.FlipX = true
+					else sprite.FlipX = false end
+					
+					local shootVec
+					local distance = math.sqrt(((target.Position.X-d.lastPos.X)^2)+((target.Position.Y-d.lastPos.Y)^2))
+					if distance < 100 then 
+						shootVec = (target.Position - npc.Position):Normalized()*d2.ghost.fireAttackSpeed
+						d.lastPos = target.Position
+					else 
+						shootVec = (d.lastPos - npc.Position):Normalized()*d2.ghost.fireAttackSpeed 
+					end
+					
+					local fire = Isaac.Spawn(9, ProjectileVariant.PROJECTILE_FIRE,1,npc.Position, shootVec:Rotated(mod:RandomInt(-5,5)), npc):ToProjectile()
+					fire.Height = -60
+					fire:SetColor(d.floorColor, 100, 1, false, false)
+				end
+				npc.Friction = d2.bal.attackFriction
+			end
 		end
 	end
 	
@@ -1986,10 +2566,15 @@ function mod:Death2AI(npc)
 		--init
 		if not d.substate then
 			mod:SpritePlay(sprite, "Idle")
-			npc.Friction = 0
+			npc.Friction = npc.Friction*0.9
 			
 			if not d.stateTimer then
-				d.stateTimer = d2.scythe.gasTime
+				local gasExtra = 0
+				if d.gasPause then
+					gasExtra = d.gasPause
+				end
+				d.stateTimer = d2.scythe.gasTime+gasExtra
+				
 			elseif d.stateTimer > 0 then
 				d.stateTimer = d.stateTimer - 1 
 			else
@@ -2007,7 +2592,14 @@ function mod:Death2AI(npc)
 				poof.Color = d.poofColor
 				npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_PLAYERONLY
 				
-				if not d.scytheDir then d.scytheDir = "down" end
+				if not d.scytheDir then 
+					if target.Position.Y < npc.Position.Y then
+						d.scytheDir = "up"
+					else
+						d.scytheDir = "down"
+					end
+				end
+				
 				if not d.pause then d.pause = 0 end
 				
 				local accel = d.scytheSpeed
@@ -2053,7 +2645,7 @@ function mod:Death2AI(npc)
 		end
 	end
 	
-	--ENTITY SHADOW---------
+	--ENTITY CLOUD---------
 	
 	if d.state == "cloud" then
 	
@@ -2088,9 +2680,16 @@ function mod:Death2AI(npc)
 			d.stateTimer = 80
 			d.shootVec = (target.Position - npc.Position):Resized(d2.cloud.velocity)
 			npc.Velocity = d.shootVec
+			d.lastPos = target.Position
 			
 		elseif d.stateTimer > 0 then
 			if d.stateTimer > 50 and not d.touched then
+				local distance = math.sqrt(((target.Position.X-d.lastPos.X)^2)+((target.Position.Y-d.lastPos.Y)^2))
+				if distance < 100 then 
+					d.lastPos = target.Position
+				else
+					d.touched = true
+				end
 				mod:RubberbandRun(npc, d, target.Position, d2.cloud.accel*(d.stateTimer/80), d2.cloud.velocity)
 			end
 			
@@ -2102,8 +2701,100 @@ function mod:Death2AI(npc)
 		end
 	end
 end
-
 mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.Death2AI, d2.id)
+
+--DEATHS death
+mod:AddCallback(ModCallbacks.MC_POST_ENTITY_REMOVE, function(_, npc)
+	if not (npc.Type == d2.id
+		and npc.Variant == d2.variant) then
+		return
+	end
+
+	if npc:IsDead() and not game:IsPaused() then
+        local dice = mod:RandomInt(2)
+		if dice == 1 then
+			local trinket = Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, TrinketType.TRINKET_YOUR_SOUL, npc.Position, Vector(0,0), npc)
+		end
+	end
+end)
+
+function mod:deathRender(npc)
+	if not (npc.Type == d2.id
+		and npc.Variant == d2.variant) then
+		return
+	end
+	
+	local sprite = npc:GetSprite()
+	local d = npc:GetData()
+	if sprite:IsPlaying("Death") then
+		if sprite:GetFrame() == 1 and not d.deathState then
+			if not d.phase2 then
+				npc:BloodExplode()
+			end
+			npc:PlaySound(SoundEffect.SOUND_BONE_SNAP, 1, 0, false, 1)
+			
+			for i, entity in ipairs(Isaac.FindByType(d2.scythe.id, d2.scythe.variant)) do
+				entity:Kill()
+			end
+			
+			for i, entity in ipairs(Isaac.FindByType(EntityType.ENTITY_BIG_BONY, 10)) do
+				entity:Kill()
+			end
+			
+			for i, entity in ipairs(Isaac.FindByType(d2.ghost.id, d2.ghost.variant)) do
+				entity:Kill()
+			end
+			
+			npc.Visible = true
+			d.deathState = 1
+		elseif sprite:GetFrame() >= 10 and sprite:GetFrame() <= 50 then
+			if sprite:GetFrame()%4 == 0 and d.deathState ~= sprite:GetFrame() then
+				local ghostPos = Isaac.GetRandomPosition()
+				local ghost = Isaac.Spawn(d2.ghost.id, d2.ghost.variant, 0, ghostPos, Vector(0,0), npc)
+				ghost:GetData().deathPhase = true
+				ghost:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
+				d.deathState = sprite:GetFrame()
+				
+				if sprite:IsEventTriggered("Dying") then
+					sfx:Play(SoundEffect.SOUND_FAT_GRUNT, 1, 2, false, 1)
+				end
+			end
+		end
+	end
+end
+
+function mod:PurpleBoneTrail(npc)
+	local sprite = npc:GetSprite()
+	local d = npc:GetData()
+	local level = game:GetLevel()
+	local room = game:GetRoom()
+	
+	if npc.Variant == 10 and d.purple then
+		if not d.init then
+			if (level:GetStage() == LevelStage.STAGE3_1 or level:GetStage() == LevelStage.STAGE3_2)
+			and level:GetStageType() == StageType.STAGETYPE_REPENTANCE_B then
+				d.altSkin = true
+			end
+
+			if not d.altSkin then
+			--MAUSOLEUM COLORS
+			d.floorColor = Color(1,1,1,1)
+			d.floorColor:SetColorize(4,1,6,1)
+			else
+			--GEHENNA COLORS
+			d.floorColor = Color(1,1,1,1)
+			d.floorColor:SetColorize(4,0,0,1)
+			end
+			d.init = true
+		end
+		if npc.FrameCount % 3 == 0 then
+			local trail = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.HAEMO_TRAIL, 0, npc.Position+Vector(0,-15), Vector(0,0), npc):ToEffect()
+			trail.Color = d.floorColor
+			trail.Scale = 0.7
+		end
+	end
+end
+mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.PurpleBoneTrail, EntityType.ENTITY_BIG_BONY)
 
 ------------------------COOL FUNCTIONS------------------------
 --------------------------------------------------------------
@@ -2273,6 +2964,7 @@ end
 
 --npc damage
 mod:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, function(_, npc,amount,flag,source)
+	--war armor
 	if npc.Type == w2.id and npc.Variant == w2.variant and npc:GetData().phase2 then
 		if flag <= DamageFlag.DAMAGE_EXPLOSION then
 			if npc:GetData().armorDamage ~= nil then
@@ -2286,6 +2978,29 @@ mod:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, function(_, npc,amount,flag,sou
 				local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector(0,0), player):ToEffect()
 				poof.SpriteScale = Vector(0.3,0.3)
 				poof.Color = Color(0.8,0.6,0.4,1)
+				return false
+			end
+		end
+	end
+	
+	--death horse
+	if npc.Type == d2.horse.id and npc.Variant == d2.horse.variant then
+		return false
+	end
+	
+	--telefrag death
+	if source.Entity and npc.Type == EntityType.ENTITY_PLAYER then
+		if source.Type == d2.id and source.Variant == d2.variant then
+			if npc:GetSprite():GetAnimation() == "TeleportDown" then
+				return false
+			end
+		elseif source.Type == d2.scythe.id and source.Variant == d2.scythe.variant then
+			if npc:GetSprite():GetAnimation() == "TeleportDown" then
+				return false
+			end
+		elseif source.Type == d2.ghost.id and source.Variant == d2.ghost.variant then
+			if npc:GetSprite():GetAnimation() == "TeleportDown" then
+				source.Entity:Kill()
 				return false
 			end
 		end
@@ -2304,6 +3019,11 @@ mod:AddCallback(ModCallbacks.MC_PRE_TEAR_COLLISION, function(_, tear, npc)
 	end
 end
 )
+
+function mod:renderBosses(npc)
+	mod:deathRender(npc)
+end
+mod:AddCallback(ModCallbacks.MC_POST_NPC_RENDER, mod.renderBosses, d2.id)
 
 --TUMOR CUBE --------------------
 Althorsemen.Tumorcube = {
@@ -3290,15 +4010,15 @@ if HPBars then
     HPBars.BossDefinitions[f2id] = {
         sprite = "gfx/bosses/famine2/small_famine_head.png",
 		conditionalSprites = {
-			{"isStageType","gfx/misc/small_famine_head_dross.png", {StageType.STAGETYPE_REPENTANCE_B}}
+			{"isStageType","gfx/bosses/famine2/small_famine_head_dross.png", {StageType.STAGETYPE_REPENTANCE_B}}
 		},
         offset = Vector(-4, 0)
     }
 	HPBars.BossDefinitions[w2id] = {
-        sprite = "gfx/misc/small_war_head.png",
+        sprite = "gfx/bosses/war2/small_war_head.png",
 		conditionalSprites = {
-			{"animationNameStartsWith","gfx/misc/small_war_head_fire.png", {"P2"}},
-			{"isStageType","gfx/misc/small_war_head_ashpit.png", {StageType.STAGETYPE_REPENTANCE_B}},
+			{"animationNameStartsWith","gfx/bosses/war2/small_war_head_fire.png", {"P2"}},
+			{"isStageType","gfx/bosses/war2/small_war_head_ashpit.png", {StageType.STAGETYPE_REPENTANCE_B}},
 		},
         offset = Vector(-4, 0)
     }
