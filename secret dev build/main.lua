@@ -5,7 +5,7 @@ local sfx = SFXManager()
 local rng = RNG()
 
 local firstLoaded = true
-local loadText = "Alt Horsemen v4 (+Death)"
+local loadText = "Alt Horsemen v4.03 (+Death)"
 local loadTextFailed = "Alt Horsemen load failed (STAGEAPI Disabled)"
 
 ------------------------BOSSES------------------------
@@ -1418,11 +1418,13 @@ Althorsemen.Death2 = {
 		id = 660,
 		variant = 102,
 		speed = 14,
-		slowSpeed = 3.5,
-		accelRate = 0.16,
+		slowSpeed = 0.4,
+		accelRate = 0.15,
 		steerRate = 0.012,
-		scytheRate = 2,
+		scytheRate = 1,
 		scytheRateSlow = 4,
+		gasPause = 15,
+		gasSpread = 7,
 	},
 	scythe = {
 		name = "Purple Scythe",
@@ -1436,12 +1438,12 @@ Althorsemen.Death2 = {
 		name = "Death Cloud",
 		id = 660,
 		variant = 104,
-		accel = 7,
-		velocity = 9,
+		accel = 8,
+		velocity = 9.5,
 		hitSphere = 32,
-		slowValue = 0.93,
+		slowValue = 0.90,
 		slowHandicap = 0.03, --added slowness for higher speeds
-		slowTime = 350,
+		slowTime = 400,
 	},
 	ghost = {
 		name = "Tainted Death Ghost",
@@ -1449,40 +1451,45 @@ Althorsemen.Death2 = {
 		variant = 105,
 		moveWaitMin = 10,
 		moveWaitMax = 30,
-		speed = 1.1,
+		speed = 1.15,
 		ghostDistMin = 100,
 		lifeTimerMin = 30,
 		lifeTimerMax = 100,
 		attackDelayMin = 1,
 		attackDelayMax = 70,
-		boneAttackSpeed = 10,
-		fireAttackSpeed = 7,
+		boneAttackSpeed = 11.8,
+		boneCurve = 7,
+		fireAttackSpeed = 9,
+		fireCurve = 2,
 		boneLimit = 1,
+		bonusArmor = 200,
 	},
 	bal = {
-		scytheIdleTail = 38,
-		scytheIdleFast = 24,
-		scytheIdleSlow = 46,
-		slashIdleHead = 38,
-		slashIdleTail = 14,
+		scytheIdleTail = 26,
+		scytheIdleFast = 14,
+		scytheIdleSlow = 32,
+		slashIdleHead = 20,
+		slashIdleTail = 10,
 		moveWaitMin = 20,
 		moveWaitMax = 30,
 		attackFriction = 0.85,
 		speed = 1.2,
-		slashSpeed = 60,
-		slashCurve = 20,
+		slashSpeed = 80,
+		slashCurve = 30,
 		slashFriction = 0.82,
 		slashCircle = 60,
 		slashTime = 7,
-		boneShotDist = 15,
-		boneShotSpeed = 9,
-		boneShotAmount = 5,
+		boneShotDist = 18,
+		boneShotSpeed = 8.5,
+		boneShotAmount = 6,
+		boneShotAmount2 = 10,
 		phase2Health = 0.4,
 		ghostRateMin = 10,
 		ghostRateMax = 60,
 		ghostMax = 3,
 		ghostCount = 7,
 		ghostExtra = 3,
+		postGhostPause = 50,
 	}
 }
 local d2 = Althorsemen.Death2
@@ -1504,12 +1511,12 @@ function mod:Death2AI(npc)
 			d.altSkin = true
 		end
 		
-		for playerNum = 1, game:GetNumPlayers() do
+		--[[for playerNum = 1, game:GetNumPlayers() do
 			local player = game:GetPlayer(playerNum)
 			if Isaac.GetPlayer(playerNum):GetPlayerType() == PlayerType.PLAYER_EVE_B then
 				d.tpSafe = true
 			end
-		end
+		end]]
 
 		--add safespots because this isnt a boss room
 		if npc.SubType == 1 then
@@ -1530,10 +1537,10 @@ function mod:Death2AI(npc)
         d.floorColor:SetColorize(1.5,1,2,1)
 		else
 		--GEHENNA COLORS
-		d.poofColor = Color(0.6,0.2,0,2)
+		d.poofColor = Color(0.9,0.35,0.3,1)
 		
 		d.floorColor = Color(1,1,1,1)
-        d.floorColor:SetColorize(4,0,0,1)
+        d.floorColor:SetColorize(1.5,0.3,0,1)
 		end
 
 		npc.SplatColor = Color(0.1, 0.05, 0.2, 1)
@@ -1547,7 +1554,7 @@ function mod:Death2AI(npc)
 			npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
 			npc:AddEntityFlags(EntityFlag.FLAG_NO_KNOCKBACK)
 			if d.altSkin then
-				sprite:Load("gfx/redscythe.anm2", true)
+				sprite:Load("gfx/purplescythe_gehenna.anm2", true)
 			end
 			d.state = "scythe"
 		elseif npc.Variant == d2.cloud.variant then
@@ -1563,11 +1570,18 @@ function mod:Death2AI(npc)
 			--GHOST
 			npc.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_WALLS
 			npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
+			if d.altSkin then
+				sprite:Load("gfx/boss_death2_ghost_gehenna.anm2", true)
+			end
 			d.state = "ghost"
 		else
 			--DEATH
 			npc.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_WALLS
+			npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_PLAYEROBJECTS
 			d.movesBeforeSlash = mod:RandomInt(2,3)
+			if d.altSkin then
+				sprite:Load("gfx/boss_death2_gehenna.anm2", true)
+			end
 			d.state = "idle"
 		end
 	end
@@ -1885,7 +1899,7 @@ function mod:Death2AI(npc)
 			end
 			
 			if sprite:IsEventTriggered("Target") and not d.reshoot then
-				d.shootVec = (target.Position - npc.Position):Resized(d2.bal.slashSpeed)
+				d.shootVec = (target.Position - npc.Position):Normalized() * d2.bal.slashSpeed
 			end
 			
 			if sprite:IsFinished(d.P2text.."SlashCharge") or d.reshoot == 1 then
@@ -1895,10 +1909,11 @@ function mod:Death2AI(npc)
 				
 				if not d.tpSafe and not d.reshoot then
 					d.shootVec = d.shootVec + target.Velocity:Resized(d2.bal.slashCurve)
+					d.shootVec = d.shootVec:Normalized() * d2.bal.slashSpeed
 				end
 			
 				targetPos = d.shootVec + npc.Position
-				if targetPos.Y >= npc.Position.Y then mod:SpritePlay(sprite,d.P2text.."SlashDashA")
+				if targetPos.Y >= npc.Position.Y-20 then mod:SpritePlay(sprite,d.P2text.."SlashDashA")
 				else mod:SpritePlay(sprite,d.P2text.."SlashDashB") end
 				
 				if targetPos.X < npc.Position.X then
@@ -1936,7 +1951,7 @@ function mod:Death2AI(npc)
 			end
 			
 			if sprite:IsEventTriggered("Unwind") then
-				npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_ALL
+				npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_PLAYEROBJECTS
 			end
 			
 			if d.stateTimer then 
@@ -1944,12 +1959,19 @@ function mod:Death2AI(npc)
 				if d.stateTimer == d2.bal.slashTime-1 then
 					local params = ProjectileParams()
 					params.Variant = ProjectileVariant.PROJECTILE_BONE
-					if not d.phase2 then
+					--if not d.phase2 then
 						if (npc.Velocity.X > 0) then params.BulletFlags = ProjectileFlags.CURVE_LEFT
 						else params.BulletFlags = ProjectileFlags.CURVE_RIGHT end
+						--params.BulletFlags = ProjectileFlags.WIGGLE
 						params.FallingAccelModifier = 0.1-(0.01*d2.bal.boneShotDist)
+					--end
+					local shotAmount
+					if not d.reshoot then
+						shotAmount = d2.bal.boneShotAmount
+					else
+						shotAmount = d2.bal.boneShotAmount2
 					end
-					npc:FireProjectiles(npc.Position, Vector(d2.bal.boneShotSpeed,d2.bal.boneShotAmount), 9, params)
+					npc:FireProjectiles(npc.Position, Vector(d2.bal.boneShotSpeed,shotAmount), 9, params)
 				end
 
 				if d.stateTimer > 0 then
@@ -1967,7 +1989,7 @@ function mod:Death2AI(npc)
 			npc.Friction = npc.Friction * d2.bal.slashFriction
 			
 			if sprite:IsFinished(d.P2text.."SlashDashA") or sprite:IsFinished(d.P2text.."SlashDashB") then
-				npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_ALL
+				npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_PLAYEROBJECTS
 				d.substate = nil
 				d.stateTimer = nil
 				d.reshoot = nil
@@ -2036,9 +2058,7 @@ function mod:Death2AI(npc)
 			mod:SpritePlay(sprite, "HorseLaunch")
 		end
 		
-		if sprite:IsFinished("HorseLaunch") then
-			d.phase2 = true
-			
+		if sprite:IsFinished("HorseLaunch") then		
 			local spawnVec = Vector(npc.Position.X+10*d.launchDir,npc.Position.Y) 
 			d.horseNpc = Isaac.Spawn(d2.horse.id, d2.horse.variant, 0, spawnVec, Vector(0,0), npc)
 			d.horseNpc:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
@@ -2053,6 +2073,7 @@ function mod:Death2AI(npc)
 		end
 		
 		if sprite:IsFinished("HorseLaunch2") then
+			d.phase2 = true
 			d.P2text = "P2_"
 			d.idleState = "realghost"
 			d.substate = nil
@@ -2067,7 +2088,7 @@ function mod:Death2AI(npc)
 		--invisible
 		if d.state == "invisible" then
 			if not d.stateTimer then
-				d.stateTimer = 50
+				d.stateTimer = 20
 			elseif d.stateTimer <= 0 then
 				d.stateTimer = nil
 				d.state = "waiting"
@@ -2082,7 +2103,7 @@ function mod:Death2AI(npc)
 		--waiting (for horse phase to end)
 		if d.state == "waiting" then
 			if d.horseNpc then
-				if d.horseNpc:GetData().substate == 2 then
+				if d.horseNpc:GetData().substate == 2 or not d.horseNpc:Exists() then
 					d.horseWait = true
 				end
 			else
@@ -2180,6 +2201,18 @@ function mod:Death2AI(npc)
 				
 			elseif d.ghoststate == 1 then
 				if sprite:IsFinished("P2_Appear") then
+					--bonus ghost!!!
+					d.ghostPos = Isaac.GetRandomPosition()
+					local distance = 0
+					
+					while distance < d2.ghost.ghostDistMin do
+						d.ghostPos = Isaac.GetRandomPosition()
+						distance = math.sqrt(((target.Position.X-d.ghostPos.X)^2)+((target.Position.Y-d.ghostPos.Y)^2))
+					end
+					local ghost = Isaac.Spawn(d2.ghost.id, d2.ghost.variant, 0, d.ghostPos, Vector(0,0), npc)
+					ghost:GetData().parentNpc = npc
+					ghost:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
+				
 					d.moveWait = nil
 					d.atkCount = 0
 					d.ghoststate = 2
@@ -2216,11 +2249,11 @@ function mod:Death2AI(npc)
 					elseif d.atkCount == 1 then
 						d.state = "slowcloud"
 						d.atkCount = 3
-						d.attackTimer = 40
+						d.attackTimer = d2.bal.postGhostPause
 					elseif d.atkCount == 2 then
 						d.state = "slash"
 						d.atkCount = 3
-						d.attackTimer = 40
+						d.attackTimer = d2.bal.postGhostPause
 					elseif d.atkCount == 3 then
 						d.atkCount = 4
 					end
@@ -2275,6 +2308,8 @@ function mod:Death2AI(npc)
 			d.substate = 1
 		else
 			if d.hasParent and not d.parentNpc:Exists() then
+				npc:Kill()
+			elseif not d.hasParent and d.once then
 				npc:Kill()
 			end
 			--Going offscreen
@@ -2343,9 +2378,9 @@ function mod:Death2AI(npc)
 					d.scytheTimer = d.scytheRate	
 					
 					local lightPause = (d.horseTimer*0.03)*20
-					local scythe = Isaac.Spawn(d2.scythe.id, d2.scythe.variant, 0, Vector(npc.Position.X-(d.dir*20),npc.Position.Y), Vector(d.dir*-3,mod:RandomInt(-4,4)), npc)
+					local scythe = Isaac.Spawn(d2.scythe.id, d2.scythe.variant, 0, Vector(npc.Position.X-(d.dir*20),npc.Position.Y), Vector(d.dir*-3,mod:RandomInt(-d2.horse.gasSpread,d2.horse.gasSpread)), npc)
 					scythe:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
-					scythe:GetData().gasPause = lightPause-10
+					scythe:GetData().gasPause = lightPause-10+d2.horse.gasPause
 					scythe:GetData().scytheSpeed = d2.scythe.accel
 					scythe.GridCollisionClass = GridCollisionClass.COLLISION_NONE
 					scythe.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
@@ -2358,7 +2393,9 @@ function mod:Death2AI(npc)
 					d.scytheTimer = nil
 					d.steerPower = nil
 					d.horseAccel = nil
+					npc.Velocity = Vector(0,0)
 					d.dir = d.dir*-1
+					d.once = true
 					d.substate = 2
 				end
 			end
@@ -2417,7 +2454,7 @@ function mod:Death2AI(npc)
 			if npc.HitPoints < d.lastHealth then
 				if target:ToPlayer() and d.hasParent then
 					--if d.parentNpc.HitPoints > target:ToPlayer().Damage*2 then
-						local p = d.parentNpc.HitPoints / (d.parentNpc.MaxHitPoints*d2.bal.phase2Health+100)
+						local p = d.parentNpc.HitPoints / (d.parentNpc.MaxHitPoints*d2.bal.phase2Health+d2.ghost.bonusArmor)
 						if p < 0.15 then p = 0.15 end
 						local pp = p*target:ToPlayer().Damage
 						d.parentNpc:TakeDamage(pp, 0, EntityRef(target), 0)
@@ -2503,6 +2540,8 @@ function mod:Death2AI(npc)
 					d.substate = 1
 				elseif sprite:IsEventTriggered("Target") then
 					d.shootVec = (target.Position - npc.Position):Normalized()*d2.ghost.boneAttackSpeed
+					d.shootVec = d.shootVec + target.Velocity:Resized(d2.ghost.boneCurve)
+					d.shootVec = d.shootVec:Normalized()*d2.ghost.boneAttackSpeed
 				elseif sprite:IsEventTriggered("Shoot") then
 					if not d.shootVec then d.shootVec = (target.Position - npc.Position):Normalized()*d2.ghost.boneAttackSpeed end
 					if npc.Position.X+d.shootVec.X < npc.Position.X then sprite.FlipX = true
@@ -2527,6 +2566,8 @@ function mod:Death2AI(npc)
 					d.Firing = true
 				elseif sprite:IsEventTriggered("Stop") then
 					d.Firing = false
+				elseif sprite:IsEventTriggered("Target") then
+					d.lastPos = target.Position
 				end
 				
 				if not sprite:IsPlaying("G_Attack3") and not sprite:IsPlaying("G_Attack3B") then
@@ -2544,16 +2585,22 @@ function mod:Death2AI(npc)
 					
 					local shootVec
 					local distance = math.sqrt(((target.Position.X-d.lastPos.X)^2)+((target.Position.Y-d.lastPos.Y)^2))
-					if distance < 100 then 
+					if distance < 200 then 
 						shootVec = (target.Position - npc.Position):Normalized()*d2.ghost.fireAttackSpeed
+						shootVec = shootVec + target.Velocity:Resized(d2.ghost.fireCurve)
+						shootVec = shootVec:Normalized()*d2.ghost.fireAttackSpeed
 						d.lastPos = target.Position
 					else 
 						shootVec = (d.lastPos - npc.Position):Normalized()*d2.ghost.fireAttackSpeed 
 					end
 					
-					local fire = Isaac.Spawn(9, ProjectileVariant.PROJECTILE_FIRE,1,npc.Position, shootVec:Rotated(mod:RandomInt(-5,5)), npc):ToProjectile()
+					local posOffset = 20
+					local fire = Isaac.Spawn(9, ProjectileVariant.PROJECTILE_FIRE,1,npc.Position-Vector(0,posOffset), shootVec:Rotated(math.random(-2,2)), npc):ToProjectile()
 					fire.Height = -60
 					fire:SetColor(d.floorColor, 100, 1, false, false)
+					fire.DepthOffset = posOffset
+					fire.SpriteOffset = Vector(0,10)
+					fire.FallingAccel = 0.12
 				end
 				npc.Friction = d2.bal.attackFriction
 			end
@@ -2670,7 +2717,9 @@ function mod:Death2AI(npc)
 				
 				local slowColor = Color.Lerp(d.poofColor,Color(0,0,0),0.5)
 				
-				target:AddSlowing(EntityRef(npc), d2.cloud.slowTime, slowValue, slowColor)
+				if not (target:GetEntityFlags() & EntityFlag.FLAG_SLOW == EntityFlag.FLAG_SLOW) then
+					target:AddSlowing(EntityRef(npc), d2.cloud.slowTime, slowValue, slowColor)
+				end
 				npc:PlaySound(SoundEffect.SOUND_SUMMON_POOF, 1, 0, false, 1)
 				d.touched = true
 			end
@@ -2685,12 +2734,12 @@ function mod:Death2AI(npc)
 		elseif d.stateTimer > 0 then
 			if d.stateTimer > 50 and not d.touched then
 				local distance = math.sqrt(((target.Position.X-d.lastPos.X)^2)+((target.Position.Y-d.lastPos.Y)^2))
-				if distance < 100 then 
+				if distance < 200 then 
 					d.lastPos = target.Position
+					mod:RubberbandRun(npc, d, target.Position, d2.cloud.accel*(d.stateTimer/80), d2.cloud.velocity)
 				else
 					d.touched = true
 				end
-				mod:RubberbandRun(npc, d, target.Position, d2.cloud.accel*(d.stateTimer/80), d2.cloud.velocity)
 			end
 			
 			d.stateTimer = d.stateTimer - 1 
@@ -2710,10 +2759,15 @@ mod:AddCallback(ModCallbacks.MC_POST_ENTITY_REMOVE, function(_, npc)
 		return
 	end
 
-	if npc:IsDead() and not game:IsPaused() then
-        local dice = mod:RandomInt(2)
-		if dice == 1 then
-			local trinket = Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, TrinketType.TRINKET_YOUR_SOUL, npc.Position, Vector(0,0), npc)
+	local room = game:GetRoom()
+	
+	--drop trinket
+	if room:GetType() == RoomType.ROOM_BOSS then
+		if npc:IsDead() and not game:IsPaused() then
+			local dice = mod:RandomInt(2)
+			if dice == 1 then
+				local trinket = Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, TrinketType.TRINKET_YOUR_SOUL, npc.Position, Vector(0,0), npc)
+			end
 		end
 	end
 end)
@@ -2783,7 +2837,7 @@ function mod:PurpleBoneTrail(npc)
 			else
 			--GEHENNA COLORS
 			d.floorColor = Color(1,1,1,1)
-			d.floorColor:SetColorize(4,0,0,1)
+			d.floorColor:SetColorize(4,0.5,0,1)
 			end
 			d.init = true
 		end
@@ -2983,8 +3037,28 @@ mod:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, function(_, npc,amount,flag,sou
 		end
 	end
 	
+	--death under phase 2
+	if npc.Type == d2.id and npc.Variant == d2.variant then
+		if not npc:GetData().phase2 and npc.HitPoints <= npc.MaxHitPoints * d2.bal.phase2Health then
+			if npc:GetData().armorDamage ~= nil then
+				npc:GetData().armorDamage = nil
+				return true
+			else
+				amount = amount * 0.1
+				npc:GetData().armorDamage = amount
+				npc:TakeDamage(npc:GetData().armorDamage, 0, source, 0)
+				return false
+			end
+		end
+	end
+	
 	--death horse
 	if npc.Type == d2.horse.id and npc.Variant == d2.horse.variant then
+		return false
+	end
+	
+	--death scythe
+	if npc.Type == d2.scythe.id and npc.Variant == d2.scythe.variant then
 		return false
 	end
 	
@@ -3058,7 +3132,12 @@ Althorsemen.Tumorcube = {
 		stompRange = 90,
 		tumorMax1 = 5,
 		tumorMax2 = 7,
-		tumorMax3 = 15
+		tumorMax3 = 15,
+	},
+	tears = {
+		flat = 0.10, --flat bonus, applied per wad
+		multiplier = 0.12, --multiplier, applied after flat bonus
+		multiplierPlus = 0.07 --how much the multiplier increases per wad
 	}
 }
 
@@ -3078,7 +3157,10 @@ FamiliarVariant.TUMOR_NUGGET = Isaac.GetEntityVariantByName("Tumor Nugget")
 function mod:CacheUpdate(player, flag)
     if flag == CacheFlag.CACHE_FAMILIARS then
 		local boxOfFriends = player:GetEffects():GetCollectibleEffectNum(CollectibleType.COLLECTIBLE_BOX_OF_FRIENDS)
-		local tumorNum = player:GetCollectibleNum(tc.id) + boxOfFriends
+		local tumorNum = player:GetCollectibleNum(tc.id)
+		if tumorNum > 0 then
+			tumorNum = player:GetCollectibleNum(tc.id) + boxOfFriends
+		end
 		local tumorSub = tumorNum
 		local tumorFull = 0
 		while tumorSub > 4 do
@@ -3114,12 +3196,13 @@ function mod:CacheUpdate(player, flag)
 	if flag == CacheFlag.CACHE_FIREDELAY and tc.tearsUp then
 		if player:HasCollectible(tc.id) then
 			local tumorNum = player:GetCollectibleNum(tc.id, true)
-			local tearsUp = 1.14
-			local tearAmp = 0
-			if tumorNum == 2 then tearAmp = 0.08
-			elseif tumorNum == 3 then tearAmp = 0.14
-			elseif tumorNum >= 4 then tearAmp = 0.18 end
-			local tearCalculate = TearsUp(player.MaxFireDelay, tearsUp + tearAmp, true)
+			
+			local tearsFlat = tumorNum * tc.tears.flat
+			local tearsMult = 1 + tc.tears.multiplier
+			local tearsAmp = (tumorNum-1)*tc.tears.multiplierPlus
+			
+			local tearCalculate = TearsUp(player.MaxFireDelay, tearsFlat, false)
+			tearCalculate = TearsUp(tearCalculate, tearsMult+tearsAmp, true)
 			player.MaxFireDelay = tearCalculate
 		end
 	end
@@ -4006,13 +4089,13 @@ end
 if HPBars then
 	f2id = tostring(f2.id) .. "." .. tostring(f2.variant)
 	w2id = tostring(w2.id) .. "." .. tostring(w2.variant)
+	d2id = tostring(d2.id) .. "." .. tostring(d2.variant)
 
     HPBars.BossDefinitions[f2id] = {
         sprite = "gfx/bosses/famine2/small_famine_head.png",
 		conditionalSprites = {
 			{"isStageType","gfx/bosses/famine2/small_famine_head_dross.png", {StageType.STAGETYPE_REPENTANCE_B}}
 		},
-        offset = Vector(-4, 0)
     }
 	HPBars.BossDefinitions[w2id] = {
         sprite = "gfx/bosses/war2/small_war_head.png",
@@ -4020,7 +4103,12 @@ if HPBars then
 			{"animationNameStartsWith","gfx/bosses/war2/small_war_head_fire.png", {"P2"}},
 			{"isStageType","gfx/bosses/war2/small_war_head_ashpit.png", {StageType.STAGETYPE_REPENTANCE_B}},
 		},
-        offset = Vector(-4, 0)
+    }
+	HPBars.BossDefinitions[d2id] = {
+        sprite = "gfx/bosses/death2/small_death_head.png",
+		conditionalSprites = {
+			{"isStageType","gfx/bosses/death2/small_death_head_gehenna.png", {StageType.STAGETYPE_REPENTANCE_B}},
+		},
     }
 end
 

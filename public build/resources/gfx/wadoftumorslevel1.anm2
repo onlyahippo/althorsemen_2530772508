@@ -1,5 +1,5 @@
 <AnimatedActor>
-	<Info CreatedBy="robot" CreatedOn="7/8/2021 6:04:01 PM" Version="115" Fps="60"/>
+	<Info CreatedBy="robot" CreatedOn="11/26/2021 10:07:21 PM" Version="117" Fps="60"/>
 	<Content>
 		<Spritesheets>
 			<Spritesheet Path="familiar/familiar_wadoftumorslevel1.png" Id="0"/>
@@ -10,7 +10,9 @@
 			<Layer Name="blood" Id="1" SpritesheetId="1"/>
 		</Layers>
 		<Nulls/>
-		<Events/>
+		<Events>
+			<Event Name="Drip" Id="0"/>
+		</Events>
 	</Content>
 	<Animations DefaultAnimation="Idle">
 		<Animation Name="Idle" FrameNum="1" Loop="false">
@@ -56,7 +58,9 @@
 				</LayerAnimation>
 			</LayerAnimations>
 			<NullAnimations/>
-			<Triggers/>
+			<Triggers>
+				<Trigger EventId="0" AtFrame="5"/>
+			</Triggers>
 		</Animation>
 	</Animations>
 </AnimatedActor>

@@ -32,9 +32,10 @@ TotallyNotIlias - Sprites (War)
 hippocrunchy - Design, Sprites, Implementation
 jubbalub - Tumor Item Concept
 NotYourSagittarius - Original Character Design</description>
-    <version>1.12</version>
+    <version>1.15</version>
     <visibility>Public</visibility>
     <tag id="Lua"/>
     <tag id="Items"/>
+    <tag id="Rooms"/>
     <tag id="Bosses"/>
 </metadata>
