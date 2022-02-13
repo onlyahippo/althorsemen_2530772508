@@ -1,5 +1,5 @@
 <AnimatedActor>
-	<Info CreatedBy="trtv" CreatedOn="12/7/2021 3:09:26 PM" Version="64" Fps="50"/>
+	<Info CreatedBy="trtv" CreatedOn="2/2/2022 10:27:30 PM" Version="65" Fps="50"/>
 	<Content>
 		<Spritesheets>
 			<Spritesheet Path="bosses/war2/monster_army.png" Id="0"/>

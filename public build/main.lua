@@ -5,7 +5,7 @@ local sfx = SFXManager()
 local rng = RNG()
 
 local firstLoaded = true
-local loadText = "Alt Horsemen v4.03 (+Death)"
+local loadText = "Alt Horsemen v4.15 (+Death)"
 local loadTextFailed = "Alt Horsemen load failed (STAGEAPI Disabled)"
 
 ------------------------BOSSES------------------------
@@ -1480,7 +1480,7 @@ Althorsemen.Death2 = {
 		slashCircle = 60,
 		slashTime = 7,
 		boneShotDist = 18,
-		boneShotSpeed = 8.5,
+		boneShotSpeed = 9,
 		boneShotAmount = 6,
 		boneShotAmount2 = 10,
 		phase2Health = 0.4,
@@ -2309,7 +2309,7 @@ function mod:Death2AI(npc)
 		else
 			if d.hasParent and not d.parentNpc:Exists() then
 				npc:Kill()
-			elseif not d.hasParent and d.once then
+			elseif not d.hasParent and room:IsClear() then
 				npc:Kill()
 			end
 			--Going offscreen
@@ -2395,7 +2395,6 @@ function mod:Death2AI(npc)
 					d.horseAccel = nil
 					npc.Velocity = Vector(0,0)
 					d.dir = d.dir*-1
-					d.once = true
 					d.substate = 2
 				end
 			end
@@ -2849,6 +2848,47 @@ function mod:PurpleBoneTrail(npc)
 	end
 end
 mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.PurpleBoneTrail, EntityType.ENTITY_BIG_BONY)
+
+--PESTILENCE2--------------------
+
+Althorsemen.Pestilence2 = {
+	name = "Tainted Pestilence",
+	--nameAlt = "Tainted Pestilence Alt",
+	portrait = "gfx/bosses/pestilence2/portrait_pestilence2.png",
+	--portraitAlt = "gfx/bosses/pestilence2/portrait_pestilence2_mortis.png",
+	bossName = "gfx/bosses/pestilence2/bossname_pestilence2.png",
+	weight = 1,
+	weightAlt = 1,
+	id = 640,
+	variant = 101,
+	bal = {
+		idleWaitMin = 20,
+		idleWaitMax = 50,
+		moveWaitMin = 5,
+		moveWaitMax = 40,
+		attackFriction = 0.85,
+		speed = 1.2,
+	}
+}
+local p2 = Althorsemen.Pestilence2
+
+function mod:Pestilence2AI(npc)
+	local sprite = npc:GetSprite()
+	local d = npc:GetData()
+	local target = npc:GetPlayerTarget()
+	local level = game:GetLevel()
+	local room = game:GetRoom()
+	
+	if not d.init then
+		d.init = true
+		--print("spawned")
+		
+		--local cord = Isaac.Spawn(865, 10, 0, npc.Position, Vector(0,0), npc)
+		--cord.Parent = npc
+		--cord.Target = target
+	end
+end
+mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.Pestilence2AI, p2.id)
 
 ------------------------COOL FUNCTIONS------------------------
 --------------------------------------------------------------
@@ -3784,8 +3824,10 @@ local function FloorVerify()
 			bossID = f2.name
 		elseif (stage == LevelStage.STAGE2_1 or stage == LevelStage.STAGE2_2) and not bossSeen.w2 then
 			bossID = w2.name
-		elseif (stage == LevelStage.STAGE3_1 or stage == LevelStage.STAGE3_2) and not bossSeen.d2 then
+		elseif (stage == LevelStage.STAGE3_1) and not bossSeen.d2 then
 			bossID = d2.name
+		--[[elseif (stage == LevelStage.STAGE4_1) and not bossSeen.p2 then
+			bossID = p2.name]]
 		end
 	--alt
 	elseif (stageType ~= StageType.STAGETYPE_REPENTANCE and stageType == StageType.STAGETYPE_REPENTANCE_B) then
@@ -3793,17 +3835,12 @@ local function FloorVerify()
 			bossID = f2.nameAlt
 		elseif (stage == LevelStage.STAGE2_1 or stage == LevelStage.STAGE2_2) and not bossSeen.w2 then
 			bossID = w2.nameAlt
-		elseif (stage == LevelStage.STAGE3_1 or stage == LevelStage.STAGE3_2) and not bossSeen.d2 then
+		elseif (stage == LevelStage.STAGE3_1) and not bossSeen.d2 then
 			bossID = d2.nameAlt
+		--[[elseif (stage == LevelStage.STAGE4_1) and not bossSeen.p2 then
+			bossID = p2.name]]
 		end
 	end
-	
-	--[[
-	if (stageType == StageType.STAGETYPE_REPENTANCE or stageType == StageType.STAGETYPE_REPENTANCE_B)
-	and (stage == LevelStage.STAGE4_1) then
-		bossID = "Tainted Pestilence"
-	end
-	]]
 	
 	return bossID
 end
@@ -3969,7 +4006,15 @@ if StageAPI and firstLoaded then
 			Bossname = d2.bossName,
 			Weight = d2.weightAlt,
 			Rooms = StageAPI.RoomsList("Death Alt Rooms", require("resources.luarooms.boss_death2_alt")),
-		})
+		}),
+		--[[p2 = StageAPI.AddBossData(p2.name, {
+			Name = p2.name,
+			Portrait = p2.portrait,
+			Offset = Vector(0,-15),
+			Bossname = p2.bossName,
+			Weight = p2.weightAlt,
+			Rooms = StageAPI.RoomsList("Pestilence Rooms", require("resources.luarooms.boss_pestilence")),
+		})]]
 	}
 	
 	StageAPI.AddBossToBaseFloorPool({BossID = f2.name},LevelStage.STAGE1_1,StageType.STAGETYPE_REPENTANCE)
@@ -3978,6 +4023,7 @@ if StageAPI and firstLoaded then
 	StageAPI.AddBossToBaseFloorPool({BossID = w2.nameAlt},LevelStage.STAGE2_1,StageType.STAGETYPE_REPENTANCE_B)
 	StageAPI.AddBossToBaseFloorPool({BossID = d2.name},LevelStage.STAGE3_1,StageType.STAGETYPE_REPENTANCE)
 	StageAPI.AddBossToBaseFloorPool({BossID = d2.nameAlt},LevelStage.STAGE3_1,StageType.STAGETYPE_REPENTANCE_B)
+	--StageAPI.AddBossToBaseFloorPool({BossID = p2.name},LevelStage.STAGE4_1,StageType.STAGETYPE_REPENTANCE)
 end
 
 --New Game
@@ -4045,7 +4091,7 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function(_)
 					if (IsMirror()) then
 						local tumorChance = mod:RandomInt(2)
 						--print(tumorChance)
-						if (tumorChance == 0) then
+						if (tumorChance == 1) then
 							doHorseDrop = true
 						end
 					else
@@ -4072,6 +4118,15 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function(_)
 					
 					StageAPI.GetBossData(d2.name).Weight = 0
 					StageAPI.GetBossData(d2.nameAlt).Weight = 0
+					break
+				--PESTILENCE
+				elseif entity.Type == p2.id and entity.Variant == p2.variant then
+					bossGet = p2.name
+					bossSeen.p2 = true
+					doHorseDrop = true
+					
+					StageAPI.GetBossData(p2.name).Weight = 0
+					StageAPI.GetBossData(p2.nameAlt).Weight = 0
 					break
 				end
 			end

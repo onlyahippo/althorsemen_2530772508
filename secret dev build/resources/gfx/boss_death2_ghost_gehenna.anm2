@@ -1,5 +1,5 @@
 <AnimatedActor>
-	<Info CreatedBy="robot" CreatedOn="1/24/2022 6:37:22 PM" Version="571" Fps="37"/>
+	<Info CreatedBy="robot" CreatedOn="1/26/2022 10:44:45 AM" Version="572" Fps="37"/>
 	<Content>
 		<Spritesheets>
 			<Spritesheet Path="bosses\death2\boss_death2_gehenna.png" Id="0"/>
@@ -395,7 +395,7 @@
 			<Triggers>
 				<Trigger EventId="2" AtFrame="21"/>
 				<Trigger EventId="0" AtFrame="25"/>
-				<Trigger EventId="1" AtFrame="57"/>
+				<Trigger EventId="1" AtFrame="54"/>
 			</Triggers>
 		</Animation>
 		<Animation Name="G_Phase" FrameNum="10" Loop="false">
@@ -501,7 +501,7 @@
 			<Triggers>
 				<Trigger EventId="2" AtFrame="21"/>
 				<Trigger EventId="0" AtFrame="25"/>
-				<Trigger EventId="1" AtFrame="57"/>
+				<Trigger EventId="1" AtFrame="54"/>
 			</Triggers>
 		</Animation>
 	</Animations>
