@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <rooms>
-	<room variant="31000" name="(AH) - dirty boys" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31000" name="(AH) - dirty boys" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-19T21:59+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="True" x="6" y="7"/>
@@ -10,9 +10,6 @@
 		</spawn>
 		<spawn x="1" y="0">
 			<entity type="651" variant="101" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="3" y="0">
-			<entity type="651" variant="101" subtype="10" weight="1.0"/>
 		</spawn>
 		<spawn x="5" y="0">
 			<entity type="1500" variant="0" subtype="0" weight="1.0"/>
@@ -25,9 +22,6 @@
 		</spawn>
 		<spawn x="0" y="1">
 			<entity type="651" variant="101" subtype="10" weight="1.0"/>
-		</spawn>
-		<spawn x="3" y="1">
-			<entity type="969" variant="9" subtype="0" weight="1.0"/>
 		</spawn>
 		<spawn x="12" y="1">
 			<entity type="651" variant="101" subtype="10" weight="1.0"/>
@@ -56,9 +50,6 @@
 		<spawn x="0" y="5">
 			<entity type="651" variant="101" subtype="10" weight="1.0"/>
 		</spawn>
-		<spawn x="9" y="5">
-			<entity type="969" variant="9" subtype="0" weight="1.0"/>
-		</spawn>
 		<spawn x="12" y="5">
 			<entity type="651" variant="101" subtype="10" weight="1.0"/>
 		</spawn>
@@ -71,9 +62,6 @@
 		<spawn x="7" y="6">
 			<entity type="1500" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
-		<spawn x="9" y="6">
-			<entity type="651" variant="101" subtype="10" weight="1.0"/>
-		</spawn>
 		<spawn x="11" y="6">
 			<entity type="651" variant="101" subtype="0" weight="1.0"/>
 		</spawn>
@@ -81,7 +69,7 @@
 			<entity type="969" variant="9" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31001" name="(AH) - antibirth closet" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-08T02:35+00:00">
+	<room variant="31001" name="(AH) - antibirth closet" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-19T21:59+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="False" x="6" y="-1"/>
 		<door exists="False" x="6" y="7"/>
@@ -303,7 +291,7 @@
 			<entity type="3000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31002" name="(AH) -  rock em n cock em" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31002" name="(AH) -  rock em n cock em" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-19T21:59+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="False" x="6" y="-1"/>
 		<door exists="True" x="6" y="7"/>
@@ -417,7 +405,7 @@
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31003" name="(AH) -  coalesce" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31003" name="(AH) -  coalesce" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-19T21:59+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="True" x="6" y="7"/>
@@ -510,7 +498,7 @@
 			<entity type="33" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31004" name="(AH) -  pit boss" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31004" name="(AH) -  pit boss" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-19T21:59+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="True" x="6" y="7"/>
@@ -520,9 +508,6 @@
 		</spawn>
 		<spawn x="1" y="0">
 			<entity type="651" variant="101" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="12" y="0">
-			<entity type="651" variant="101" subtype="10" weight="1.0"/>
 		</spawn>
 		<spawn x="1" y="1">
 			<entity type="969" variant="9" subtype="0" weight="1.0"/>
@@ -541,9 +526,6 @@
 		</spawn>
 		<spawn x="8" y="1">
 			<entity type="3000" variant="0" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="12" y="1">
-			<entity type="969" variant="9" subtype="0" weight="1.0"/>
 		</spawn>
 		<spawn x="4" y="2">
 			<entity type="1500" variant="0" subtype="0" weight="1.0"/>
@@ -590,9 +572,6 @@
 		<spawn x="8" y="4">
 			<entity type="1500" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
-		<spawn x="0" y="5">
-			<entity type="969" variant="9" subtype="0" weight="1.0"/>
-		</spawn>
 		<spawn x="4" y="5">
 			<entity type="3000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
@@ -611,9 +590,6 @@
 		<spawn x="11" y="5">
 			<entity type="969" variant="9" subtype="0" weight="1.0"/>
 		</spawn>
-		<spawn x="0" y="6">
-			<entity type="651" variant="101" subtype="10" weight="1.0"/>
-		</spawn>
 		<spawn x="11" y="6">
 			<entity type="651" variant="101" subtype="0" weight="1.0"/>
 		</spawn>
@@ -621,7 +597,7 @@
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31005" name="(AH) -  commence kill squad" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31005" name="(AH) -  commence kill squad" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-19T21:59+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="True" x="6" y="7"/>
@@ -631,12 +607,6 @@
 		</spawn>
 		<spawn x="1" y="0">
 			<entity type="651" variant="101" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="2" y="0">
-			<entity type="969" variant="9" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="3" y="0">
-			<entity type="651" variant="101" subtype="10" weight="1.0"/>
 		</spawn>
 		<spawn x="5" y="0">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
@@ -707,12 +677,6 @@
 		<spawn x="7" y="6">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
-		<spawn x="9" y="6">
-			<entity type="651" variant="101" subtype="10" weight="1.0"/>
-		</spawn>
-		<spawn x="10" y="6">
-			<entity type="969" variant="9" subtype="0" weight="1.0"/>
-		</spawn>
 		<spawn x="11" y="6">
 			<entity type="651" variant="101" subtype="0" weight="1.0"/>
 		</spawn>
@@ -720,7 +684,7 @@
 			<entity type="33" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31006" name="(AH) -  rock me sideways" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31006" name="(AH) -  rock me sideways" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-19T21:59+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="True" x="6" y="7"/>
@@ -849,7 +813,7 @@
 			<entity type="1940" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31007" name="(AH) -  yearn to burn" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31007" name="(AH) -  yearn to burn" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-19T21:59+00:00">
 		<door exists="False" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="True" x="6" y="7"/>
@@ -987,7 +951,7 @@
 			<entity type="3000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31008" name="(AH) -  hallway of fun and explosions" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31008" name="(AH) -  hallway of fun and explosions" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-19T21:59+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="False" x="6" y="-1"/>
 		<door exists="False" x="6" y="7"/>
@@ -1140,7 +1104,7 @@
 			<entity type="3000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31009" name="(AH) - the trenches" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-08T02:35+00:00">
+	<room variant="31009" name="(AH) - the trenches" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-19T21:59+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="True" x="6" y="7"/>
@@ -1329,7 +1293,7 @@
 			<entity type="651" variant="101" subtype="3" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31010" name="(AH) - spring cleaning" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31010" name="(AH) - spring cleaning" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-19T21:59+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="True" x="6" y="7"/>
@@ -1339,9 +1303,6 @@
 		</spawn>
 		<spawn x="1" y="0">
 			<entity type="1500" variant="0" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="7" y="0">
-			<entity type="651" variant="101" subtype="10" weight="1.0"/>
 		</spawn>
 		<spawn x="10" y="0">
 			<entity type="1940" variant="0" subtype="0" weight="1.0"/>
@@ -1363,9 +1324,6 @@
 		</spawn>
 		<spawn x="3" y="1">
 			<entity type="1500" variant="0" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="7" y="1">
-			<entity type="969" variant="9" subtype="0" weight="1.0"/>
 		</spawn>
 		<spawn x="9" y="1">
 			<entity type="1500" variant="0" subtype="0" weight="1.0"/>
@@ -1436,9 +1394,6 @@
 		<spawn x="3" y="5">
 			<entity type="1500" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
-		<spawn x="5" y="5">
-			<entity type="969" variant="9" subtype="0" weight="1.0"/>
-		</spawn>
 		<spawn x="9" y="5">
 			<entity type="1500" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
@@ -1460,9 +1415,6 @@
 		<spawn x="2" y="6">
 			<entity type="1940" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
-		<spawn x="5" y="6">
-			<entity type="651" variant="101" subtype="10" weight="1.0"/>
-		</spawn>
 		<spawn x="11" y="6">
 			<entity type="1500" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
@@ -1470,7 +1422,7 @@
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31011" name="(AH) - surprise hug attack" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31011" name="(AH) - surprise hug attack" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-19T21:59+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="True" x="6" y="7"/>
@@ -1546,9 +1498,6 @@
 		</spawn>
 		<spawn x="12" y="2">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="1" y="3">
-			<entity type="651" variant="101" subtype="0" weight="1.0"/>
 		</spawn>
 		<spawn x="3" y="3">
 			<entity type="4500" variant="10" subtype="0" weight="1.0"/>
@@ -1641,7 +1590,7 @@
 			<entity type="3000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31012" name="(AH) - passage" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31012" name="(AH) - passage" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-19T21:59+00:00">
 		<door exists="False" x="-1" y="3"/>
 		<door exists="False" x="6" y="-1"/>
 		<door exists="False" x="6" y="7"/>
@@ -1872,7 +1821,7 @@
 			<entity type="3000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31013" name="(AH) - bear cage" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31013" name="(AH) - bear cage" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-19T21:59+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="False" x="6" y="-1"/>
 		<door exists="False" x="6" y="7"/>
@@ -1971,7 +1920,7 @@
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31014" name="(AH) - we like to play these games" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31014" name="(AH) - we like to play these games" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-19T21:59+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="False" x="6" y="7"/>
@@ -2095,14 +2044,11 @@
 			<entity type="1001" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31015" name="(AH) - corridor of war" type="1" subtype="0" shape="7" width="26" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31015" name="(AH) - corridor of war" type="1" subtype="0" shape="7" width="26" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-19T21:59+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="26" y="3"/>
 		<spawn x="1" y="2">
 			<entity type="651" variant="101" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="3" y="2">
-			<entity type="651" variant="101" subtype="10" weight="1.0"/>
 		</spawn>
 		<spawn x="4" y="2">
 			<entity type="1940" variant="0" subtype="0" weight="1.0"/>
@@ -2113,9 +2059,6 @@
 		<spawn x="16" y="2">
 			<entity type="1940" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
-		<spawn x="22" y="2">
-			<entity type="651" variant="101" subtype="10" weight="1.0"/>
-		</spawn>
 		<spawn x="24" y="2">
 			<entity type="651" variant="101" subtype="0" weight="1.0"/>
 		</spawn>
@@ -2123,10 +2066,7 @@
 			<entity type="969" variant="9" subtype="0" weight="1.0"/>
 		</spawn>
 		<spawn x="2" y="3">
-			<entity type="651" variant="101" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="3" y="3">
-			<entity type="969" variant="9" subtype="0" weight="1.0"/>
+			<entity type="651" variant="101" subtype="10" weight="1.0"/>
 		</spawn>
 		<spawn x="4" y="3">
 			<entity type="1002" variant="0" subtype="0" weight="1.0"/>
@@ -2146,20 +2086,14 @@
 		<spawn x="21" y="3">
 			<entity type="1002" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
-		<spawn x="22" y="3">
-			<entity type="969" variant="9" subtype="0" weight="1.0"/>
-		</spawn>
 		<spawn x="23" y="3">
-			<entity type="651" variant="101" subtype="0" weight="1.0"/>
+			<entity type="651" variant="101" subtype="10" weight="1.0"/>
 		</spawn>
 		<spawn x="24" y="3">
 			<entity type="969" variant="9" subtype="0" weight="1.0"/>
 		</spawn>
 		<spawn x="1" y="4">
 			<entity type="651" variant="101" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="3" y="4">
-			<entity type="651" variant="101" subtype="10" weight="1.0"/>
 		</spawn>
 		<spawn x="9" y="4">
 			<entity type="1940" variant="0" subtype="0" weight="1.0"/>
@@ -2170,14 +2104,11 @@
 		<spawn x="21" y="4">
 			<entity type="1940" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
-		<spawn x="22" y="4">
-			<entity type="651" variant="101" subtype="10" weight="1.0"/>
-		</spawn>
 		<spawn x="24" y="4">
 			<entity type="651" variant="101" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31016" name="(AH) - elaborate set piece" type="1" subtype="0" shape="4" width="13" height="14" difficulty="5" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31016" name="(AH) - elaborate set piece" type="1" subtype="0" shape="4" width="13" height="14" difficulty="5" weight="1.0" lastTestTime="2022-02-19T21:59+00:00">
 		<door exists="False" x="-1" y="3"/>
 		<door exists="True" x="-1" y="10"/>
 		<door exists="False" x="6" y="-1"/>
@@ -2575,7 +2506,7 @@
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31017" name="(AH) - release the beast" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31017" name="(AH) - release the beast" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-19T21:59+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="False" x="6" y="7"/>
@@ -2584,16 +2515,16 @@
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 		<spawn x="2" y="0">
-			<entity type="651" variant="101" subtype="0" weight="1.0"/>
+			<entity type="651" variant="101" subtype="4" weight="1.0"/>
 		</spawn>
 		<spawn x="10" y="0">
-			<entity type="651" variant="101" subtype="0" weight="1.0"/>
+			<entity type="651" variant="101" subtype="4" weight="1.0"/>
 		</spawn>
 		<spawn x="12" y="0">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 		<spawn x="1" y="1">
-			<entity type="651" variant="101" subtype="4" weight="1.0"/>
+			<entity type="651" variant="101" subtype="10" weight="1.0"/>
 		</spawn>
 		<spawn x="2" y="1">
 			<entity type="969" variant="0" subtype="0" weight="1.0"/>
@@ -2602,16 +2533,10 @@
 			<entity type="969" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 		<spawn x="11" y="1">
-			<entity type="651" variant="101" subtype="4" weight="1.0"/>
+			<entity type="651" variant="101" subtype="10" weight="1.0"/>
 		</spawn>
 		<spawn x="12" y="1">
 			<entity type="1940" variant="0" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="0" y="2">
-			<entity type="651" variant="101" subtype="10" weight="1.0"/>
-		</spawn>
-		<spawn x="1" y="2">
-			<entity type="969" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 		<spawn x="2" y="2">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
@@ -2624,12 +2549,6 @@
 		</spawn>
 		<spawn x="10" y="2">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="11" y="2">
-			<entity type="969" variant="0" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="12" y="2">
-			<entity type="651" variant="101" subtype="10" weight="1.0"/>
 		</spawn>
 		<spawn x="4" y="3">
 			<entity type="1009" variant="0" subtype="0" weight="1.0"/>
@@ -2749,7 +2668,7 @@
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31018" name="(AH) - prison break" type="1" subtype="0" shape="4" width="13" height="14" difficulty="10" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31018" name="(AH) - prison break" type="1" subtype="0" shape="4" width="13" height="14" difficulty="10" weight="1.0" lastTestTime="2022-02-19T22:07+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="-1" y="10"/>
 		<door exists="True" x="6" y="-1"/>
@@ -2790,7 +2709,7 @@
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 		<spawn x="4" y="4">
-			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
+			<entity type="1009" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 		<spawn x="5" y="4">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
@@ -2802,7 +2721,7 @@
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 		<spawn x="8" y="4">
-			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
+			<entity type="1009" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 		<spawn x="9" y="4">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
@@ -2880,7 +2799,7 @@
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 		<spawn x="4" y="9">
-			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
+			<entity type="1009" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 		<spawn x="5" y="9">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
@@ -2892,7 +2811,7 @@
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 		<spawn x="8" y="9">
-			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
+			<entity type="1009" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 		<spawn x="9" y="9">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
@@ -2928,7 +2847,7 @@
 			<entity type="1500" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31019" name="(AH) - my friends can help" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31019" name="(AH) - my friends can help" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-19T22:07+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="True" x="6" y="7"/>
@@ -3066,7 +2985,7 @@
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31020" name="(AH) - golden idol" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31020" name="(AH) - golden idol" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-19T22:07+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="False" x="6" y="7"/>
@@ -3261,7 +3180,7 @@
 			<entity type="5" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31021" name="(AH) - don't bomb him!!!" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31021" name="(AH) - don't bomb him!!!" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-19T22:07+00:00">
 		<door exists="False" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="True" x="6" y="7"/>
@@ -3393,7 +3312,7 @@
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31022" name="(AH) - bomber boy's birthday room" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31022" name="(AH) - bomber boy's birthday room" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="0.5" lastTestTime="2022-02-19T22:07+00:00">
 		<door exists="False" x="-1" y="3"/>
 		<door exists="False" x="6" y="-1"/>
 		<door exists="True" x="6" y="7"/>
@@ -3499,12 +3418,6 @@
 		<spawn x="11" y="3">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
-		<spawn x="4" y="4">
-			<entity type="969" variant="0" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="5" y="4">
-			<entity type="651" variant="101" subtype="0" weight="1.0"/>
-		</spawn>
 		<spawn x="6" y="4">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
@@ -3526,6 +3439,9 @@
 		<spawn x="0" y="5">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
+		<spawn x="5" y="5">
+			<entity type="969" variant="0" subtype="0" weight="1.0"/>
+		</spawn>
 		<spawn x="7" y="5">
 			<entity type="651" variant="101" subtype="0" weight="1.0"/>
 		</spawn>
@@ -3538,10 +3454,7 @@
 		<spawn x="1" y="6">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
-		<spawn x="3" y="6">
-			<entity type="969" variant="0" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="4" y="6">
+		<spawn x="5" y="6">
 			<entity type="651" variant="101" subtype="0" weight="1.0"/>
 		</spawn>
 		<spawn x="7" y="6">
@@ -3557,7 +3470,7 @@
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31023" name="(AH) - yeah i'm a little funny" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31023" name="(AH) - yeah i'm a little funny" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-19T22:07+00:00">
 		<door exists="False" x="-1" y="3"/>
 		<door exists="False" x="6" y="-1"/>
 		<door exists="True" x="6" y="7"/>
@@ -3697,7 +3610,7 @@
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31024" name="(AH) - blast zone" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31024" name="(AH) - blast zone" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-19T22:07+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="True" x="6" y="7"/>
@@ -3850,7 +3763,7 @@
 			<entity type="651" variant="101" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31025" name="(AH) - quake and wake" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-08T02:35+00:00">
+	<room variant="31025" name="(AH) - quake and wake" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-19T22:07+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="True" x="6" y="7"/>
@@ -3860,9 +3773,6 @@
 		</spawn>
 		<spawn x="3" y="0">
 			<entity type="804" variant="0" subtype="3" weight="1.0"/>
-		</spawn>
-		<spawn x="7" y="0">
-			<entity type="651" variant="101" subtype="10" weight="1.0"/>
 		</spawn>
 		<spawn x="8" y="0">
 			<entity type="3000" variant="0" subtype="0" weight="1.0"/>
@@ -3885,9 +3795,6 @@
 		<spawn x="1" y="1">
 			<entity type="651" variant="101" subtype="4" weight="1.0"/>
 		</spawn>
-		<spawn x="7" y="1">
-			<entity type="969" variant="0" subtype="0" weight="1.0"/>
-		</spawn>
 		<spawn x="9" y="1">
 			<entity type="3000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
@@ -3903,23 +3810,11 @@
 		<spawn x="0" y="2">
 			<entity type="651" variant="101" subtype="10" weight="1.0"/>
 		</spawn>
-		<spawn x="5" y="2">
-			<entity type="969" variant="0" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="7" y="2">
-			<entity type="969" variant="0" subtype="0" weight="1.0"/>
-		</spawn>
 		<spawn x="12" y="2">
 			<entity type="3000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
-		<spawn x="5" y="3">
-			<entity type="651" variant="101" subtype="0" weight="1.0"/>
-		</spawn>
 		<spawn x="6" y="3">
 			<entity type="4500" variant="10" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="7" y="3">
-			<entity type="651" variant="101" subtype="0" weight="1.0"/>
 		</spawn>
 		<spawn x="0" y="4">
 			<entity type="3000" variant="0" subtype="0" weight="1.0"/>
@@ -3941,9 +3836,6 @@
 		</spawn>
 		<spawn x="3" y="5">
 			<entity type="3000" variant="0" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="5" y="5">
-			<entity type="969" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 		<spawn x="6" y="5">
 			<entity type="969" variant="0" subtype="0" weight="1.0"/>
@@ -3969,9 +3861,6 @@
 		<spawn x="4" y="6">
 			<entity type="3000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
-		<spawn x="5" y="6">
-			<entity type="651" variant="101" subtype="10" weight="1.0"/>
-		</spawn>
 		<spawn x="9" y="6">
 			<entity type="804" variant="0" subtype="1" weight="1.0"/>
 		</spawn>
@@ -3979,10 +3868,10 @@
 			<entity type="651" variant="101" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31026" name="(AH) - evacuation" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31026" name="(AH) - evacuation" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-19T22:42+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
-		<door exists="True" x="6" y="7"/>
+		<door exists="False" x="6" y="7"/>
 		<door exists="False" x="13" y="3"/>
 		<spawn x="0" y="0">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
@@ -4032,8 +3921,11 @@
 		<spawn x="12" y="1">
 			<entity type="1500" variant="0" subtype="1" weight="1.0"/>
 		</spawn>
-		<spawn x="2" y="2">
+		<spawn x="1" y="2">
 			<entity type="969" variant="9" subtype="0" weight="1.0"/>
+		</spawn>
+		<spawn x="4" y="2">
+			<entity type="651" variant="101" subtype="4" weight="1.0"/>
 		</spawn>
 		<spawn x="7" y="2">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
@@ -4048,16 +3940,10 @@
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 		<spawn x="11" y="2">
-			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
+			<entity type="1500" variant="0" subtype="1" weight="1.0"/>
 		</spawn>
-		<spawn x="2" y="3">
+		<spawn x="1" y="3">
 			<entity type="651" variant="101" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="5" y="3">
-			<entity type="651" variant="101" subtype="4" weight="1.0"/>
-		</spawn>
-		<spawn x="6" y="3">
-			<entity type="969" variant="9" subtype="0" weight="1.0"/>
 		</spawn>
 		<spawn x="7" y="3">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
@@ -4071,9 +3957,6 @@
 		<spawn x="10" y="3">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
-		<spawn x="11" y="3">
-			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
-		</spawn>
 		<spawn x="0" y="4">
 			<entity type="969" variant="9" subtype="0" weight="1.0"/>
 		</spawn>
@@ -4083,7 +3966,16 @@
 		<spawn x="3" y="4">
 			<entity type="804" variant="0" subtype="2" weight="1.0"/>
 		</spawn>
+		<spawn x="5" y="4">
+			<entity type="651" variant="101" subtype="4" weight="1.0"/>
+		</spawn>
+		<spawn x="6" y="4">
+			<entity type="969" variant="9" subtype="0" weight="1.0"/>
+		</spawn>
 		<spawn x="10" y="4">
+			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
+		</spawn>
+		<spawn x="11" y="4">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 		<spawn x="0" y="5">
@@ -4091,15 +3983,6 @@
 		</spawn>
 		<spawn x="2" y="5">
 			<entity type="1940" variant="0" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="4" y="5">
-			<entity type="969" variant="9" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="6" y="5">
-			<entity type="969" variant="9" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="7" y="5">
-			<entity type="651" variant="101" subtype="4" weight="1.0"/>
 		</spawn>
 		<spawn x="9" y="5">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
@@ -4119,11 +4002,11 @@
 		<spawn x="1" y="6">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
-		<spawn x="4" y="6">
-			<entity type="651" variant="101" subtype="4" weight="1.0"/>
-		</spawn>
-		<spawn x="5" y="6">
+		<spawn x="2" y="6">
 			<entity type="969" variant="9" subtype="0" weight="1.0"/>
+		</spawn>
+		<spawn x="3" y="6">
+			<entity type="651" variant="101" subtype="4" weight="1.0"/>
 		</spawn>
 		<spawn x="7" y="6">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
@@ -4144,7 +4027,7 @@
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31027" name="(AH) - think fast chucklenuts!" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31027" name="(AH) - think fast chucklenuts!" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-19T22:13+00:00">
 		<door exists="False" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="True" x="6" y="7"/>
@@ -4225,7 +4108,7 @@
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31028" name="(AH) - ignition" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31028" name="(AH) - ignition" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-19T22:13+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="True" x="6" y="7"/>
@@ -4300,7 +4183,7 @@
 			<entity type="3000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31029" name="(AH) - verminator" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31029" name="(AH) - verminator" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-19T22:13+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="False" x="6" y="7"/>
@@ -4411,7 +4294,7 @@
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31030" name="(AH) - choose wisely, or not at all" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-08T02:35+00:00">
+	<room variant="31030" name="(AH) - choose wisely, or not at all" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-19T22:13+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="True" x="6" y="7"/>
@@ -4512,7 +4395,7 @@
 			<entity type="3000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31031" name="(AH) - rubedo" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31031" name="(AH) - rubedo" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-19T22:13+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="True" x="6" y="7"/>
@@ -4647,7 +4530,7 @@
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31032" name="(AH) - guide me" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31032" name="(AH) - guide me" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-19T22:13+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="True" x="6" y="7"/>
@@ -4794,7 +4677,7 @@
 			<entity type="651" variant="101" subtype="4" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31033" name="(AH) - caught in the crossfire" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31033" name="(AH) - caught in the crossfire" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-19T22:13+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="True" x="6" y="7"/>
@@ -4896,7 +4779,7 @@
 			<entity type="3000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31034" name="(AH) - decapsulate" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-08T02:35+00:00">
+	<room variant="31034" name="(AH) - decapsulate" type="1" subtype="0" shape="1" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-19T22:13+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="True" x="6" y="7"/>
@@ -5052,7 +4935,7 @@
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31035" name="(AH) - what's this what's that" type="1" subtype="0" shape="2" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31035" name="(AH) - what's this what's that" type="1" subtype="0" shape="2" width="13" height="7" difficulty="5" weight="1.0" lastTestTime="2022-02-19T22:13+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="False" x="13" y="3"/>
 		<spawn x="2" y="2">
@@ -5101,7 +4984,7 @@
 			<entity type="651" variant="101" subtype="10" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31036" name="(AH) - rubble arrays" type="1" subtype="0" shape="8" width="26" height="14" difficulty="5" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31036" name="(AH) - rubble arrays" type="1" subtype="0" shape="8" width="26" height="14" difficulty="5" weight="0.5" lastTestTime="2022-02-19T22:13+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="-1" y="10"/>
 		<door exists="True" x="6" y="-1"/>
@@ -5831,7 +5714,7 @@
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31037" name="(AH) - tramway" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31037" name="(AH) - tramway" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-19T22:13+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="True" x="6" y="7"/>
@@ -5972,7 +5855,7 @@
 			<entity type="651" variant="101" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31038" name="(AH) - congestion" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-08T02:18+00:00">
+	<room variant="31038" name="(AH) - congestion" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-19T22:13+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="True" x="6" y="7"/>
@@ -5982,9 +5865,6 @@
 		</spawn>
 		<spawn x="1" y="0">
 			<entity type="651" variant="101" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="2" y="0">
-			<entity type="969" variant="9" subtype="0" weight="1.0"/>
 		</spawn>
 		<spawn x="11" y="0">
 			<entity type="651" variant="101" subtype="10" weight="1.0"/>
@@ -5997,9 +5877,6 @@
 		</spawn>
 		<spawn x="1" y="1">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="2" y="1">
-			<entity type="651" variant="101" subtype="10" weight="1.0"/>
 		</spawn>
 		<spawn x="3" y="1">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
@@ -6067,9 +5944,6 @@
 		<spawn x="9" y="5">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
-		<spawn x="10" y="5">
-			<entity type="651" variant="101" subtype="10" weight="1.0"/>
-		</spawn>
 		<spawn x="11" y="5">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
@@ -6082,9 +5956,6 @@
 		<spawn x="1" y="6">
 			<entity type="651" variant="101" subtype="10" weight="1.0"/>
 		</spawn>
-		<spawn x="10" y="6">
-			<entity type="969" variant="9" subtype="0" weight="1.0"/>
-		</spawn>
 		<spawn x="11" y="6">
 			<entity type="651" variant="101" subtype="0" weight="1.0"/>
 		</spawn>
@@ -6092,7 +5963,7 @@
 			<entity type="969" variant="9" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31039" name="(AH) - pocketed" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-08T02:35+00:00">
+	<room variant="31039" name="(AH) - pocketed" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-19T22:13+00:00">
 		<door exists="True" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="False" x="6" y="7"/>
@@ -6157,12 +6028,6 @@
 		<spawn x="1" y="2">
 			<entity type="651" variant="101" subtype="10" weight="1.0"/>
 		</spawn>
-		<spawn x="7" y="2">
-			<entity type="969" variant="9" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="8" y="2">
-			<entity type="651" variant="101" subtype="10" weight="1.0"/>
-		</spawn>
 		<spawn x="9" y="2">
 			<entity type="3000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
@@ -6199,9 +6064,6 @@
 		<spawn x="1" y="4">
 			<entity type="969" variant="9" subtype="0" weight="1.0"/>
 		</spawn>
-		<spawn x="2" y="4">
-			<entity type="969" variant="9" subtype="0" weight="1.0"/>
-		</spawn>
 		<spawn x="6" y="4">
 			<entity type="3000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
@@ -6228,9 +6090,6 @@
 		</spawn>
 		<spawn x="1" y="5">
 			<entity type="3000" variant="0" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="2" y="5">
-			<entity type="651" variant="101" subtype="10" weight="1.0"/>
 		</spawn>
 		<spawn x="3" y="5">
 			<entity type="3000" variant="0" subtype="0" weight="1.0"/>
@@ -6302,7 +6161,7 @@
 			<entity type="3000" variant="0" subtype="0" weight="1.0"/>
 		</spawn>
 	</room>
-	<room variant="31040" name="(AH) - grand caper" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-08T03:04+00:00">
+	<room variant="31040" name="(AH) - grand caper" type="1" subtype="0" shape="1" width="13" height="7" difficulty="10" weight="1.0" lastTestTime="2022-02-19T22:13+00:00">
 		<door exists="False" x="-1" y="3"/>
 		<door exists="True" x="6" y="-1"/>
 		<door exists="True" x="6" y="7"/>
@@ -6340,9 +6199,6 @@
 		<spawn x="4" y="1">
 			<entity type="969" variant="1" subtype="0" weight="1.0"/>
 		</spawn>
-		<spawn x="5" y="1">
-			<entity type="651" variant="101" subtype="10" weight="1.0"/>
-		</spawn>
 		<spawn x="0" y="2">
 			<entity type="651" variant="101" subtype="0" weight="1.0"/>
 		</spawn>
@@ -6369,9 +6225,6 @@
 		</spawn>
 		<spawn x="2" y="3">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>
-		</spawn>
-		<spawn x="3" y="3">
-			<entity type="651" variant="101" subtype="10" weight="1.0"/>
 		</spawn>
 		<spawn x="0" y="4">
 			<entity type="1000" variant="0" subtype="0" weight="1.0"/>

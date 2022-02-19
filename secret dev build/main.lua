@@ -516,7 +516,13 @@ function mod:Famine2AI(npc)
 	end
 end
 
-mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.Famine2AI, f2.id)
+function mod:Famine2Update(npc)
+	if npc.Type == f2.id and npc.Variant == f2.variant then
+		mod:Famine2AI(npc)
+	end
+end
+
+mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.Famine2Update, f2.id)
 
 --WAR2--------------------
 
@@ -541,6 +547,7 @@ mod.War2 = {
 		bombPower = 17,
 		bombCountdown = 22,
 		speed = 3.5,
+		roomSpeed = 3.3,
 		roomSpawnDist = 100,
 		roomDelay = 50,
 		roomBombDelay = 20,
@@ -1190,7 +1197,13 @@ function mod:War2AI(npc)
 	end
 end
 
-mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.War2AI, w2.id)
+function mod:War2Update(npc)
+	if npc.Type == w2.id and npc.Variant == w2.variant then
+		mod:War2AI(npc)
+	end
+end
+
+mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.War2Update, w2.id)
 
 --ARMY--------------------
 
@@ -1228,8 +1241,11 @@ function mod:ArmyAI(npc)
 			d.state = "bombspawn"
 		end
 		
+		d.walkSpeed = w2.army.speed
+		
 		if not d.roomArmy and room:GetAliveBossesCount() < 1 and d.popoff < 1 then
 			d.roomArmy = true
+			d.walkSpeed = w2.army.roomSpeed
 			if d.state == "spawn" then 
 				d.spawnDelay = mod:RandomInt(2,w2.army.roomDelay) 
 			elseif d.state == "bombspawn" then 
@@ -1304,6 +1320,7 @@ function mod:ArmyAI(npc)
 			mod:SpritePlay(sprite, "JumpOut")
 			
 			if sprite:IsEventTriggered("Jump") then
+				d.splodePrimed = true
 				if d.popoff > 0 then
 					npc:Kill()
 				else
@@ -1376,13 +1393,13 @@ function mod:ArmyAI(npc)
 		end
 		
 		if mod:isScare(npc) then
-			local targetvel = (targetpos - npc.Position):Resized(-w2.army.speed)
+			local targetvel = (targetpos - npc.Position):Resized(-d.walkSpeed)
 			npc.Velocity = mod:Lerp(npc.Velocity, targetvel,0.25)
 		elseif room:CheckLine(npc.Position,targetpos,0,1,false,false) then
-			local targetvel = (targetpos - npc.Position):Resized(w2.army.speed)
+			local targetvel = (targetpos - npc.Position):Resized(d.walkSpeed)
 			npc.Velocity = mod:Lerp(npc.Velocity, targetvel,0.25)
 		else
-			path:FindGridPath(targetpos, 0.6, 900, true)
+			path:FindGridPath(targetpos, 0.5, 900, true)
 		end
 	end 
 	
@@ -1393,13 +1410,19 @@ function mod:ArmyAI(npc)
 			local bombe = Isaac.Spawn(4, 0, 0, npc.Position, d.shootVec, npc):ToBomb()
 			bombe:SetExplosionCountdown(w2.army.bombCountdown)
 			bombe.ExplosionDamage = w2.army.bombDamage
-		elseif npc.SubType == 4 then
+		elseif npc.SubType == 4 and d.splodePrimed then
 			Isaac.Explode(npc.Position, npc, w2.army.walkingBombDamage)
 		end
 	end
 end
 
-mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.ArmyAI, w2.army.id)
+function mod:ArmyUpdate(npc)
+	if npc.Type == w2.army.id and npc.Variant >= w2.army.variant and npc.Variant <= w2.army.variantBomb then
+		mod:ArmyAI(npc)
+	end
+end
+
+mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.ArmyUpdate, w2.army.id)
 
 --DEATH2--------------------
 
@@ -1431,8 +1454,8 @@ mod.Death2 = {
 		id = 660,
 		variant = 103,
 		gasTime = 10,
-		accel = 0.34,
-		fastAccel = 0.5,
+		accel = 0.38,
+		fastAccel = 0.6,
 	},
 	cloud = {
 		name = "Death Cloud",
@@ -1465,7 +1488,7 @@ mod.Death2 = {
 		bonusArmor = 200,
 	},
 	bal = {
-		scytheIdleTail = 26,
+		scytheIdleTail = 22,
 		scytheIdleFast = 14,
 		scytheIdleSlow = 32,
 		slashIdleHead = 20,
@@ -2749,7 +2772,14 @@ function mod:Death2AI(npc)
 		end
 	end
 end
-mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.Death2AI, d2.id)
+
+function mod:Death2Update(npc)
+	if npc.Type == d2.id and npc.Variant >= d2.variant and npc.Variant <= d2.ghost.variant then
+		mod:Death2AI(npc)
+	end
+end
+
+mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.Death2Update, d2.id)
 
 --DEATHS death
 mod:AddCallback(ModCallbacks.MC_POST_ENTITY_REMOVE, function(_, npc)
@@ -2888,7 +2918,14 @@ function mod:Pestilence2AI(npc)
 		--cord.Target = target
 	end
 end
-mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.Pestilence2AI, p2.id)
+
+function mod:Pestilence2Update(npc)
+	if npc.Type == p2.id and npc.Variant == p2.variant then
+		mod:Pestilence2AI(npc)
+	end
+end
+
+mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.Pestilence2Update, p2.id)
 
 ------------------------COOL FUNCTIONS------------------------
 --------------------------------------------------------------
@@ -3243,6 +3280,9 @@ function mod:CacheUpdate(player, flag)
 			
 			local tearCalculate = TearsUp(player.MaxFireDelay, tearsFlat, false)
 			tearCalculate = TearsUp(tearCalculate, tearsMult+tearsAmp, true)
+
+			--[[Reminding myself that I can't set it to the tear limit because the tear limit could be anything
+			and I dont have access to that variable]]
 			player.MaxFireDelay = tearCalculate
 		end
 	end
@@ -3826,8 +3866,8 @@ local function FloorVerify()
 			bossID = w2.name
 		elseif (stage == LevelStage.STAGE3_1) and not bossSeen.d2 then
 			bossID = d2.name
-		--[[elseif (stage == LevelStage.STAGE4_1) and not bossSeen.p2 then
-			bossID = p2.name]]
+		elseif (stage == LevelStage.STAGE4_1) and not bossSeen.p2 then
+			bossID = p2.name
 		end
 	--alt
 	elseif (stageType ~= StageType.STAGETYPE_REPENTANCE and stageType == StageType.STAGETYPE_REPENTANCE_B) then
@@ -3838,7 +3878,7 @@ local function FloorVerify()
 		elseif (stage == LevelStage.STAGE3_1) and not bossSeen.d2 then
 			bossID = d2.nameAlt
 		--[[elseif (stage == LevelStage.STAGE4_1) and not bossSeen.p2 then
-			bossID = p2.name]]
+			bossID = p2.nameAlt]]
 		end
 	end
 	
@@ -3965,7 +4005,7 @@ if StageAPI and firstLoaded then
 			Offset = Vector(0,-15),
 			Bossname = f2.bossName,
 			Weight = f2.weight,
-			Rooms = StageAPI.RoomsList("Famine Rooms", require("resources.luarooms.boss_famine2")),
+			Rooms = StageAPI.RoomsList("Famine2 Rooms", require("resources.luarooms.boss_famine2")),
 		}),
 		f2alt = StageAPI.AddBossData(f2.nameAlt, {
 			Name = f2.name,
@@ -3973,7 +4013,7 @@ if StageAPI and firstLoaded then
 			Offset = Vector(0,-15),
 			Bossname = f2.bossName,
 			Weight = f2.weightAlt,
-			Rooms = StageAPI.RoomsList("BossRooms", require("resources.luarooms.boss_famine2_alt")),
+			Rooms = StageAPI.RoomsList("Famine2 Alt Rooms", require("resources.luarooms.boss_famine2_alt")),
 		}),
 		w2 = StageAPI.AddBossData(w2.name, {
 			Name = w2.name,
@@ -3981,7 +4021,7 @@ if StageAPI and firstLoaded then
 			Offset = Vector(0,-15),
 			Bossname = w2.bossName,
 			Weight = w2.weight,
-			Rooms = StageAPI.RoomsList("BossRooms", require("resources.luarooms.boss_war2")),
+			Rooms = StageAPI.RoomsList("War2 Rooms", require("resources.luarooms.boss_war2")),
 		}),
 		w2alt = StageAPI.AddBossData(w2.nameAlt, {
 			Name = w2.name,
@@ -3989,7 +4029,7 @@ if StageAPI and firstLoaded then
 			Offset = Vector(0,-15),
 			Bossname = w2.bossName,
 			Weight = w2.weightAlt,
-			Rooms = StageAPI.RoomsList("BossRooms", require("resources.luarooms.boss_war2_alt")),
+			Rooms = StageAPI.RoomsList("War2 Alt Rooms", require("resources.luarooms.boss_war2_alt")),
 		}),
 		d2 = StageAPI.AddBossData(d2.name, {
 			Name = d2.name,
@@ -3997,7 +4037,7 @@ if StageAPI and firstLoaded then
 			Offset = Vector(0,-15),
 			Bossname = d2.bossName,
 			Weight = d2.weight,
-			Rooms = StageAPI.RoomsList("BossRooms", require("resources.luarooms.boss_death2")),
+			Rooms = StageAPI.RoomsList("Death2 Rooms", require("resources.luarooms.boss_death2")),
 		}),
 		d2alt = StageAPI.AddBossData(d2.nameAlt, {
 			Name = d2.name,
@@ -4005,15 +4045,23 @@ if StageAPI and firstLoaded then
 			Offset = Vector(0,-15),
 			Bossname = d2.bossName,
 			Weight = d2.weightAlt,
-			Rooms = StageAPI.RoomsList("BossRooms", require("resources.luarooms.boss_death2_alt")),
+			Rooms = StageAPI.RoomsList("Death2 Alt Rooms", require("resources.luarooms.boss_death2_alt")),
 		}),
-		--[[p2 = StageAPI.AddBossData(p2.name, {
+		p2 = StageAPI.AddBossData(p2.name, {
 			Name = p2.name,
 			Portrait = p2.portrait,
 			Offset = Vector(0,-15),
 			Bossname = p2.bossName,
+			Weight = p2.weight,
+			Rooms = StageAPI.RoomsList("Pestilence2 Rooms", require("resources.luarooms.boss_pestilence2")),
+		}),
+		--[[p2alt = StageAPI.AddBossData(p2.nameAlt, {
+			Name = p2.name,
+			Portrait = p2.portraitAlt,
+			Offset = Vector(0,-15),
+			Bossname = p2.bossName,
 			Weight = p2.weightAlt,
-			Rooms = StageAPI.RoomsList("BossRooms", require("resources.luarooms.boss_pestilence")),
+			Rooms = StageAPI.RoomsList("Pestilence2 Alt Rooms", require("resources.luarooms.boss_pestilence_alt")),
 		})]]
 	}
 	
@@ -4023,7 +4071,8 @@ if StageAPI and firstLoaded then
 	StageAPI.AddBossToBaseFloorPool({BossID = w2.nameAlt},LevelStage.STAGE2_1,StageType.STAGETYPE_REPENTANCE_B)
 	StageAPI.AddBossToBaseFloorPool({BossID = d2.name},LevelStage.STAGE3_1,StageType.STAGETYPE_REPENTANCE)
 	StageAPI.AddBossToBaseFloorPool({BossID = d2.nameAlt},LevelStage.STAGE3_1,StageType.STAGETYPE_REPENTANCE_B)
-	--StageAPI.AddBossToBaseFloorPool({BossID = p2.name},LevelStage.STAGE4_1,StageType.STAGETYPE_REPENTANCE)
+	StageAPI.AddBossToBaseFloorPool({BossID = p2.name},LevelStage.STAGE4_1,StageType.STAGETYPE_REPENTANCE)
+	--StageAPI.AddBossToBaseFloorPool({BossID = p2.nameAlt},LevelStage.STAGE4_1,StageType.STAGETYPE_REPENTANCE_B)
 end
 
 --New Game
@@ -4055,7 +4104,8 @@ mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, function(_, isContinue)
 		StageAPI.GetBossData(w2.nameAlt).Weight = w2.weightAlt
 		StageAPI.GetBossData(d2.name).Weight = d2.weight
 		StageAPI.GetBossData(d2.nameAlt).Weight = d2.weightAlt
-		--StageAPI.GetBossData(p2.name).Weight = p2.weight
+		StageAPI.GetBossData(p2.name).Weight = p2.weight
+		--StageAPI.GetBossData(p2.nameAlt).Weight = p2.weightAlt
 	end
 end
 )
