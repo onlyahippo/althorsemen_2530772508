@@ -1,0 +1,5 @@
+<sounds root="sounds/">
+	<sound name="FartReverb">
+		<sample weight="1" path="fart_reverb.wav" />
+	</sound>
+</sounds>

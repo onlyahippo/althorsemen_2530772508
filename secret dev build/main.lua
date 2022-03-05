@@ -547,7 +547,7 @@ mod.War2 = {
 		bombPower = 17,
 		bombCountdown = 22,
 		speed = 3.5,
-		roomSpeed = 3.3,
+		roomSpeed = 3.2,
 		roomSpawnDist = 100,
 		roomDelay = 50,
 		roomBombDelay = 20,
@@ -1446,7 +1446,7 @@ mod.Death2 = {
 		steerRate = 0.012,
 		scytheRate = 1,
 		scytheRateSlow = 4,
-		gasPause = 15,
+		gasPause = 20,
 		gasSpread = 7,
 	},
 	scythe = {
@@ -1454,7 +1454,7 @@ mod.Death2 = {
 		id = 660,
 		variant = 103,
 		gasTime = 10,
-		accel = 0.38,
+		accel = 0.36,
 		fastAccel = 0.6,
 	},
 	cloud = {
@@ -1503,9 +1503,9 @@ mod.Death2 = {
 		slashCircle = 60,
 		slashTime = 7,
 		boneShotDist = 18,
-		boneShotSpeed = 10,
+		boneShotSpeed = 9,
 		boneShotAmount = 6,
-		boneShotAmount2 = 10,
+		boneShotAmount2 = 9,
 		phase2Health = 0.4,
 		ghostRateMin = 10,
 		ghostRateMax = 60,
@@ -2299,6 +2299,7 @@ function mod:Death2AI(npc)
 					d.ghoststate = nil
 					d.state = "invisible"
 				end
+				npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
 				npc.Friction = npc.Friction * 0.9
 			end
 		end
@@ -2782,25 +2783,6 @@ end
 mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.Death2Update, d2.id)
 
 --DEATHS death
-mod:AddCallback(ModCallbacks.MC_POST_ENTITY_REMOVE, function(_, npc)
-	if not (npc.Type == d2.id
-		and npc.Variant == d2.variant) then
-		return
-	end
-
-	local room = game:GetRoom()
-	
-	--drop trinket
-	if room:GetType() == RoomType.ROOM_BOSS then
-		if npc:IsDead() and not game:IsPaused() then
-			local dice = mod:RandomInt(2)
-			if dice == 1 then
-				local trinket = Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, TrinketType.TRINKET_YOUR_SOUL, npc.Position, Vector(0,0), npc)
-			end
-		end
-	end
-end)
-
 function mod:deathRender(npc)
 	if not (npc.Type == d2.id
 		and npc.Variant == d2.variant) then
@@ -2845,6 +2827,11 @@ function mod:deathRender(npc)
 		end
 	end
 end
+
+function mod:renderDeath(npc)
+	mod:deathRender(npc)
+end
+mod:AddCallback(ModCallbacks.MC_POST_NPC_RENDER, mod.renderDeath, d2.id)
 
 function mod:PurpleBoneTrail(npc)
 	local sprite = npc:GetSprite()
@@ -2891,13 +2878,49 @@ mod.Pestilence2 = {
 	weightAlt = 1,
 	id = 640,
 	variant = 101,
+	horse = {
+		name = "Tainted Pestilence Horse",
+		id = 640,
+		variant = 102,
+	},
+	corpse = {
+		name = "Tainted Pestilence Corpse",
+		id = 640,
+		variant = 103,
+	},
 	bal = {
-		idleWaitMin = 20,
-		idleWaitMax = 50,
+		idleWaitMin = 30,
+		idleWaitMax = 60,
 		moveWaitMin = 5,
 		moveWaitMax = 40,
 		attackFriction = 0.85,
 		speed = 1.2,
+		spewStrength = 11,
+		scatterStart = 160,
+		scatterFade = 7,
+		burstStrength = 15,
+		gasLifeSpan = 500,
+		grabPower = 5,
+		grabRestrict = 0.5,
+		grabPullPower = 10,
+		maxPatience = 20, --timer before grab
+		lobTearStrength = 10,
+		lobTracking = 0.03,
+		maggotMax = 2,
+		gasMin = 4, --minimum gas for quad spew to trigger
+		phase2Health = 0.66,
+		airDropNum = 9,
+		airDropRate = 16,
+		distToWall = 35,
+		constantPullPower = 0.55,
+		pullMod = 0.3,
+		slideAccel = 0.06,
+		scatter2 = 100,
+		lobTracking2 = 0.028,
+		gasLifeSpan2 = 325,
+		phase3Health = 0.33,
+		phase3Delay = 130,
+		tinyMaggotMax = 4,
 	}
 }
 local p2 = mod.Pestilence2
@@ -2909,23 +2932,1036 @@ function mod:Pestilence2AI(npc)
 	local level = game:GetLevel()
 	local room = game:GetRoom()
 	
+	--INIT
 	if not d.init then
 		d.init = true
-		--print("spawned")
 		
-		--local cord = Isaac.Spawn(865, 10, 0, npc.Position, Vector(0,0), npc)
-		--cord.Parent = npc
-		--cord.Target = target
+		npc.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_WALLS
+		
+		if (level:GetStage() == LevelStage.STAGE4_1 or level:GetStage() == LevelStage.STAGE4_2)
+		and level:GetStageType() == StageType.STAGETYPE_REPENTANCE_B then
+			d.altSkin = true
+		end
+		
+		d.tearColor = Color(1,1,1,1)
+        d.tearColor:SetColorize(1,1.4,0.9,1)
+		
+		d.tearColor2 = Color(1,1,1,1)
+        d.tearColor2:SetColorize(1.5,2.2,0.8,1)
+
+		d.patience = p2.bal.maxPatience
+		d.grabPrep = false
+		d.lastDie = -1
+		d.firstStrike = true
+		d.state = "idle"
+	end
+	
+	--IDLE
+	if d.state == "idle" then
+		
+		mod:SpritePlay(sprite, "Idle")
+		
+		--Get direction
+		local tarDir = target.Position - npc.Position
+		local faceDir = math.atan(tarDir.Y/tarDir.X)
+		if faceDir < 0 then
+			faceDir = faceDir * -1
+		end
+		
+		local distance = math.sqrt(((room:GetCenterPos().X-npc.Position.X)^2)+((room:GetCenterPos().Y-npc.Position.Y)^2))
+		
+		if target.Position.X < npc.Position.X and faceDir < 0.28 then
+			--left
+			d.grabDir = -1
+			d.grabVert = false
+			d.patience = d.patience - 1
+			d.grabPrep = true
+		elseif target.Position.Y < npc.Position.Y and faceDir > 1.28 then
+			--up
+			d.grabDir = -1
+			d.grabVert = true
+			d.patience = d.patience - 1
+			d.grabPrep = true
+		elseif target.Position.X > npc.Position.X and faceDir < 0.28 then
+			--right
+			d.grabDir = 1
+			d.grabVert = false
+			d.patience = d.patience - 1
+			d.grabPrep = true
+		elseif target.Position.Y > npc.Position.Y and faceDir > 1.28 then
+			--down
+			d.grabDir = 1
+			d.grabVert = true
+			d.patience = d.patience - 1
+			d.grabPrep = true
+		else
+			d.grabPrep = false
+		end
+		
+		if not d.idleWait then
+			d.idleWait = mod:RandomInt(p2.bal.idleWaitMin,p2.bal.idleWaitMax)
+		end
+		
+		if d.idleWait <= 0 then
+			--idle time finish
+			d.idleWait = nil
+			d.moveWait = nil
+			
+			d.dice = mod:RandomInt(3)	
+			while d.dice == d.lastDie do
+				d.dice = mod:RandomInt(3)	
+			end
+			d.lastDie = d.dice
+			
+			if d.firstStrike or mod:CountRoom(EntityType.ENTITY_EFFECT,EffectVariant.SMOKE_CLOUD) < p2.bal.gasMin then
+				d.dice = 1
+			end
+
+			if not d.firstStrike and d.patience < 0 and d.grabPrep then
+				d.state = "tonguegrab"
+				d.patience = p2.bal.maxPatience * 3
+			elseif d.dice == 1 and distance < 100 then
+				d.state = "spew"
+				d.patience = p2.bal.maxPatience
+				d.firstStrike = false
+			elseif d.dice == 2 then
+				local enemyNum = mod:CountRoom(EntityType.ENTITY_CHARGER_L2,0)
+				if enemyNum < p2.bal.maggotMax then
+					d.state = "summon"
+				else
+					d.state = "lobspew"
+				end
+				d.patience = p2.bal.maxPatience
+			else
+				d.state = "lobspew"
+				d.patience = p2.bal.maxPatience
+			end
+			
+			--phase 2 begin
+			if npc.HitPoints <= npc.MaxHitPoints*p2.bal.phase2Health and not d.phase2 then
+				d.state = "horsefly"
+			end
+		else
+			d.idleWait = d.idleWait - 1
+		end
+		
+		--float move
+		if not d.moveWait then
+			d.moveWait = mod:RandomInt(p2.bal.moveWaitMin,p2.bal.moveWaitMax)
+			
+			if distance > 100 then
+				d.targetvelocity = ((room:GetCenterPos() - npc.Position):Normalized()*2):Rotated(-10+mod:RandomInt(20))
+			else
+				d.targetvelocity = ((target.Position - npc.Position):Normalized()*2):Rotated(-50+mod:RandomInt(100))
+			end
+		end
+		
+		if d.moveWait <= 0 and d.moveWait ~= nil then
+			d.moveWait = nil
+		else
+			d.moveWait = d.moveWait - 1
+		end
+		
+		npc.Friction = 1
+		npc.Velocity = ((d.targetvelocity * 0.3) + (npc.Velocity * 0.7)) * p2.bal.speed
+		d.targetvelocity = d.targetvelocity * 0.99
+		
+		if npc.Velocity.X < -2 then
+			sprite.FlipX = true
+		elseif npc.Velocity.X > 2 then
+			sprite.FlipX = false
+		end
+	end
+	
+	--QUAD SPEW
+	if d.state == "spew" then
+		mod:SpritePlay(sprite, "Spew")
+		
+		--init attack
+		if not d.substate then
+		
+			if sprite:IsEventTriggered("Target") then
+				npc:PlaySound(SoundEffect.SOUND_MONSTER_GRUNT_4, 1, 0, false, 1)
+				for i=0,3 do
+					local targetPos = Vector(1,0):Rotated(i*90)
+					local tracer = Isaac.Spawn(1000, EffectVariant.GENERIC_TRACER, 0, npc.Position, Vector(0,0), npc):ToEffect()
+					tracer.LifeSpan = 20
+					tracer.Timeout = tracer.LifeSpan
+					tracer.TargetPosition = targetPos
+					tracer:FollowParent(npc)
+					local tracerColor = Color(0.4,1,0.3,0.2)
+					tracer:SetColor(tracerColor, 100, 1, false, false)
+				end
+			end
+			
+			if sprite:IsEventTriggered("Shoot") then
+				d.shotDir = mod:RandomInt(0,1)
+				if d.shotDir == 0 then
+					d.shotDir = -1
+				end
+				d.shotRotated = 0
+				d.shotTurn = mod:RandomInt(28,35) * 0.1
+				
+				d.scatterAmount = p2.bal.scatterStart
+				d.substate = 1
+			end 
+		--Quad tears
+		elseif d.substate == 1 then
+			if npc.FrameCount % 2 == 0 then
+				local scatter = mod:RandomInt(-d.scatterAmount,d.scatterAmount) * 0.1
+				local shotRotated = d.shotRotated * d.shotDir
+				
+				local extraVector = Vector(0,1):Rotated(mod:RandomInt(360))*mod:RandomInt(2,6)
+				local vector = Vector(0,1):Normalized():Rotated(scatter) * p2.bal.spewStrength
+				
+				--small extra tears
+				local tear = Isaac.Spawn(EntityType.ENTITY_PROJECTILE, ProjectileVariant.PROJECTILE_NORMAL, 0, npc.Position, extraVector, npc):ToProjectile()
+				tear:GetSprite().Color = d.tearColor
+				tear.Height = -16
+				
+				--quad tears
+				for i=0,3 do
+					local rotated = (i*90)+shotRotated
+					local tear = Isaac.Spawn(EntityType.ENTITY_PROJECTILE, ProjectileVariant.PROJECTILE_NORMAL, 0, npc.Position, vector:Rotated(rotated), npc):ToProjectile()
+					tear:GetSprite().Color = d.tearColor
+					tear.FallingAccel = -0.05
+					tear.Height = -16
+				end
+				npc:PlaySound(SoundEffect.SOUND_BLOODSHOOT, 1, 0, false, 1)
+				
+				if d.scatterAmount > 20 then
+					d.scatterAmount = d.scatterAmount - p2.bal.scatterFade
+				end
+				d.shotRotated = d.shotRotated + d.shotTurn
+			end
+			
+			if sprite:IsEventTriggered("Stop") then
+				d.substate = 2
+			end
+		--Stop and burst
+		elseif d.substate == 2 then
+			if sprite:IsEventTriggered("Burst") then
+				local shotRotated = d.shotRotated * d.shotDir
+				local vector = Vector(0,1):Normalized() * p2.bal.burstStrength
+				
+				local fart = Isaac.Spawn(1000, EffectVariant.FART, 0, npc.Position, Vector(0,0), npc)
+				npc:PlaySound(SoundEffect.SOUND_FART_GURG, 1, 0, false, 1)
+				
+				for i=0,3 do
+					local rotated = (i*90)+shotRotated
+					local tear = Isaac.Spawn(EntityType.ENTITY_PROJECTILE, ProjectileVariant.PROJECTILE_NORMAL, 0, npc.Position, vector:Rotated(rotated), npc):ToProjectile()
+					tear:GetSprite().Color = d.tearColor2
+					tear.FallingAccel = -0.05
+					tear.Scale = 2
+					tear:GetData().pestBoom = true
+				end
+			end
+		
+			if sprite:IsFinished("Spew") then
+				d.shotDir = nil
+				d.shotRotated = nil
+				d.shotTurn = nil
+				d.scatterAmount = nil
+				d.substate = nil
+				d.state = "idle"
+			end
+		end
+		
+		npc.Friction = p2.bal.attackFriction
+	end
+	
+	--TONGUE GRAB
+	if d.state == "tonguegrab" then
+		mod:SpritePlay(sprite, "TongueGrab")
+		if d.grabDir == -1 then
+			sprite.FlipX = true
+		elseif d.grabDir == 1 then
+			sprite.FlipX = false
+		end
+		
+		--init attack
+		if not d.substate then
+			if sprite:IsEventTriggered("Shoot") then
+				d.substate = 1
+				npc:PlaySound(SoundEffect.SOUND_MEATHEADSHOOT, 1, 0, false, 1)
+			end 
+		--do it
+		elseif d.substate == 1 then
+		
+			if not d.cord then
+				d.cord = Isaac.Spawn(865, 10, 0, npc.Position, Vector(0,0), npc)
+				d.cord.Parent = npc
+				d.cord.Target = target
+				npc:PlaySound(SoundEffect.SOUND_MEATY_DEATHS, 1, 0, false, 1)
+			else
+				if d.grabVert then
+					--up down
+					d.cord.Target.Velocity = Vector(d.cord.Target.Velocity.X*p2.bal.grabRestrict,d.cord.Target.Velocity.Y+(d.grabDir*p2.bal.grabPower))
+				else
+					--left right
+					d.cord.Target.Velocity = Vector(d.cord.Target.Velocity.X+(d.grabDir*p2.bal.grabPower),d.cord.Target.Velocity.Y*p2.bal.grabRestrict)
+				end
+			end
+		
+			if sprite:IsEventTriggered("Stop") then
+				if d.grabVert then
+					--up down
+					d.cord.Target.Velocity = Vector(0,-d.grabDir*p2.bal.grabPullPower)
+				else
+					--left right
+					d.cord.Target.Velocity = Vector(-d.grabDir*p2.bal.grabPullPower,0)
+				end
+				d.cord:Die()
+				npc:PlaySound(SoundEffect.SOUND_MEATY_DEATHS, 1, 0, false, 1)
+				d.substate = 2
+			end 
+		--release
+		elseif d.substate == 2 then
+			if sprite:IsFinished("TongueGrab") then
+				d.substate = nil
+				d.cord = nil
+				d.state = "idle"
+			end
+		end
+		
+		npc.Friction = p2.bal.attackFriction
+	end
+	
+	--LOB SPEW
+	if d.state == "lobspew" then
+		mod:SpritePlay(sprite, "LobSpew")
+		
+		if sprite:IsFinished("LobSpew") then
+			d.state = "idle"
+		elseif sprite:IsEventTriggered("Shoot") then
+			
+			npc:PlaySound(SoundEffect.SOUND_MEATHEADSHOOT,1,0,false,1)
+			npc:PlaySound(SoundEffect.SOUND_MONSTER_GRUNT_0,1,0,false,1)
+			local vector = (target.Position-npc.Position)*p2.bal.lobTracking
+			
+			local tear = Isaac.Spawn(EntityType.ENTITY_PROJECTILE, ProjectileVariant.PROJECTILE_NORMAL, 0, npc.Position, vector, npc):ToProjectile();
+			tear:GetSprite().Color = d.tearColor2
+			tear.Scale = 2
+			tear.FallingSpeed = -45;
+			tear.FallingAccel = 1.5;
+			tear:GetData().pestBoom = true
+			tear:GetData().pestBoomTears = true
+			tear:GetData().pestGasLife = p2.bal.gasLifeSpan/2
+		end
+		npc.Friction = p2.bal.attackFriction
+	end
+	
+	--SUMMON MAGGOT
+	if d.state == "summon" then
+		mod:SpritePlay(sprite, "Summon")
+		
+		if sprite:IsFinished("Summon") then
+			d.state = "idle"
+		elseif sprite:IsEventTriggered("Shoot") then
+		
+			local position = npc.Position + Vector(20,0):Rotated(mod:RandomInt(360))
+			Isaac.Spawn(EntityType.ENTITY_CHARGER_L2, 0, 0, position, Vector(0,0), npc)
+			
+			npc:PlaySound(SoundEffect.SOUND_SUMMONSOUND, 1, 0, false, 1)
+			npc:PlaySound(SoundEffect.SOUND_MONSTER_GRUNT_5, 1, 0, false, 1)
+		end
+		npc.Friction = p2.bal.attackFriction
+	end
+	
+	--PHASE2 transition
+	if d.state == "horsefly" then
+		if not d.substate then
+		
+			mod:SpritePlay(sprite, "FlyAway")
+			npc.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_NONE
+			sprite.FlipX = false
+			
+			if sprite:IsEventTriggered("Shoot") then
+			
+				if not d.cord then
+					d.cord = {}
+					for i = 1, game:GetNumPlayers() do
+						local player = game:GetPlayer(i)
+						d.cord[i] = Isaac.Spawn(865, 10, 0, npc.Position, Vector(0,0), npc)
+						d.cord[i].Parent = npc
+						d.cord[i].Target = player
+						d.cord[i]:GetSprite():ReplaceSpritesheet(0, "gfx/bosses/pestilence2/blank.png")
+						d.cord[i]:GetSprite():ReplaceSpritesheet(1, "gfx/bosses/pestilence2/blank.png")
+						d.cord[i]:GetSprite():LoadGraphics()
+						--npc:PlaySound(SoundEffect.SOUND_MEATHEADSHOOT, 1, 0, false, 1)
+						--npc:PlaySound(SoundEffect.SOUND_MEATY_DEATHS, 1, 0, false, 1)
+						
+						--d.cord[i].Target.Velocity = Vector(d.grabDir*p2.bal.grabPullPower,0)
+					end
+				end
+			
+				d.substate = 1
+			end
+		elseif d.substate == 1 then
+			d.increase = d.increase or 1
+			if d.increase then
+				d.increase = d.increase + 0.2
+			end
+			npc.Velocity = npc.Velocity + Vector(0.08,0.01)*d.increase*2
+			npc.SpriteOffset = npc.SpriteOffset + Vector(0,-0.15)*d.increase^2
+			npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
+			
+			if sprite:IsFinished("FlyAway") then			
+				npc.Visible = false
+				npc.Velocity = Vector(0,0)
+				d.increase = nil
+				d.P2text = "P2_"
+				d.substate = nil
+				d.state = "airdrop"
+			end
+		end
+		npc.Friction = 0.9
+	end
+
+	--AIRDROP
+	if d.state == "airdrop" then
+		if not d.substate then
+			d.dropNum = p2.bal.airDropNum
+			d.substate = 1
+			
+		--Drop vomit bombs
+		elseif d.substate == 1 then
+			if not d.dropRate then
+				d.dropRate = 0
+			elseif d.dropRate <= 0 and d.dropNum < 0 then
+					--Begin falling	
+					
+					--randomize direction
+					local randDir = mod:RandomInt(1,2)
+					
+					local xStart = room:GetTopLeftPos().X + p2.bal.distToWall
+					local xEnd = room:GetBottomRightPos().X - p2.bal.distToWall
+					local mid = room:GetCenterPos().Y
+					
+					if randDir == 1 then
+						xStart = room:GetBottomRightPos().X - p2.bal.distToWall
+						xEnd = room:GetTopLeftPos().X + p2.bal.distToWall
+						d.grabDir = -1
+						sprite.FlipX = true
+					else
+						d.grabDir = 1
+						sprite.FlipX = false
+					end
+					
+					npc.Position = Vector(xStart,mid)
+					
+					d.xPos = npc.Position.X
+					d.xEndPos = xEnd
+					
+					npc.SpriteOffset = Vector(0,-550)
+					mod:SpritePlay(sprite, "Falling")
+					d.dropNum = nil
+					d.dropRate = nil
+					d.substate = 2
+					
+			elseif d.dropRate <= 0 then
+				d.dropNum = d.dropNum-1
+				d.dropRate = p2.bal.airDropRate
+				
+				local randPos = Isaac.GetRandomPosition()
+				
+				if d.dropNum % 3 == 0 then
+					randPos = target.Position + Vector(50,0):Rotated(mod:RandomInt(360))
+				end
+				
+				--airdrop projectile
+				local tear = Isaac.Spawn(EntityType.ENTITY_PROJECTILE, ProjectileVariant.PROJECTILE_NORMAL, 0, randPos, Vector(0,0), npc):ToProjectile();
+				tear:GetSprite().Color = d.tearColor2
+				tear.Height = -500
+				tear.Scale = 2
+				tear.FallingSpeed = 15;
+				tear.FallingAccel = 2;
+				
+				tear:GetData().pestBoom = true
+				tear:GetData().pestBoomTears = true
+				tear:GetData().pestBoomTarget = true
+				tear:GetData().pestGasLife = p2.bal.gasLifeSpan/4
+			else
+				d.dropRate = d.dropRate - 1
+			end
+		--fall into the screen
+		elseif d.substate == 2 then
+		
+			npc.Visible = true
+			if not d.target then
+				d.target = Isaac.Spawn(1000, EffectVariant.TARGET, 0, npc.Position, Vector(0,0), npc):ToEffect()
+				local targetColor = Color(0.4,1,0.3,1)
+				d.target:SetColor(targetColor, 400, 1, false, false)
+			end
+			
+			if npc.SpriteOffset.Y < 0 then
+				d.increase = d.increase or 1
+				if d.increase then
+					d.increase = d.increase + 0.1
+				end
+				npc.SpriteOffset = npc.SpriteOffset + Vector(0,5)*d.increase
+			else
+				--fell
+				npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_ALL
+				npc.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_WALLS
+			
+				game:ShakeScreen(10)
+				npc:PlaySound(SoundEffect.SOUND_FORESTBOSS_STOMPS, 1, 0, false, 1)
+				npc.SpriteOffset = Vector(0,0)
+				d.target:Remove()
+				d.increase = nil
+				mod:SpritePlay(sprite, "Fell")
+				d.substate = 3
+			end
+		--commence the gut grabbing
+		elseif d.substate == 3 then
+			if sprite:IsEventTriggered("Shoot") then
+				if d.cord then
+					npc:PlaySound(SoundEffect.SOUND_MEATHEADSHOOT, 1, 0, false, 1)
+					npc:PlaySound(SoundEffect.SOUND_MEATY_DEATHS, 1, 0, false, 1)
+					
+					for i = 1, #d.cord do
+						d.cord[i].Target.Velocity = Vector(d.grabDir*p2.bal.grabPullPower,0)
+						d.cord[i]:GetSprite():ReplaceSpritesheet(0, "gfx/effects/evis_guts.png")
+						d.cord[i]:GetSprite():ReplaceSpritesheet(1, "gfx/effects/evis_guts.png")
+						d.cord[i]:GetSprite():LoadGraphics()
+					end
+				end
+			end
+			
+			if sprite:IsFinished("Fell") then
+				d.substate = nil
+				d.phase2 = true
+				d.idleWait = 20
+				d.state = "idle2"
+			end
+		end
+		npc.Friction = 0
+	end
+	
+	--PHASE 2
+	if d.phase2 then
+	
+		--phase 3 begin
+		if npc.HitPoints <= npc.MaxHitPoints*p2.bal.phase3Health and not d.phase3 then
+			npc:BloodExplode()
+			npc:AddEntityFlags(EntityFlag.FLAG_NO_TARGET)
+			npc:AddEntityFlags(EntityFlag.FLAG_NO_STATUS_EFFECTS)
+			d.phase3 = true
+			d.P2text = "P3_"
+			d.idleWait = p2.bal.phase3Delay
+		end
+		
+		if d.horse then
+			npc.HitPoints = d.horse.HitPoints
+			
+			if d.horse:IsDead() then
+				npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
+				for i = 1, #d.cord do
+					d.cord[i]:Kill()
+				end
+				npc:Kill()
+				d.state = nil
+				d.horse = nil
+				d.phase2 = false
+			end
+		end
+	
+		--IDLE 2
+		if d.state == "idle2" then
+		
+			if (npc.Velocity.Y > 2 or npc.Velocity.Y < -2) and not d.phase3 then
+				mod:SpritePlay(sprite, d.P2text .. "Idle2")
+			else
+				mod:SpritePlay(sprite, d.P2text .. "Idle")
+			end
+			
+			if d.phase3 and not d.horse and d.idleWait == p2.bal.phase3Delay - 20 then
+				d.horse = Isaac.Spawn(p2.horse.id, p2.horse.variant, 0, Vector(d.xEndPos,0), Vector(0,0), npc)
+				d.horse:GetData().grabDir = -d.grabDir
+				d.horse:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
+			end
+			
+			if not d.idleWait then
+				d.idleWait = mod:RandomInt(p2.bal.idleWaitMin,p2.bal.idleWaitMax)
+			elseif d.idleWait <= 0 then
+				--idle time finish
+				d.idleWait = nil
+				
+				d.dice = mod:RandomInt(4)	
+				while d.dice == d.lastDie do
+					d.dice = mod:RandomInt(4)	
+				end
+				d.lastDie = d.dice
+				
+				if d.dice == 1 then
+					d.state = "tonguegrab2"
+				elseif d.dice == 2 then
+					d.state = "spew2"
+				elseif d.dice == 3 then
+					local enemyNum = mod:CountRoom(EntityType.ENTITY_CHARGER_L2,0)
+					if enemyNum < p2.bal.maggotMax then
+						d.state = "summon2"
+					else
+						d.state = "lobspew2"
+					end
+				else
+					d.state = "lobspew2"
+				end
+			else
+				d.idleWait = d.idleWait - 1
+			end
+		end
+		
+		--TONGUE GRAB 2
+		if d.state == "tonguegrab2" then
+			mod:SpritePlay(sprite, d.P2text .. "TongueGrab")
+			
+			if d.slammed then
+				if not d.magTearSeq then
+					d.magTears = {}
+					for i = 1, 3 do
+						local enemyNum = mod:CountRoom(EntityType.ENTITY_SMALL_MAGGOT,0)
+						if enemyNum < p2.bal.tinyMaggotMax then
+							local randPos = Vector(d.xEndPos+(-d.grabDir*mod:RandomInt(50)),Isaac.GetRandomPosition().Y)
+							--airdrop maggot projectiles
+							d.magTears[i] = Isaac.Spawn(EntityType.ENTITY_PROJECTILE, ProjectileVariant.PROJECTILE_NORMAL, 0, randPos, Vector(0,0), npc):ToProjectile();
+							d.magTears[i].Height = -600 - mod:RandomInt(1,500)
+							d.magTears[i].FallingSpeed = 15;
+							d.magTears[i].FallingAccel = 2;
+							d.magTears[i]:GetData().pestMagBullet = true
+						end
+					end
+					d.magTearSeq = 4
+				elseif d.magTearSeq == 0 then
+					for i = 1, #d.magTears do
+						d.magTears[i]:GetSprite():Load("gfx/853.000_small maggot.anm2", true)
+						d.magTears[i]:GetSprite():Play("Bullet", true)
+					end
+					d.magTearSeq = -1
+				else
+					d.magTearSeq = d.magTearSeq - 1
+				end
+			end
+			
+			--windup
+			if not d.substate then
+				if sprite:IsEventTriggered("Target") then
+					d.magTearSeq = nil
+					npc:PlaySound(SoundEffect.SOUND_ANIMAL_SQUISH, 1, 0, false, 1)
+					for i = 1, #d.cord do
+						d.cord[i].Target.Velocity = Vector(-d.grabDir*p2.bal.grabPullPower,0)
+					end
+				end 
+				
+				if sprite:IsEventTriggered("Shoot") then
+					npc:PlaySound(SoundEffect.SOUND_MEATHEADSHOOT, 1, 0, false, 1)
+					d.haltPull = true
+					d.substate = 1
+				end 
+			--launch and pin
+			elseif d.substate == 1 then
+			
+			for i = 1, #d.cord do				
+				if not d.slammed then
+					if d.grabDir == 1 and d.cord[i].Target.Position.X > d.xEndPos 
+					or d.grabDir == -1 and d.cord[i].Target.Position.X < d.xEndPos then
+						game:ShakeScreen(10)
+						npc:PlaySound(SoundEffect.SOUND_FORESTBOSS_STOMPS, 1, 0, false, 1)
+						d.slammed = true
+					end
+					d.cord[i].Target.Velocity = Vector(d.cord[i].Target.Velocity.X+(d.grabDir*p2.bal.grabPower),d.cord[i].Target.Velocity.Y)
+				else
+					d.cord[i].Target.Velocity = Vector(d.cord[i].Target.Velocity.X+(d.grabDir*p2.bal.grabPower),d.cord[i].Target.Velocity.Y*p2.bal.grabRestrict)
+				end
+			end
+			
+				if sprite:IsEventTriggered("Stop") then
+					npc:PlaySound(SoundEffect.SOUND_FETUS_JUMP, 1, 0, false, 1)
+					
+					for i = 1, #d.cord do
+						d.cord[i].Target.Velocity = Vector(-d.grabDir*p2.bal.grabPullPower*1.5,0)
+					end
+					d.haltPull = false
+					d.substate = 2
+				end 
+			--pullback
+			elseif d.substate == 2 then
+				if sprite:IsFinished(d.P2text .. "TongueGrab") then
+					d.substate = nil
+					d.slammed = nil
+					d.state = "idle2"
+				end
+			end
+		end
+		
+		--SPEW 2
+		if d.state == "spew2" then
+			mod:SpritePlay(sprite, d.P2text .. "Spew")
+			
+			--begin shoot
+			if not d.substate then
+				if sprite:IsEventTriggered("Target") then
+					npc:PlaySound(SoundEffect.SOUND_MONSTER_GRUNT_4, 1, 0, false, 1)
+				end
+				
+				d.haltSlide = true
+				if sprite:IsEventTriggered("Shoot") then
+					d.scatterAmount = p2.bal.scatter2
+					d.substate = 1
+				end
+			elseif d.substate == 1 then
+				if npc.FrameCount % 2 == 0 then
+					local scatter = mod:RandomInt(-d.scatterAmount,d.scatterAmount) * 0.1
+					
+					local extraVector = Vector(d.grabDir,0):Rotated(mod:RandomInt(-90,90))*mod:RandomInt(2,6)
+					local vector = (target.Position-npc.Position):Normalized():Rotated(scatter) * p2.bal.spewStrength
+					
+					--small extra tears
+					local tear = Isaac.Spawn(EntityType.ENTITY_PROJECTILE, ProjectileVariant.PROJECTILE_NORMAL, 0, npc.Position, extraVector, npc):ToProjectile()
+					tear:GetSprite().Color = d.tearColor
+					tear.Height = -16
+					
+					local tear = Isaac.Spawn(EntityType.ENTITY_PROJECTILE, ProjectileVariant.PROJECTILE_NORMAL, 0, npc.Position, vector, npc):ToProjectile()
+					tear:GetSprite().Color = d.tearColor
+					tear.FallingAccel = -0.05
+					tear.Height = -16
+					npc:PlaySound(SoundEffect.SOUND_BLOODSHOOT, 1, 0, false, 1)
+				end
+				
+				if sprite:IsEventTriggered("Stop") then
+					d.substate = 2
+				end
+			elseif d.substate == 2 then
+				if sprite:IsEventTriggered("Burst") then
+					local vector = (target.Position-npc.Position):Normalized() * p2.bal.burstStrength
+					
+					local fart = Isaac.Spawn(1000, EffectVariant.FART, 0, npc.Position, Vector(0,0), npc)
+					npc:PlaySound(SoundEffect.SOUND_FART_GURG, 1, 0, false, 1)
+					
+					local tear = Isaac.Spawn(EntityType.ENTITY_PROJECTILE, ProjectileVariant.PROJECTILE_NORMAL, 0, npc.Position, vector, npc):ToProjectile()
+					tear:GetSprite().Color = d.tearColor2
+					tear.FallingAccel = -0.05
+					tear.Scale = 2
+					tear:GetData().pestBoom = true
+					tear:GetData().pestGasLife = p2.bal.gasLifeSpan2
+				end
+			
+				if sprite:IsFinished(d.P2text .. "Spew") then
+					d.haltSlide = false
+					d.scatterAmount = nil
+					d.substate = nil
+					d.state = "idle2"
+				end
+			end
+			npc.Friction = p2.bal.attackFriction
+		end
+		
+		--LOB SPEW 2
+		if d.state == "lobspew2" then
+			mod:SpritePlay(sprite, d.P2text .. "LobSpew")
+			
+			if sprite:IsFinished(d.P2text .. "LobSpew") then
+				d.state = "idle2"
+			elseif sprite:IsEventTriggered("Shoot") then
+				
+				npc:PlaySound(SoundEffect.SOUND_MEATHEADSHOOT,1,0,false,1)
+				npc:PlaySound(SoundEffect.SOUND_MONSTER_GRUNT_0,1,0,false,1)
+				local vector = (target.Position-npc.Position)*p2.bal.lobTracking2 + Vector(mod:RandomInt(-2,2),mod:RandomInt(-2,2))
+				
+				local tear = Isaac.Spawn(EntityType.ENTITY_PROJECTILE, ProjectileVariant.PROJECTILE_NORMAL, 0, npc.Position, vector, npc):ToProjectile();
+				tear:GetSprite().Color = d.tearColor2
+				tear.Scale = 2
+				tear.FallingSpeed = -45;
+				tear.FallingAccel = 1.5;
+				tear:GetData().pestBoom = true
+				tear:GetData().pestBoomTears = true
+				tear:GetData().pestGasLife = p2.bal.gasLifeSpan2
+			end
+		end
+		
+		--SUMMON MAGGOT 2
+		if d.state == "summon2" then
+			mod:SpritePlay(sprite, d.P2text .. "Summon")
+			
+			if sprite:IsFinished(d.P2text .. "Summon") then
+				d.state = "idle2"
+			elseif sprite:IsEventTriggered("Shoot") then
+			
+				local position = npc.Position + Vector(d.grabDir*20,0):Rotated(mod:RandomInt(-90,90))
+				Isaac.Spawn(EntityType.ENTITY_CHARGER_L2, 0, 0, position, Vector(0,0), npc)
+				
+				npc:PlaySound(SoundEffect.SOUND_SUMMONSOUND, 1, 0, false, 1)
+				npc:PlaySound(SoundEffect.SOUND_MONSTER_GRUNT_5, 1, 0, false, 1)
+			end
+			npc.Friction = p2.bal.attackFriction
+		end
+		
+		for i = 1, #d.cord do
+			if not d.haltPull then
+				d.pullPower = p2.bal.constantPullPower - p2.bal.pullMod + (d.cord[i].Target:ToPlayer().MoveSpeed * p2.bal.pullMod)
+				d.cord[i].Target.Velocity = d.cord[i].Target.Velocity + Vector(-d.grabDir*d.pullPower,0)
+			end
+		end
+		
+		if not d.haltSlide then
+			local ySlide = (target.Position.Y - npc.Position.Y)*p2.bal.slideAccel
+			npc.Velocity = Vector(0,ySlide)
+		end
+		
+		npc.Position = Vector(d.xPos,npc.Position.Y)
 	end
 end
+
+--PEST HORSE AI
+function mod:Pestilence2HorseAI(npc)
+	local sprite = npc:GetSprite()
+	local d = npc:GetData()
+	local target = npc:GetPlayerTarget()
+	local level = game:GetLevel()
+	local room = game:GetRoom()
+	
+	--INIT
+	if not d.init then
+		
+		if (level:GetStage() == LevelStage.STAGE4_1 or level:GetStage() == LevelStage.STAGE4_2)
+		and level:GetStageType() == StageType.STAGETYPE_REPENTANCE_B then
+			d.altSkin = true
+		end
+		
+		if not d.substate then
+			npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
+			
+			if sprite:IsFinished("Appear") then
+				npc:PlaySound(SoundEffect.SOUND_BOO_MAD, 1, 0, false, 1)
+		
+				if not d.grabDir then
+					d.grabDir = 1
+				end
+				
+				local xStart = room:GetTopLeftPos().X + p2.bal.distToWall
+				local xEnd = room:GetBottomRightPos().X - p2.bal.distToWall
+				local mid = room:GetCenterPos().Y
+				
+				if d.grabDir == -1 then
+					xStart = room:GetBottomRightPos().X - p2.bal.distToWall
+					xEnd = room:GetTopLeftPos().X + p2.bal.distToWall
+					sprite.FlipX = true
+				else
+					sprite.FlipX = false
+				end
+				
+				npc.Position = Vector(xStart,mid)
+				
+				d.xPos = npc.Position.X
+				d.xEndPos = xEnd
+			
+				npc.SpriteOffset = Vector(0,-550)
+				d.substate = 1
+			end
+		elseif d.substate == 1 then
+			mod:SpritePlay(sprite, "Falling")
+			if npc.SpriteOffset.Y < -8 then
+				d.increase = -npc.SpriteOffset.Y*0.02
+				npc.SpriteOffset = npc.SpriteOffset + Vector(0,5)*d.increase
+			else
+				--fell
+				d.substate =2
+			end
+		elseif d.substate == 2 then
+			mod:SpritePlay(sprite, "Submerge")
+			if sprite:IsEventTriggered("Shoot") then
+				game:SpawnParticles(npc.Position, EffectVariant.BLOOD_EXPLOSION, 1, 1)
+				npc:PlaySound(SoundEffect.SOUND_MEATY_DEATHS, 1, 0, false, 1)
+				npc.SpriteOffset = Vector(0,0)
+			end
+			
+			if sprite:IsFinished("Submerge") then
+				npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_ALL
+				npc.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_WALLS
+				d.init = true
+				d.substate = nil
+				d.increase = nil
+				d.state = "idle"
+			end
+		end
+	end
+	
+	if d.state == "idle" then
+		mod:SpritePlay(sprite, "Idle")
+		
+		local ySlide = (target.Position.Y - npc.Position.Y)*p2.bal.slideAccel
+		npc.Velocity = Vector(0,ySlide)
+		
+		npc.Position = Vector(d.xPos,npc.Position.Y)
+	end
+end
+
+--PEST CORPSE AI
+function mod:Pestilence2CorpseAI(npc)
+	local d = npc:GetData()
+	if not d.init then
+		npc:AddEntityFlags(EntityFlag.FLAG_NO_TARGET)
+		npc:AddEntityFlags(EntityFlag.FLAG_NO_STATUS_EFFECTS)
+		d.init = true
+	end
+
+	npc.Friction = 0.8
+	if npc:IsDead() then
+		local fart = Isaac.Spawn(1000, EffectVariant.FART, 0, npc.Position, Vector(0,0), npc):ToEffect()
+		fart:GetSprite().Scale = Vector(2,2)
+		npc:PlaySound(Isaac.GetSoundIdByName("FartReverb"), 1, 0, false, 1)
+		
+		for i, entity in ipairs(Isaac.FindByType(EntityType.ENTITY_PLAYER)) do
+			entity.Velocity = (entity.Position-npc.Position):Normalized()*15
+		end
+		
+		game:ShakeScreen(10)
+	end
+end
+
+function mod:pestilenceRender(npc)
+	if not (npc.Type == p2.id
+		and npc.Variant == p2.variant) then
+		return
+	end
+	
+	local sprite = npc:GetSprite()
+	local d = npc:GetData()
+	if sprite:IsPlaying("Death") then
+	
+		if sprite:IsEventTriggered("Shoot") and not d.bloodgush then
+			npc:PlaySound(SoundEffect.SOUND_SKIN_PULL, 1, 0, false, 1)
+			--d.deathState = 1
+			d.bloodgush = true
+		end
+		
+		--[[if sprite:IsEventTriggered("Stop") and d.bloodgush then
+			d.bloodgush = false
+		end]]
+		
+		--[[if d.bloodgush and sprite:GetFrame()%3 == 0 and d.deathState ~= sprite:GetFrame() then
+			npc:PlaySound(SoundEffect.SOUND_MEAT_JUMPS, 1, 0, false, 1)
+			--local blood = game:SpawnParticles(npc.Position, EffectVariant.BLOOD_EXPLOSION, 1, 1):ToEffect()
+			d.deathState = sprite:GetFrame()
+		end]]
+	
+		if sprite:IsEventTriggered("Burst") and not d.faceplant then
+			npc:PlaySound(SoundEffect.SOUND_MEAT_IMPACTS, 1, 0, false, 0.5)
+			d.faceplant = true
+		end
+		if sprite:IsEventTriggered("Target") and not d.corpse then
+			d.grabDir = d.grabDir or 1
+			local offset = Vector(d.grabDir*38,0)
+			local corpse = Isaac.Spawn(p2.corpse.id, p2.corpse.variant, 0, npc.Position+offset, Vector(0,0), npc)
+			corpse:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
+			
+			if npc:GetSprite().FlipX then
+				corpse:GetSprite().FlipX = true
+			end
+			d.corpse = true
+		end
+	end
+end
+
+function mod:renderPestilence(npc)
+	mod:pestilenceRender(npc)
+end
+mod:AddCallback(ModCallbacks.MC_POST_NPC_RENDER, mod.renderPestilence, p2.id)
 
 function mod:Pestilence2Update(npc)
 	if npc.Type == p2.id and npc.Variant == p2.variant then
 		mod:Pestilence2AI(npc)
 	end
+	if npc.Type == p2.horse.id and npc.Variant == p2.horse.variant then
+		mod:Pestilence2HorseAI(npc)
+	end
+	if npc.Type == p2.corpse.id and npc.Variant == p2.corpse.variant then
+		mod:Pestilence2CorpseAI(npc)
+	end
+end
+mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.Pestilence2Update, p2.id)
+
+--Pest boom
+function mod:PestProjectileBoom(tear,collided)
+	local d = tear:GetData()
+
+	if d.pestBoomTarget then
+		if not d.target then
+			d.target = Isaac.Spawn(1000, EffectVariant.TARGET, 0, tear.Position, Vector(0,0), tear):ToEffect()
+			local targetColor = Color(0.4,1,0.3,1)
+			d.target:SetColor(targetColor, 100, 1, false, false)
+		end
+	end
+	
+	if tear:IsDead() or collided then
+		if d.target then
+			d.target:Remove()
+		end
+	
+		local boomColor = Color(1,1,1,1)
+		boomColor:SetColorize(1.3,2,0.7,1)
+		
+		local explode = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.BOMB_EXPLOSION, 0, tear.Position, Vector(0,0), tear):ToEffect()
+		explode:GetSprite().Color = boomColor
+		
+		local gas = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.SMOKE_CLOUD, 0, tear.Position, Vector(0,0), tear):ToEffect()
+		if not d.pestGasLife then
+			gas.LifeSpan = p2.bal.gasLifeSpan
+		else
+			gas.LifeSpan = d.pestGasLife
+		end
+		gas.Timeout = gas.LifeSpan
+		
+		if tear:GetData().pestBoomTears then
+			--quad tears
+			local tearNum = 6
+			local vector = Vector(1,0)*p2.bal.lobTearStrength
+			local tearSpin = 0
+			if not d.pestBoomTarget then
+				tearSpin = mod:RandomInt(0,360)
+			end
+			--local tearSpin = 0
+			for i=0,tearNum do
+				local rotated = (i*(360/tearNum)) + tearSpin
+				local tear = Isaac.Spawn(EntityType.ENTITY_PROJECTILE, ProjectileVariant.PROJECTILE_NORMAL, 0, tear.Position, vector:Rotated(rotated), tear):ToProjectile()
+				tear:GetSprite().Color = boomColor
+			end
+		end
+	end
 end
 
-mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.Pestilence2Update, p2.id)
+--Pest mag ball
+function mod:PestMagBullet(tear,collided)
+	local d = tear:GetData()
+	if tear:IsDead() or collided then
+		local maggot = Isaac.Spawn(EntityType.ENTITY_SMALL_MAGGOT, 0, 0, tear.Position, Vector(0,0), tear)
+		maggot:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
+		maggot:GetSprite():Play("Land")
+		tear:Remove()
+	end
+end
+
+--projectile update
+mod:AddCallback(ModCallbacks.MC_POST_PROJECTILE_UPDATE, function(_, tear)
+	if tear:GetData().pestBoom then
+		mod:PestProjectileBoom(tear,false)
+	end
+	
+	if tear:GetData().pestMagBullet then
+		mod:PestMagBullet(tear,false)
+	end
+end)
+
+mod:AddCallback(ModCallbacks.MC_PRE_PROJECTILE_COLLISION, function(_, tear, collider)
+	if tear:GetData().pestBoom then
+		mod:PestProjectileBoom(tear,true)
+	end
+	
+	if tear:GetData().pestMagBullet then
+		mod:PestMagBullet(tear,true)
+	end
+end)
 
 ------------------------COOL FUNCTIONS------------------------
 --------------------------------------------------------------
@@ -3072,6 +4108,33 @@ end
 --------------------------MOD STUFF--------------------------
 -------------------------------------------------------------
 
+--post entity remove
+mod:AddCallback(ModCallbacks.MC_POST_ENTITY_REMOVE, function(_, npc)
+	--DEATH
+	if (npc.Type == d2.id
+		and npc.Variant == d2.variant) then
+		
+		local room = game:GetRoom()
+		--drop trinket
+		if room:GetType() == RoomType.ROOM_BOSS then
+			if npc:IsDead() and not game:IsPaused() then
+				local dice = mod:RandomInt(2)
+				if dice == 1 then
+					local trinket = Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, TrinketType.TRINKET_YOUR_SOUL, npc.Position, Vector(0,0), npc)
+				end
+			end
+		end
+	end
+	
+	--PESTILENCE
+	if (npc.Type == p2.id
+		and npc.Variant == p2.variant) then
+		
+		if npc:IsDead() and not game:IsPaused() then
+		end
+	end
+end)
+
 --npc collisions
 mod:AddCallback(ModCallbacks.MC_PRE_NPC_COLLISION, function(_, npc, npc2)
 	--war
@@ -3156,6 +4219,34 @@ mod:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, function(_, npc,amount,flag,sou
 			end
 		end
 	end
+	
+	--pestilence under phase 2
+	if npc.Type == p2.id and npc.Variant == p2.variant then
+		if not npc:GetData().phase2 and npc.HitPoints <= npc.MaxHitPoints * p2.bal.phase2Health then
+			if npc:GetData().armorDamage ~= nil then
+				npc:GetData().armorDamage = nil
+				return true
+			else
+				amount = amount * 0.1
+				npc:GetData().armorDamage = amount
+				npc:TakeDamage(npc:GetData().armorDamage, 0, source, 0)
+				return false
+			end
+		end
+		
+		if npc:GetData().phase3 then
+			return false
+		end
+	end
+	
+	--pestilence corpse
+	if npc.Type == p2.corpse.id and npc.Variant == p2.corpse.variant then
+		if flag <= DamageFlag.DAMAGE_EXPLOSION then
+			return false
+		else
+			return true
+		end
+	end
 end
 )
 
@@ -3170,11 +4261,6 @@ mod:AddCallback(ModCallbacks.MC_PRE_TEAR_COLLISION, function(_, tear, npc)
 	end
 end
 )
-
-function mod:renderBosses(npc)
-	mod:deathRender(npc)
-end
-mod:AddCallback(ModCallbacks.MC_POST_NPC_RENDER, mod.renderBosses, d2.id)
 
 --TUMOR CUBE --------------------
 mod.Tumorcube = {
@@ -3964,6 +5050,16 @@ end,CollectibleType.COLLECTIBLE_BOOK_OF_REVELATIONS)
 --post mod update
 mod:AddCallback(ModCallbacks.MC_POST_UPDATE,function(_)
 	local room = game:GetRoom()
+	
+	--SOUND TEST
+	--[[for i = 1, 817 do
+		if SFXManager():IsPlaying(i) then print(i) end
+	end]]--
+	
+	--FIND ENTITY
+	--[[for i, entity in ipairs(Isaac.FindByType(1000)) do
+			print(entity.Variant)
+	end]]--
 
 	if room:GetType() == RoomType.ROOM_BOSS then
 		if doHorseDrop then
@@ -4177,7 +5273,7 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function(_)
 					doHorseDrop = true
 					
 					StageAPI.GetBossData(p2.name).Weight = 0
-					StageAPI.GetBossData(p2.nameAlt).Weight = 0
+					--StageAPI.GetBossData(p2.nameAlt).Weight = 0
 					break
 				end
 			end
