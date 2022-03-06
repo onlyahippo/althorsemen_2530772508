@@ -1,5 +1,5 @@
 <AnimatedActor>
-	<Info CreatedBy="robot" CreatedOn="12/3/2021 7:56:03 PM" Version="118" Fps="60"/>
+	<Info CreatedBy="robot" CreatedOn="3/6/2022 12:46:53 AM" Version="119" Fps="60"/>
 	<Content>
 		<Spritesheets>
 			<Spritesheet Path="..\..\resources\gfx\misc\death items.png" Id="0"/>
@@ -8,9 +8,7 @@
 			<Layer Name="items" Id="0" SpritesheetId="0"/>
 		</Layers>
 		<Nulls/>
-		<Events>
-			<Event Name="Drip" Id="0"/>
-		</Events>
+		<Events/>
 	</Content>
 	<Animations DefaultAnimation="index">
 		<Animation Name="index" FrameNum="1" Loop="false">

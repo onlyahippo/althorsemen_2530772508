@@ -5,7 +5,7 @@ local sfx = SFXManager()
 local rng = RNG()
 
 local firstLoaded = true
-local loadText = "Alt Horsemen v4.15 (+Death)"
+local loadText = "Alt Horsemen v5.0 (+Pestilence)"
 local loadTextFailed = "Alt Horsemen load failed (STAGEAPI Disabled)"
 
 ------------------------BOSSES------------------------
@@ -2085,6 +2085,8 @@ function mod:Death2AI(npc)
 			local spawnVec = Vector(npc.Position.X+10*d.launchDir,npc.Position.Y) 
 			d.horseNpc = Isaac.Spawn(d2.horse.id, d2.horse.variant, 0, spawnVec, Vector(0,0), npc)
 			d.horseNpc:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
+			d.horseNpc:AddEntityFlags(EntityFlag.FLAG_NO_TARGET)
+			d.horseNpc:AddEntityFlags(EntityFlag.FLAG_NO_STATUS_EFFECTS)
 			d.horseNpc:GetData().parentNpc = npc
 			if d.tpSafe then d.horseNpc:GetData().tpSafe = true end
 			d.horseNpc:GetSprite().FlipX = sprite.FlipX
@@ -2882,11 +2884,21 @@ mod.Pestilence2 = {
 		name = "Tainted Pestilence Horse",
 		id = 640,
 		variant = 102,
+		idleWaitMin = 60,
+		idleWaitMax = 90,
+		speed = 4,
+		flyballMax = 2,
 	},
 	corpse = {
 		name = "Tainted Pestilence Corpse",
 		id = 640,
 		variant = 103,
+	},
+	flyball = {
+		name = "Army Fly Ball",
+		id = 641,
+		variant = 104,
+		speed = 4,
 	},
 	bal = {
 		idleWaitMin = 30,
@@ -2908,18 +2920,19 @@ mod.Pestilence2 = {
 		lobTracking = 0.03,
 		maggotMax = 2,
 		gasMin = 4, --minimum gas for quad spew to trigger
-		phase2Health = 0.66,
+		phase2Health = 0.6,
 		airDropNum = 9,
 		airDropRate = 16,
 		distToWall = 35,
-		constantPullPower = 0.55,
+		constantPullPower = 0.5,
 		pullMod = 0.3,
 		slideAccel = 0.06,
 		scatter2 = 100,
 		lobTracking2 = 0.028,
 		gasLifeSpan2 = 325,
-		phase3Health = 0.33,
-		phase3Delay = 130,
+		phase3Health = 0.25,
+		phase3Delay = 150,
+		delayBeforeHorse = 30,
 		tinyMaggotMax = 4,
 	}
 }
@@ -3237,7 +3250,8 @@ function mod:Pestilence2AI(npc)
 			
 			npc:PlaySound(SoundEffect.SOUND_MEATHEADSHOOT,1,0,false,1)
 			npc:PlaySound(SoundEffect.SOUND_MONSTER_GRUNT_0,1,0,false,1)
-			local vector = (target.Position-npc.Position)*p2.bal.lobTracking
+			--local variance = (Vector(mod:RandomInt(-15,15),mod:RandomInt(-15,15))*0.1)
+			local vector = (target.Position-npc.Position)*p2.bal.lobTracking-- + variance
 			
 			local tear = Isaac.Spawn(EntityType.ENTITY_PROJECTILE, ProjectileVariant.PROJECTILE_NORMAL, 0, npc.Position, vector, npc):ToProjectile();
 			tear:GetSprite().Color = d.tearColor2
@@ -3260,7 +3274,8 @@ function mod:Pestilence2AI(npc)
 		elseif sprite:IsEventTriggered("Shoot") then
 		
 			local position = npc.Position + Vector(20,0):Rotated(mod:RandomInt(360))
-			Isaac.Spawn(EntityType.ENTITY_CHARGER_L2, 0, 0, position, Vector(0,0), npc)
+			local charger = Isaac.Spawn(EntityType.ENTITY_CHARGER_L2, 0, 0, position, Vector(0,0), npc)
+			charger.HitPoints = charger.MaxHitPoints*0.75
 			
 			npc:PlaySound(SoundEffect.SOUND_SUMMONSOUND, 1, 0, false, 1)
 			npc:PlaySound(SoundEffect.SOUND_MONSTER_GRUNT_5, 1, 0, false, 1)
@@ -3372,6 +3387,7 @@ function mod:Pestilence2AI(npc)
 				--airdrop projectile
 				local tear = Isaac.Spawn(EntityType.ENTITY_PROJECTILE, ProjectileVariant.PROJECTILE_NORMAL, 0, randPos, Vector(0,0), npc):ToProjectile();
 				tear:GetSprite().Color = d.tearColor2
+				tear.CollisionDamage = 0
 				tear.Height = -500
 				tear.Scale = 2
 				tear.FallingSpeed = 15;
@@ -3421,7 +3437,7 @@ function mod:Pestilence2AI(npc)
 					npc:PlaySound(SoundEffect.SOUND_MEATY_DEATHS, 1, 0, false, 1)
 					
 					for i = 1, #d.cord do
-						d.cord[i].Target.Velocity = Vector(d.grabDir*p2.bal.grabPullPower,0)
+						d.cord[i].Target.Velocity = Vector(d.grabDir*p2.bal.grabPullPower*1.5,0)
 						d.cord[i]:GetSprite():ReplaceSpritesheet(0, "gfx/effects/evis_guts.png")
 						d.cord[i]:GetSprite():ReplaceSpritesheet(1, "gfx/effects/evis_guts.png")
 						d.cord[i]:GetSprite():LoadGraphics()
@@ -3460,6 +3476,12 @@ function mod:Pestilence2AI(npc)
 				for i = 1, #d.cord do
 					d.cord[i]:Kill()
 				end
+				for i, entity in ipairs(Isaac.FindByType(p2.flyball.id, p2.flyball.variant)) do
+					entity:Kill()
+				end
+				for i, entity in ipairs(Isaac.FindByType(EntityType.ENTITY_CHARGER_L2, 0)) do
+					entity:Kill()
+				end
 				npc:Kill()
 				d.state = nil
 				d.horse = nil
@@ -3476,9 +3498,10 @@ function mod:Pestilence2AI(npc)
 				mod:SpritePlay(sprite, d.P2text .. "Idle")
 			end
 			
-			if d.phase3 and not d.horse and d.idleWait == p2.bal.phase3Delay - 20 then
+			if d.phase3 and not d.horse and d.idleWait == p2.bal.phase3Delay - p2.bal.delayBeforeHorse then
 				d.horse = Isaac.Spawn(p2.horse.id, p2.horse.variant, 0, Vector(d.xEndPos,0), Vector(0,0), npc)
 				d.horse:GetData().grabDir = -d.grabDir
+				d.horse:GetData().Parent = npc
 				d.horse:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
 			end
 			
@@ -3500,7 +3523,11 @@ function mod:Pestilence2AI(npc)
 					d.state = "spew2"
 				elseif d.dice == 3 then
 					local enemyNum = mod:CountRoom(EntityType.ENTITY_CHARGER_L2,0)
-					if enemyNum < p2.bal.maggotMax then
+					local magMax = p2.bal.maggotMax
+					if d.phase3 then
+						magMax = 1
+					end
+					if enemyNum < magMax then
 						d.state = "summon2"
 					else
 						d.state = "lobspew2"
@@ -3548,6 +3575,7 @@ function mod:Pestilence2AI(npc)
 			if not d.substate then
 				if sprite:IsEventTriggered("Target") then
 					d.magTearSeq = nil
+					npc:PlaySound(SoundEffect.SOUND_MONSTER_GRUNT_2, 1, 0, false, 1)
 					npc:PlaySound(SoundEffect.SOUND_ANIMAL_SQUISH, 1, 0, false, 1)
 					for i = 1, #d.cord do
 						d.cord[i].Target.Velocity = Vector(-d.grabDir*p2.bal.grabPullPower,0)
@@ -3612,7 +3640,7 @@ function mod:Pestilence2AI(npc)
 				end
 			elseif d.substate == 1 then
 				if npc.FrameCount % 2 == 0 then
-					local scatter = mod:RandomInt(-d.scatterAmount,d.scatterAmount) * 0.1
+					local scatter = mod:RandomInt(-d.scatterAmount,d.scatterAmount) * 0.06
 					
 					local extraVector = Vector(d.grabDir,0):Rotated(mod:RandomInt(-90,90))*mod:RandomInt(2,6)
 					local vector = (target.Position-npc.Position):Normalized():Rotated(scatter) * p2.bal.spewStrength
@@ -3667,7 +3695,8 @@ function mod:Pestilence2AI(npc)
 				
 				npc:PlaySound(SoundEffect.SOUND_MEATHEADSHOOT,1,0,false,1)
 				npc:PlaySound(SoundEffect.SOUND_MONSTER_GRUNT_0,1,0,false,1)
-				local vector = (target.Position-npc.Position)*p2.bal.lobTracking2 + Vector(mod:RandomInt(-2,2),mod:RandomInt(-2,2))
+				local variance = (Vector(mod:RandomInt(-15,15),mod:RandomInt(-15,15))*0.1)
+				local vector = (target.Position-npc.Position)*p2.bal.lobTracking2 + variance
 				
 				local tear = Isaac.Spawn(EntityType.ENTITY_PROJECTILE, ProjectileVariant.PROJECTILE_NORMAL, 0, npc.Position, vector, npc):ToProjectile();
 				tear:GetSprite().Color = d.tearColor2
@@ -3689,7 +3718,8 @@ function mod:Pestilence2AI(npc)
 			elseif sprite:IsEventTriggered("Shoot") then
 			
 				local position = npc.Position + Vector(d.grabDir*20,0):Rotated(mod:RandomInt(-90,90))
-				Isaac.Spawn(EntityType.ENTITY_CHARGER_L2, 0, 0, position, Vector(0,0), npc)
+				local charger = Isaac.Spawn(EntityType.ENTITY_CHARGER_L2, 0, 0, position, Vector(0,0), npc)
+				charger.HitPoints = charger.MaxHitPoints*0.75
 				
 				npc:PlaySound(SoundEffect.SOUND_SUMMONSOUND, 1, 0, false, 1)
 				npc:PlaySound(SoundEffect.SOUND_MONSTER_GRUNT_5, 1, 0, false, 1)
@@ -3785,15 +3815,112 @@ function mod:Pestilence2HorseAI(npc)
 				d.state = "idle"
 			end
 		end
-	end
+	else
 	
-	if d.state == "idle" then
-		mod:SpritePlay(sprite, "Idle")
-		
-		local ySlide = (target.Position.Y - npc.Position.Y)*p2.bal.slideAccel
-		npc.Velocity = Vector(0,ySlide)
+		--local ySlide = (target.Position.Y - npc.Position.Y)*p2.bal.slideAccel
+		--npc.Velocity = Vector(0,ySlide)
+		if not d.moveDir then
+			d.moveDir = 1
+			local rand = mod:RandomInt(1,2)
+			if rand == 1 then
+				d.moveDir = -1
+			end
+		elseif d.moveDir and not d.haltMove then
+			if d.moveDir == 1 and npc.Position.Y > room:GetBottomRightPos().Y-20 then
+				d.moveDir = -1
+			end
+			
+			if d.moveDir == -1 and npc.Position.Y < room:GetTopLeftPos().Y+20 then
+				d.moveDir = 1
+			end
+			
+			local vector = Vector(0,d.moveDir*p2.horse.speed)
+			npc.Velocity = mod:Lerp(npc.Velocity, vector, 0.3)
+		end
 		
 		npc.Position = Vector(d.xPos,npc.Position.Y)
+	
+		if d.state == "idle" then
+			mod:SpritePlay(sprite, "Idle")
+			
+			if not d.idleWait then
+				d.idleWait = mod:RandomInt(p2.horse.idleWaitMin,p2.horse.idleWaitMax)
+			elseif d.idleWait <= 0 then
+				--idle time finish
+				d.idleWait = nil
+				
+				d.dice = mod:RandomInt(2)
+				
+				if d.dice == 1 then
+					d.state = "blast"
+				else
+					local enemyNum = mod:CountRoom(p2.flyball.id,p2.flyball.variant)
+					if enemyNum < p2.horse.flyballMax then
+						d.state = "cough"
+					else
+						d.state = "blast"
+					end
+				end
+				
+				if d.Parent then
+					if d.state == "blast" and d.Parent:GetData().state == "spew2" then
+						d.state = "idle"
+					end
+				end
+			else
+				d.idleWait = d.idleWait - 1
+			end
+		end
+		
+		if d.state == "blast" then
+			mod:SpritePlay(sprite, "Blast")
+			
+			if sprite:IsEventTriggered("Target") then
+				npc:PlaySound(SoundEffect.SOUND_GRROOWL, 1, 0, false, 1)
+				d.haltMove = true
+			end
+			
+			if sprite:IsEventTriggered("Shoot") then
+				local angle = 0
+				if d.grabDir == -1 then
+					angle = 180
+				end
+				local laser = EntityLaser.ShootAngle(1, npc.Position, angle, 14, Vector(68*d.grabDir,-20), npc)
+				--laser.EntityCollisionClass = EntityCollisionClass.ENTCOLL_PLAYERONLY
+				--laser.CollisionDamage = 0
+				laser.DepthOffset = 45
+				
+				local laserColor = Color(1,1,1,1)
+				laserColor:SetColorize(1.3,2,0.7,1)
+				laser:SetColor(laserColor, 999, 1, false, false)
+				laser:Update()
+			end
+			
+			if sprite:IsFinished("Blast") then
+				d.haltMove = false
+				d.state = "idle"
+			end
+			
+			npc.Friction = 0.6
+		end
+		
+		if d.state == "cough" then
+			mod:SpritePlay(sprite, "Cough")
+			
+			if sprite:IsEventTriggered("Target") then
+				npc:PlaySound(SoundEffect.SOUND_SPIDER_COUGH, 1, 0, false, 1)
+			end
+			
+			if sprite:IsEventTriggered("Shoot") then
+				--local fly = Isaac.Spawn(EntityType.ENTITY_ARMYFLY, 0, 0, npc.Position+Vector(68*d.grabDir,0), Vector(d.grabDir,0), npc)
+				local fly = Isaac.Spawn(p2.flyball.id, p2.flyball.variant, 0, npc.Position+Vector(68*d.grabDir,0), Vector(d.grabDir,0), npc)
+				fly:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
+			end
+			
+			if sprite:IsFinished("Cough") then
+				d.state = "idle"
+			end
+		end
 	end
 end
 
@@ -3816,10 +3943,54 @@ function mod:Pestilence2CorpseAI(npc)
 			entity.Velocity = (entity.Position-npc.Position):Normalized()*15
 		end
 		
-		game:ShakeScreen(10)
+		game:ShakeScreen(15)
 	end
 end
 
+--FLYBALL AI
+function mod:FlyballAI(npc)
+	local sprite = npc:GetSprite()
+	local target = npc:GetPlayerTarget()
+	local d = npc:GetData()
+	local room = game:GetRoom()
+	
+	mod:SpritePlay(sprite, "Fly")
+	if not d.init then
+	
+		npc:AddEntityFlags(EntityFlag.FLAG_NO_PHYSICS_KNOCKBACK)
+		d.xStart = room:GetTopLeftPos().X + 15
+		d.xEnd = room:GetBottomRightPos().X - 15
+		d.yStart = room:GetTopLeftPos().Y + 7
+		d.yEnd = room:GetBottomRightPos().Y - 7
+		
+		if not d.vector then
+			d.vector = (target.Position - npc.Position):Normalized()*p2.flyball.speed
+		end
+	
+		d.init = true
+	else
+		npc.Velocity = d.vector
+		
+		if not d.delay then
+			if (npc.Position.X > d.xEnd or npc.Position.X < d.xStart) then
+				d.vector = Vector(-d.vector.X,d.vector.Y)
+				d.delay = 10
+			end
+			
+			if (npc.Position.Y > d.yEnd or npc.Position.Y < d.yStart) then
+				d.vector = Vector(d.vector.X,-d.vector.Y)
+				d.delay = 10
+			end
+		else
+			d.delay = d.delay - 1
+			if d.delay <= 0 then
+				d.delay = nil
+			end
+		end
+	end
+end
+
+--PEST DEATH
 function mod:pestilenceRender(npc)
 	if not (npc.Type == p2.id
 		and npc.Variant == p2.variant) then
@@ -3831,7 +4002,7 @@ function mod:pestilenceRender(npc)
 	if sprite:IsPlaying("Death") then
 	
 		if sprite:IsEventTriggered("Shoot") and not d.bloodgush then
-			npc:PlaySound(SoundEffect.SOUND_SKIN_PULL, 1, 0, false, 1)
+			npc:PlaySound(SoundEffect.SOUND_FAT_GRUNT, 1, 0, false, 1)
 			--d.deathState = 1
 			d.bloodgush = true
 		end
@@ -3895,8 +4066,13 @@ function mod:PestProjectileBoom(tear,collided)
 	end
 	
 	if tear:IsDead() or collided then
+			
 		if d.target then
 			d.target:Remove()
+		end
+		
+		if d.pestBoomTarget and collided then
+			return
 		end
 	
 		local boomColor = Color(1,1,1,1)
@@ -3962,6 +4138,80 @@ mod:AddCallback(ModCallbacks.MC_PRE_PROJECTILE_COLLISION, function(_, tear, coll
 		mod:PestMagBullet(tear,true)
 	end
 end)
+
+--drip
+mod.TheBigDrip = {
+	name = "The Big Drip",
+	portrait = "gfx/bosses/thebigdrip/hc.png",
+	bossName = "gfx/bosses/pestilence2/blank.png",
+	id = 641,
+	variant = 105,
+	bal = {
+		speed = 10,
+	}
+}
+local bdrip = mod.TheBigDrip
+
+--drip AI
+function mod:BigDripAI(npc)
+	local sprite = npc:GetSprite()
+	local target = npc:GetPlayerTarget()
+	local d = npc:GetData()
+	local room = game:GetRoom()
+	
+	if not d.init then
+		npc:AddEntityFlags(EntityFlag.FLAG_NO_PHYSICS_KNOCKBACK)
+		d.xStart = room:GetTopLeftPos().X + 15
+		d.xEnd = room:GetBottomRightPos().X - 15
+		d.yStart = room:GetTopLeftPos().Y + 7
+		d.yEnd = room:GetBottomRightPos().Y - 7
+		
+		if not d.vector then
+			d.vector = (target.Position - npc.Position):Normalized()*5
+		end
+	
+		d.init = true
+	else
+		npc.Velocity = d.vector
+		
+		if not d.delay then
+			if (npc.Position.X > d.xEnd or npc.Position.X < d.xStart) then
+				npc:PlaySound(SoundEffect.SOUND_FORESTBOSS_STOMPS, 1, 0, false, 1)
+				npc:FireBossProjectiles(20,Vector(0,0),0,ProjectileParams())
+				d.vector = (target.Position - npc.Position):Normalized()*bdrip.bal.speed
+				d.delay = 10
+			end
+			
+			if (npc.Position.Y > d.yEnd or npc.Position.Y < d.yStart) then
+				npc:PlaySound(SoundEffect.SOUND_FORESTBOSS_STOMPS, 1, 0, false, 1)
+				npc:FireBossProjectiles(20,Vector(0,0),0,ProjectileParams())
+				d.vector = (target.Position - npc.Position):Normalized()*bdrip.bal.speed
+				d.delay = 10
+			end
+		else
+			d.delay = d.delay - 1
+			if d.delay <= 0 then
+				d.delay = nil
+			end
+		end
+	end
+	
+	if npc:IsDead() then
+		for i = 1, 10 do
+			Isaac.Spawn(EntityType.ENTITY_DRIP, 0, 0, npc.Position, Vector(0,0), npc)
+		end
+	end
+end
+
+function mod:MiscUpdate(npc)
+	if npc.Type == p2.flyball.id and npc.Variant == p2.flyball.variant then
+		mod:FlyballAI(npc)
+	end
+	if npc.Type == bdrip.id and npc.Variant == bdrip.variant then
+		mod:BigDripAI(npc)
+	end
+end
+mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.MiscUpdate, p2.flyball.id)
 
 ------------------------COOL FUNCTIONS------------------------
 --------------------------------------------------------------
@@ -5095,21 +5345,37 @@ end
 
 if StageAPI and firstLoaded then	
 	mod.StageAPIBosses = {
-		f2 = StageAPI.AddBossData(f2.name, {
-			Name = f2.name,
-			Portrait = f2.portrait,
+		p2 = StageAPI.AddBossData(p2.name, {
+			Name = p2.name,
+			Portrait = p2.portrait,
 			Offset = Vector(0,-15),
-			Bossname = f2.bossName,
-			Weight = f2.weight,
-			Rooms = StageAPI.RoomsList("Famine2 Rooms", require("resources.luarooms.boss_famine2")),
+			Bossname = p2.bossName,
+			Weight = p2.weight,
+			Rooms = StageAPI.RoomsList("Pestilence2 Rooms", require("resources.luarooms.boss_pestilence2")),
 		}),
-		f2alt = StageAPI.AddBossData(f2.nameAlt, {
-			Name = f2.name,
-			Portrait = f2.portraitAlt,
+		--[[p2alt = StageAPI.AddBossData(p2.nameAlt, {
+			Name = p2.name,
+			Portrait = p2.portraitAlt,
 			Offset = Vector(0,-15),
-			Bossname = f2.bossName,
-			Weight = f2.weightAlt,
-			Rooms = StageAPI.RoomsList("Famine2 Alt Rooms", require("resources.luarooms.boss_famine2_alt")),
+			Bossname = p2.bossName,
+			Weight = p2.weightAlt,
+			Rooms = StageAPI.RoomsList("Pestilence2 Alt Rooms", require("resources.luarooms.boss_pestilence_alt")),
+		})]]
+		d2 = StageAPI.AddBossData(d2.name, {
+			Name = d2.name,
+			Portrait = d2.portrait,
+			Offset = Vector(0,-15),
+			Bossname = d2.bossName,
+			Weight = d2.weight,
+			Rooms = StageAPI.RoomsList("Death2 Rooms", require("resources.luarooms.boss_death2")),
+		}),
+		d2alt = StageAPI.AddBossData(d2.nameAlt, {
+			Name = d2.name,
+			Portrait = d2.portraitAlt,
+			Offset = Vector(0,-15),
+			Bossname = d2.bossName,
+			Weight = d2.weightAlt,
+			Rooms = StageAPI.RoomsList("Death2 Alt Rooms", require("resources.luarooms.boss_death2_alt")),
 		}),
 		w2 = StageAPI.AddBossData(w2.name, {
 			Name = w2.name,
@@ -5127,38 +5393,30 @@ if StageAPI and firstLoaded then
 			Weight = w2.weightAlt,
 			Rooms = StageAPI.RoomsList("War2 Alt Rooms", require("resources.luarooms.boss_war2_alt")),
 		}),
-		d2 = StageAPI.AddBossData(d2.name, {
-			Name = d2.name,
-			Portrait = d2.portrait,
+		f2 = StageAPI.AddBossData(f2.name, {
+			Name = f2.name,
+			Portrait = f2.portrait,
 			Offset = Vector(0,-15),
-			Bossname = d2.bossName,
-			Weight = d2.weight,
-			Rooms = StageAPI.RoomsList("Death2 Rooms", require("resources.luarooms.boss_death2")),
+			Bossname = f2.bossName,
+			Weight = f2.weight,
+			Rooms = StageAPI.RoomsList("Famine2 Rooms", require("resources.luarooms.boss_famine2")),
 		}),
-		d2alt = StageAPI.AddBossData(d2.nameAlt, {
-			Name = d2.name,
-			Portrait = d2.portraitAlt,
+		f2alt = StageAPI.AddBossData(f2.nameAlt, {
+			Name = f2.name,
+			Portrait = f2.portraitAlt,
 			Offset = Vector(0,-15),
-			Bossname = d2.bossName,
-			Weight = d2.weightAlt,
-			Rooms = StageAPI.RoomsList("Death2 Alt Rooms", require("resources.luarooms.boss_death2_alt")),
+			Bossname = f2.bossName,
+			Weight = f2.weightAlt,
+			Rooms = StageAPI.RoomsList("Famine2 Alt Rooms", require("resources.luarooms.boss_famine2_alt")),
 		}),
-		p2 = StageAPI.AddBossData(p2.name, {
-			Name = p2.name,
-			Portrait = p2.portrait,
-			Offset = Vector(0,-15),
-			Bossname = p2.bossName,
-			Weight = p2.weight,
-			Rooms = StageAPI.RoomsList("Pestilence2 Rooms", require("resources.luarooms.boss_pestilence2")),
+		bdrip = StageAPI.AddBossData(bdrip.name, {
+			Name = bdrip.name,
+			Portrait = bdrip.portrait,
+			Offset = Vector(50,50),
+			Bossname = bdrip.bossName,
+			Weight = 0,
+			Rooms = StageAPI.RoomsList("Big Drip Rooms", require("resources.luarooms.bigdrip")),
 		}),
-		--[[p2alt = StageAPI.AddBossData(p2.nameAlt, {
-			Name = p2.name,
-			Portrait = p2.portraitAlt,
-			Offset = Vector(0,-15),
-			Bossname = p2.bossName,
-			Weight = p2.weightAlt,
-			Rooms = StageAPI.RoomsList("Pestilence2 Alt Rooms", require("resources.luarooms.boss_pestilence_alt")),
-		})]]
 	}
 	
 	StageAPI.AddBossToBaseFloorPool({BossID = f2.name},LevelStage.STAGE1_1,StageType.STAGETYPE_REPENTANCE)
@@ -5192,16 +5450,6 @@ mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, function(_, isContinue)
 		for k, v in pairs(bossSeen) do
 			bossSeen[k] = false
 		end
-		
-		--reset weights
-		StageAPI.GetBossData(f2.name).Weight = f2.weight
-		StageAPI.GetBossData(f2.nameAlt).Weight = f2.weightAlt
-		StageAPI.GetBossData(w2.name).Weight = w2.weight
-		StageAPI.GetBossData(w2.nameAlt).Weight = w2.weightAlt
-		StageAPI.GetBossData(d2.name).Weight = d2.weight
-		StageAPI.GetBossData(d2.nameAlt).Weight = d2.weightAlt
-		StageAPI.GetBossData(p2.name).Weight = p2.weight
-		--StageAPI.GetBossData(p2.nameAlt).Weight = p2.weightAlt
 	end
 end
 )
@@ -5245,8 +5493,8 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function(_)
 						doHorseDrop = true
 					end
 					
-					StageAPI.GetBossData(f2.name).Weight = 0
-					StageAPI.GetBossData(f2.nameAlt).Weight = 0
+					StageAPI.SetBossEncountered(f2.name)
+					StageAPI.SetBossEncountered(f2.nameAlt)
 					break
 				--WAR
 				elseif entity.Type == w2.id and entity.Variant == w2.variant then
@@ -5254,8 +5502,8 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function(_)
 					bossSeen.w2 = true
 					doHorseDrop = true
 					
-					StageAPI.GetBossData(w2.name).Weight = 0
-					StageAPI.GetBossData(w2.nameAlt).Weight = 0
+					StageAPI.SetBossEncountered(w2.name)
+					StageAPI.SetBossEncountered(w2.nameAlt)
 					break
 				--DEATH
 				elseif entity.Type == d2.id and entity.Variant == d2.variant then
@@ -5263,8 +5511,8 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function(_)
 					bossSeen.d2 = true
 					doHorseDrop = true
 					
-					StageAPI.GetBossData(d2.name).Weight = 0
-					StageAPI.GetBossData(d2.nameAlt).Weight = 0
+					StageAPI.SetBossEncountered(d2.name)
+					StageAPI.SetBossEncountered(d2.nameAlt)
 					break
 				--PESTILENCE
 				elseif entity.Type == p2.id and entity.Variant == p2.variant then
@@ -5272,8 +5520,8 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function(_)
 					bossSeen.p2 = true
 					doHorseDrop = true
 					
-					StageAPI.GetBossData(p2.name).Weight = 0
-					--StageAPI.GetBossData(p2.nameAlt).Weight = 0
+					StageAPI.SetBossEncountered(p2.name)
+					--StageAPI.SetBossEncountered(p2.nameAlt)
 					break
 				end
 			end
@@ -5292,6 +5540,7 @@ if HPBars then
 	f2id = tostring(f2.id) .. "." .. tostring(f2.variant)
 	w2id = tostring(w2.id) .. "." .. tostring(w2.variant)
 	d2id = tostring(d2.id) .. "." .. tostring(d2.variant)
+	p2id = tostring(p2.id) .. "." .. tostring(p2.variant)
 
     HPBars.BossDefinitions[f2id] = {
         sprite = "gfx/bosses/famine2/small_famine_head.png",
@@ -5311,6 +5560,12 @@ if HPBars then
 		conditionalSprites = {
 			{"isStageType","gfx/bosses/death2/small_death_head_gehenna.png", {StageType.STAGETYPE_REPENTANCE_B}},
 		},
+    }
+	HPBars.BossDefinitions[p2id] = {
+        sprite = "gfx/bosses/pestilence2/small_pestilence_head.png",
+		--[[conditionalSprites = {
+			{"isStageType","gfx/bosses/death2/small_death_head_gehenna.png", {StageType.STAGETYPE_REPENTANCE_B}},
+		},]]
     }
 end
 
