@@ -2,4 +2,7 @@
 	<sound name="FartReverb">
 		<sample weight="1" path="fart_reverb.wav" />
 	</sound>
+	<sound name="TumorCollect">
+		<sample weight="1" path="tumor_collect.wav" />
+	</sound>
 </sounds>

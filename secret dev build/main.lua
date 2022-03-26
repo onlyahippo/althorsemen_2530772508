@@ -5,7 +5,7 @@ local sfx = SFXManager()
 local rng = RNG()
 
 local firstLoaded = true
-local loadText = "Alt Horsemen v5.0 (+Pestilence)"
+local loadText = "Alt Horsemen v5.2 (+Pestilence)"
 local loadTextFailed = "Alt Horsemen load failed (STAGEAPI Disabled)"
 
 ------------------------BOSSES------------------------
@@ -964,6 +964,8 @@ function mod:War2AI(npc)
 				entity:TakeDamage(2, DamageFlag.DAMAGE_EXPLOSION, EntityRef(npc), 0)
 			end
 			
+			d.phase2 = true
+			
 			npc:BloodExplode()
 			game:ShakeScreen(25)
 			npc:TakeDamage(w2.bal.phase2Bomb, 0, EntityRef(npc), 0)
@@ -973,7 +975,6 @@ function mod:War2AI(npc)
 			
 			npc.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_GROUND
 			
-			d.phase2 = true
 			mod:SpritePlay(sprite, "P2_Inferno")
 			sprite:SetOverlayRenderPriority(true)
 			mod:OverlayPlay(sprite,"P2_Fire")
@@ -2884,8 +2885,8 @@ mod.Pestilence2 = {
 		name = "Tainted Pestilence Horse",
 		id = 640,
 		variant = 102,
-		idleWaitMin = 60,
-		idleWaitMax = 90,
+		idleWaitMin = 50,
+		idleWaitMax = 80,
 		speed = 4,
 		flyballMax = 2,
 	},
@@ -2934,6 +2935,8 @@ mod.Pestilence2 = {
 		phase3Delay = 150,
 		delayBeforeHorse = 30,
 		tinyMaggotMax = 4,
+		boomDamage = 25,
+		boomRange = 60,
 	}
 }
 local p2 = mod.Pestilence2
@@ -3460,6 +3463,7 @@ function mod:Pestilence2AI(npc)
 	
 		--phase 3 begin
 		if npc.HitPoints <= npc.MaxHitPoints*p2.bal.phase3Health and not d.phase3 then
+			game:ShakeScreen(5)
 			npc:BloodExplode()
 			npc:AddEntityFlags(EntityFlag.FLAG_NO_TARGET)
 			npc:AddEntityFlags(EntityFlag.FLAG_NO_STATUS_EFFECTS)
@@ -3503,6 +3507,7 @@ function mod:Pestilence2AI(npc)
 				d.horse:GetData().grabDir = -d.grabDir
 				d.horse:GetData().Parent = npc
 				d.horse:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
+				d.horse:AddEntityFlags(EntityFlag.FLAG_DONT_COUNT_BOSS_HP)
 			end
 			
 			if not d.idleWait then
@@ -3542,7 +3547,12 @@ function mod:Pestilence2AI(npc)
 		
 		--TONGUE GRAB 2
 		if d.state == "tonguegrab2" then
+			local frame = sprite:GetFrame()
 			mod:SpritePlay(sprite, d.P2text .. "TongueGrab")
+			
+			if d.phase3 and not d.horse then
+				sprite:SetFrame(frame)
+			end
 			
 			if d.slammed then
 				if not d.magTearSeq then
@@ -3625,7 +3635,12 @@ function mod:Pestilence2AI(npc)
 		
 		--SPEW 2
 		if d.state == "spew2" then
+			local frame = sprite:GetFrame()
 			mod:SpritePlay(sprite, d.P2text .. "Spew")
+			
+			if d.phase3 and not d.horse then
+				sprite:SetFrame(frame)
+			end
 			
 			--begin shoot
 			if not d.substate then
@@ -3687,7 +3702,12 @@ function mod:Pestilence2AI(npc)
 		
 		--LOB SPEW 2
 		if d.state == "lobspew2" then
+			local frame = sprite:GetFrame()
 			mod:SpritePlay(sprite, d.P2text .. "LobSpew")
+			
+			if d.phase3 and not d.horse then
+				sprite:SetFrame(frame)
+			end
 			
 			if sprite:IsFinished(d.P2text .. "LobSpew") then
 				d.state = "idle2"
@@ -3711,7 +3731,12 @@ function mod:Pestilence2AI(npc)
 		
 		--SUMMON MAGGOT 2
 		if d.state == "summon2" then
+			local frame = sprite:GetFrame()
 			mod:SpritePlay(sprite, d.P2text .. "Summon")
+			
+			if d.phase3 and not d.horse then
+				sprite:SetFrame(frame)
+			end
 			
 			if sprite:IsFinished(d.P2text .. "Summon") then
 				d.state = "idle2"
@@ -3728,7 +3753,7 @@ function mod:Pestilence2AI(npc)
 		end
 		
 		for i = 1, #d.cord do
-			if not d.haltPull then
+			if not d.haltPull and d.cord[i].Target then
 				d.pullPower = p2.bal.constantPullPower - p2.bal.pullMod + (d.cord[i].Target:ToPlayer().MoveSpeed * p2.bal.pullMod)
 				d.cord[i].Target.Velocity = d.cord[i].Target.Velocity + Vector(-d.grabDir*d.pullPower,0)
 			end
@@ -3915,6 +3940,12 @@ function mod:Pestilence2HorseAI(npc)
 				--local fly = Isaac.Spawn(EntityType.ENTITY_ARMYFLY, 0, 0, npc.Position+Vector(68*d.grabDir,0), Vector(d.grabDir,0), npc)
 				local fly = Isaac.Spawn(p2.flyball.id, p2.flyball.variant, 0, npc.Position+Vector(68*d.grabDir,0), Vector(d.grabDir,0), npc)
 				fly:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
+				
+				if (d.grabDir == 1 and target.Position.X < npc.Position.X+68)
+					or (d.grabDir == -1 and target.Position.X > npc.Position.X-68) then 
+					local vec = Vector(d.grabDir*10,0):Rotated(mod:RandomInt(-45,45)):Normalized()*p2.flyball.speed
+					fly:GetData().vector = vec
+				end
 			end
 			
 			if sprite:IsFinished("Cough") then
@@ -3937,6 +3968,8 @@ function mod:Pestilence2CorpseAI(npc)
 	if npc:IsDead() then
 		local fart = Isaac.Spawn(1000, EffectVariant.FART, 0, npc.Position, Vector(0,0), npc):ToEffect()
 		fart:GetSprite().Scale = Vector(2,2)
+		
+		--oilyspoily told me to do this so i did
 		npc:PlaySound(Isaac.GetSoundIdByName("FartReverb"), 1, 0, false, 1)
 		
 		for i, entity in ipairs(Isaac.FindByType(EntityType.ENTITY_PLAYER)) do
@@ -3988,6 +4021,15 @@ function mod:FlyballAI(npc)
 			end
 		end
 	end
+	
+	--[[if npc:IsDead() then
+		if target:ToPlayer().Damage >= 10 and target:ToPlayer().FireDelay <= 15 then
+			for i=1,3 do
+				local fly = Isaac.Spawn(EntityType.ENTITY_ARMYFLY, 0, 0, npc.Position, Vector(0,0), npc)
+				fly:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
+			end
+		end
+	end]]
 end
 
 --PEST DEATH
@@ -4080,6 +4122,12 @@ function mod:PestProjectileBoom(tear,collided)
 		
 		local explode = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.BOMB_EXPLOSION, 0, tear.Position, Vector(0,0), tear):ToEffect()
 		explode:GetSprite().Color = boomColor
+		
+		for i, entity in ipairs(Isaac.FindInRadius(tear.Position, p2.bal.boomRange)) do
+			if entity.Type ~= EntityType.ENTITY_PLAYER and entity.Type ~= p2.id then
+				entity:TakeDamage(p2.bal.boomDamage, DamageFlag.DAMAGE_EXPLOSION, EntityRef(tear), 0)
+			end
+		end
 		
 		local gas = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.SMOKE_CLOUD, 0, tear.Position, Vector(0,0), tear):ToEffect()
 		if not d.pestGasLife then
@@ -4409,20 +4457,35 @@ end
 --npc damage
 mod:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, function(_, npc,amount,flag,source)
 	--war armor
-	if npc.Type == w2.id and npc.Variant == w2.variant and npc:GetData().phase2 then
-		if flag <= DamageFlag.DAMAGE_EXPLOSION then
+	if npc.Type == w2.id and npc.Variant == w2.variant then
+	
+		if not npc:GetData().phase2 and npc.HitPoints <= npc.MaxHitPoints * w2.bal.phase2Health then
 			if npc:GetData().armorDamage ~= nil then
 				npc:GetData().armorDamage = nil
 				return true
 			else
-				amount = amount * w2.bal.walkArmor
+				amount = amount * 0.1
 				npc:GetData().armorDamage = amount
 				npc:TakeDamage(npc:GetData().armorDamage, 0, source, 0)
-				npc:ToNPC():PlaySound(SoundEffect.SOUND_FIREDEATH_HISS, 0.18, 0, false, 2)
-				local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector(0,0), player):ToEffect()
-				poof.SpriteScale = Vector(0.3,0.3)
-				poof.Color = Color(0.8,0.6,0.4,1)
 				return false
+			end
+		end
+	
+		if npc:GetData().phase2 then
+			if flag <= DamageFlag.DAMAGE_EXPLOSION then
+				if npc:GetData().armorDamage ~= nil then
+					npc:GetData().armorDamage = nil
+					return true
+				else
+					amount = amount * w2.bal.walkArmor
+					npc:GetData().armorDamage = amount
+					npc:TakeDamage(npc:GetData().armorDamage, 0, source, 0)
+					npc:ToNPC():PlaySound(SoundEffect.SOUND_FIREDEATH_HISS, 0.18, 0, false, 2)
+					local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector(0,0), player):ToEffect()
+					poof.SpriteScale = Vector(0.3,0.3)
+					poof.Color = Color(0.8,0.6,0.4,1)
+					return false
+				end
 			end
 		end
 	end
@@ -4566,6 +4629,8 @@ FamiliarVariant.TUMOR_NUGGET = Isaac.GetEntityVariantByName("Tumor Nugget")
 
 ------------------------------------
 
+local myTumors = 0
+
 --cache update
 function mod:CacheUpdate(player, flag)
     if flag == CacheFlag.CACHE_FAMILIARS then
@@ -4605,6 +4670,11 @@ function mod:CacheUpdate(player, flag)
 		player:CheckFamiliar(tc.variant4, tumorS4 + tumorFull, player:GetCollectibleRNG(tc.id))
 		
 		player:CheckFamiliar(tc.helper, helper + tumorFull + helperNum, player:GetCollectibleRNG(tc.helper))
+		
+		if myTumors < tumorNum then
+			sfx:Play(Isaac.GetSoundIdByName("TumorCollect"), 1, 2, false, 1)
+		end
+		myTumors = tumorNum
 	end
 	if flag == CacheFlag.CACHE_FIREDELAY and tc.tearsUp then
 		if player:HasCollectible(tc.id) then
@@ -4759,20 +4829,33 @@ function mod:TumorUpdate3(tumor)
     local room = game:GetRoom()
 	local d = tumor:GetData()
 	
-	if not d.helper then
-		for i, entity in ipairs(Isaac.FindByType(EntityType.ENTITY_FAMILIAR, tc.helper)) do
-			if entity:ToFamiliar().Keys ~= tc.helperKeys then
-				d.helper = entity
-				d.helperInit = true
-				break
+	if not d.helperInit then
+		if not d.helper then
+			for i, entity in ipairs(Isaac.FindByType(EntityType.ENTITY_FAMILIAR, tc.helper)) do
+				if entity:ToFamiliar().Keys <= 0 or entity:ToFamiliar().Keys == tc.helperKeys then
+					d.helper = entity
+					if entity:ToFamiliar().Keys <= 0 then
+						d.helper:ToFamiliar():AddKeys(tc.helperKeys)
+					end
+					break
+				end
 			end
 		end
 		
-		if d.helperInit then
+		if d.helper and d.helper:ToFamiliar().Keys == tc.helperKeys then
 			tumor.Position = d.helper.Position
-			d.helper:ToFamiliar():AddKeys(tc.helperKeys)
+			d.helperInit = true
+		else
+			d.jankTimer = d.jankTimer or 30
+			if d.jankTimer == 0 then
+				print("(AH) Mod incompability detected, have a free gift!")
+				game:GetPlayer(0):AddCollectible(tc.helperid)
+				d.jankTimer = -1
+			else
+				d.jankTimer = d.jankTimer - 1
+			end
 		end
-	else	
+	elseif d.helper then
 		local hsprite = d.helper:GetSprite()
 		local tardir = d.helper.Position - tumor.Position
 		
@@ -4816,6 +4899,11 @@ function mod:TumorUpdate3(tumor)
 		if not d.helper:Exists() then
 			d.helper = nil
 		end
+	else
+		d.helperInit = false
+		d.helper = false
+		d.jankTimer = nil
+		tumor.Velocity = Vector(0,0)
 	end
 end
 
@@ -4826,20 +4914,33 @@ function mod:TumorUpdate4(tumor)
     local room = game:GetRoom()
 	local d = tumor:GetData()
 	
-	if not d.helper then
-		for i, entity in ipairs(Isaac.FindByType(EntityType.ENTITY_FAMILIAR, tc.helper)) do
-			if entity:ToFamiliar().Keys ~= tc.helperKeys then
-				d.helper = entity
-				d.helperInit = true
-				break
+	if not d.helperInit then
+		if not d.helper then
+			for i, entity in ipairs(Isaac.FindByType(EntityType.ENTITY_FAMILIAR, tc.helper)) do
+				if entity:ToFamiliar().Keys <= 0 or entity:ToFamiliar().Keys == tc.helperKeys then
+					d.helper = entity
+					if entity:ToFamiliar().Keys <= 0 then
+						d.helper:ToFamiliar():AddKeys(tc.helperKeys)
+					end
+					break
+				end
 			end
 		end
 		
-		if d.helperInit then
+		if d.helper and d.helper:ToFamiliar().Keys == tc.helperKeys then
 			tumor.Position = d.helper.Position
-			d.helper:ToFamiliar():AddKeys(tc.helperKeys)
+			d.helperInit = true
+		else
+			d.jankTimer = d.jankTimer or 30
+			if d.jankTimer == 0 then
+				print("(AH) Mod incompability detected, have a free gift!")
+				game:GetPlayer(0):AddCollectible(tc.helperid)
+				d.jankTimer = -1
+			else
+				d.jankTimer = d.jankTimer - 1
+			end
 		end
-	else	
+	elseif d.helper then
 		local hsprite = d.helper:GetSprite()
 		local tardir = d.helper.Position - tumor.Position
 		
@@ -4979,6 +5080,11 @@ function mod:TumorUpdate4(tumor)
 		if not d.helper:Exists() then
 			d.helper = nil
 		end
+	else
+		d.helperInit = false
+		d.helper = false
+		d.jankTimer = nil
+		tumor.Velocity = Vector(0,0)
 	end
 end
 
@@ -5156,6 +5262,9 @@ mod:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, mod.NuggetCollision,  tc
 local doHorseDrop
 local meatCheck
 local bandageCheck
+local sickFloodBro
+local sickFloodBro2
+local bossRoomId
 
 local revChance = false
 local bossEntered = false
@@ -5185,6 +5294,38 @@ local function CheckThatMeat()
 			break
 		end
 	end
+end
+
+local function getBossRoomId(subtype)
+	local level = game:GetLevel()
+	for i=0,168 do
+		local roomDesc = level:GetRoomByIdx(i)
+		if roomDesc.Data then 
+			if roomDesc.Data.Type == RoomType.ROOM_BOSS and roomDesc.Data.Subtype == subtype then
+				--print(i)
+				return i
+			end
+		end
+	end
+	return -1
+end
+
+local function bossRoomFlood(bsid,newBoss)
+	local level = game:GetLevel()
+	local roomDesc = level:GetRoomByIdx(bsid)
+	if roomDesc.Data then 
+		local levelRoom = StageAPI.GetLevelRoom(roomDesc.ListIndex)
+		--print(StageAPI.GetLevelRoom(roomDesc.ListIndex))
+		if levelRoom then
+			--print(levelRoom.PersistentData.BossID)
+			if levelRoom.PersistentData.BossID == newBoss and roomDesc.Flags ~= RoomDescriptor.FLAG_FLOODED then
+				roomDesc.Flags = RoomDescriptor.FLAG_FLOODED
+				--print("flooded")
+				return true
+			end
+		end
+	end
+	return false
 end
 
 --horsemen check
@@ -5333,6 +5474,7 @@ mod:AddCallback(ModCallbacks.MC_POST_UPDATE,function(_)
 					end]]
 					
 					entity:ToPickup():Morph(5,100,thisDrop,-1)
+					break
 				end
 			end
 		end
@@ -5380,7 +5522,7 @@ if StageAPI and firstLoaded then
 		w2 = StageAPI.AddBossData(w2.name, {
 			Name = w2.name,
 			Portrait = w2.portrait,
-			Offset = Vector(0,-15),
+			Offset = Vector(0,-22),
 			Bossname = w2.bossName,
 			Weight = w2.weight,
 			Rooms = StageAPI.RoomsList("War2 Rooms", require("resources.luarooms.boss_war2")),
@@ -5388,7 +5530,7 @@ if StageAPI and firstLoaded then
 		w2alt = StageAPI.AddBossData(w2.nameAlt, {
 			Name = w2.name,
 			Portrait = w2.portraitAlt,
-			Offset = Vector(0,-15),
+			Offset = Vector(0,-22),
 			Bossname = w2.bossName,
 			Weight = w2.weightAlt,
 			Rooms = StageAPI.RoomsList("War2 Alt Rooms", require("resources.luarooms.boss_war2_alt")),
@@ -5462,6 +5604,9 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL ,function(_)
 	bossGen = nil
 	revChance = false
 	bossEntered = false
+	sickFloodBro = false
+	sickFloodBro2 = false
+	bossRoomId = nil
 end
 )
 
@@ -5469,7 +5614,8 @@ end
 mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function(_)
 	if StageAPI and StageAPI.Loaded and not StageAPI.InTestMode then
 	
-		local room = Game():GetRoom()
+		local room = game:GetRoom()
+		local level = game:GetLevel()
         if room:GetType() == RoomType.ROOM_BOSS then
 			if room:IsFirstVisit() and not StageAPI.InNewStage() then
 				bossEntered = true
@@ -5523,6 +5669,22 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function(_)
 					StageAPI.SetBossEncountered(p2.name)
 					--StageAPI.SetBossEncountered(p2.nameAlt)
 					break
+				end
+			end
+		end
+		
+		if (level:GetStage() == LevelStage.STAGE1_1 or level:GetStage() == LevelStage.STAGE1_2)
+		and (level:GetStageType() == StageType.STAGETYPE_REPENTANCE_B) then
+			if not bossRoomId then
+				bossRoomId = getBossRoomId(97)
+			end
+			
+			if bossRoomId > -1 then
+				if not IsMirror() and sickFloodBro == false then
+					sickFloodBro = bossRoomFlood(bossRoomId,f2.nameAlt)
+				end
+				if IsMirror() and sickFloodBro2 == false then
+					sickFloodBro2 = bossRoomFlood(bossRoomId,f2.nameAlt)
 				end
 			end
 		end

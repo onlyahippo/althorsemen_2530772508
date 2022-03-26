@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <metadata>
-    <name>Alt Horsemen (+Death)</name>
+    <name>Alt Horsemen (+Pestilence)</name>
     <directory>althorsemen</directory>
     <id>2530772508</id>
     <description>This mod adds a completely new set of harbingers for the alternate path!
@@ -16,8 +16,8 @@ get it -&gt;  [url=https://steamcommunity.com/sharedfiles/filedetails/?id=134803
     [*]Famine (Downpour/Dross) ✓
     [*]War (Mines/Ashpit) ✓
     [*]Death (Mausoleum/Gehenna) ✓
-	
-    [*]Pestilence ✗
+    [*]Pestilence (Corpse) ✓
+
     [*]Conquest (?)
     [*]Headless Horseman (?)
 [/list]
@@ -27,15 +27,19 @@ When the horsemen get added into the alt path officially, this mod will cease to
 -----------------------------------------
 
 [h1]Credits[/h1]
-lambchop_is_ok - Sprites (Famine)
-TotallyNotIlias - Sprites (War)
-hippocrunchy - Design, Sprites, Implementation
-jubbalub - Tumor Item Concept
-NotYourSagittarius - Original Character Design</description>
-    <version>1.17</version>
+[url=https://twitter.com/hippotasty]hippocrunchy[/url] - Design, Sprites, Implementation
+
+[url=https://twitter.com/lambchop_is_ok]lambchop_is_ok[/url] - Sprites (Famine)
+[url=https://twitter.com/TotallyNotIlias]TotallyNotIlias[/url] - Sprites (War)
+[url=https://twitter.com/Cometz202]Cometz[/url] - Sprites (Pestilence)
+
+[url=https://twitter.com/_jubbalub]jubbalub[/url] - Tumor Item Concept
+[url=https://twitter.com/NY_Sagittarius]NotYourSagittarius[/url] - Original Character Design</description>
+    <version>1.19</version>
     <visibility>Public</visibility>
     <tag id="Lua"/>
     <tag id="Items"/>
     <tag id="Rooms"/>
+    <tag id="Enemies"/>
     <tag id="Bosses"/>
 </metadata>
