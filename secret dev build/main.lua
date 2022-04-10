@@ -5,8 +5,16 @@ local sfx = SFXManager()
 local rng = RNG()
 
 local firstLoaded = true
-local loadText = "Alt Horsemen v5.2 (+Pestilence)"
+local loadText = "Alt Horsemen v5.23 (+Pestilence)"
 local loadTextFailed = "Alt Horsemen load failed (STAGEAPI Disabled)"
+
+------------------------------------------------------
+
+mod.CustomSFX = {
+	fartReverb = Isaac.GetSoundIdByName("FartReverb"),
+	tumorCollect = Isaac.GetSoundIdByName("TumorCollect")
+}
+local ahSfx = mod.CustomSFX
 
 ------------------------BOSSES------------------------
 ------------------------------------------------------
@@ -3468,6 +3476,7 @@ function mod:Pestilence2AI(npc)
 			npc:AddEntityFlags(EntityFlag.FLAG_NO_TARGET)
 			npc:AddEntityFlags(EntityFlag.FLAG_NO_STATUS_EFFECTS)
 			d.phase3 = true
+			d.shieldQ = true
 			d.P2text = "P3_"
 			d.idleWait = p2.bal.phase3Delay
 		end
@@ -3508,6 +3517,7 @@ function mod:Pestilence2AI(npc)
 				d.horse:GetData().Parent = npc
 				d.horse:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
 				d.horse:AddEntityFlags(EntityFlag.FLAG_DONT_COUNT_BOSS_HP)
+				d.shieldQ = nil
 			end
 			
 			if not d.idleWait then
@@ -3970,7 +3980,7 @@ function mod:Pestilence2CorpseAI(npc)
 		fart:GetSprite().Scale = Vector(2,2)
 		
 		--oilyspoily told me to do this so i did
-		npc:PlaySound(Isaac.GetSoundIdByName("FartReverb"), 1, 0, false, 1)
+		npc:PlaySound(ahSfx.fartReverb, 1, 0, false, 1)
 		
 		for i, entity in ipairs(Isaac.FindByType(EntityType.ENTITY_PLAYER)) do
 			entity.Velocity = (entity.Position-npc.Position):Normalized()*15
@@ -4113,9 +4123,9 @@ function mod:PestProjectileBoom(tear,collided)
 			d.target:Remove()
 		end
 		
-		if d.pestBoomTarget and collided then
-			return
-		end
+		--if d.pestBoomTarget and collided then
+			--return
+		--end
 	
 		local boomColor = Color(1,1,1,1)
 		boomColor:SetColorize(1.3,2,0.7,1)
@@ -4287,7 +4297,7 @@ function mod:CountRoom(entityType,entityVariant)
 	return number
 end
 
---rubberband run (fiend folio)
+--rubberband run
 function mod:RubberbandRun(npc, npcdata, target, acceleration, velocitymax)
 	local distance = math.sqrt(((target.X-npc.Position.X)^2)+((target.Y-npc.Position.Y)^2));
 	local angle = math.atan((target.Y-npc.Position.Y)/(target.X-npc.Position.X));
@@ -4533,7 +4543,7 @@ mod:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, function(_, npc,amount,flag,sou
 		end
 	end
 	
-	--pestilence under phase 2
+	--pest under phase 2
 	if npc.Type == p2.id and npc.Variant == p2.variant then
 		if not npc:GetData().phase2 and npc.HitPoints <= npc.MaxHitPoints * p2.bal.phase2Health then
 			if npc:GetData().armorDamage ~= nil then
@@ -4548,7 +4558,16 @@ mod:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, function(_, npc,amount,flag,sou
 		end
 		
 		if npc:GetData().phase3 then
-			return false
+			if npc:GetData().horse or npc:GetData().shieldQ then
+				local shield = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.BISHOP_SHIELD, 0, npc.Position, Vector(0,0), npc):ToEffect()
+				shield.Target = npc
+				shield.SpriteOffset = Vector(0,-12)
+				shield.SpriteScale = Vector(1.1,1.1)
+				if not sfx:IsPlaying(SoundEffect.SOUND_BISHOP_HIT) then
+					sfx:Play(SoundEffect.SOUND_BISHOP_HIT, 1, 0, false, 1)
+				end
+				return false
+				end
 		end
 	end
 	
@@ -4588,8 +4607,8 @@ mod.Tumorcube = {
 	helper = 56,
 	helperKeys = 39,
 	bal = {
-		orbitSpeed = 0.035,
-		orbitDistance = Vector(30, 30),
+		orbitSpeed = 0.045,
+		orbitDistance = Vector(25, 25),
 		slowDuration = 40,
 		slowAmount = 0.5,
 		creepMin = 50,
@@ -4618,14 +4637,6 @@ mod.Tumorcube = {
 }
 
 local tc = mod.Tumorcube
-
---index------
-CollectibleType.COLLECTIBLE_WAD_OF_TUMORS = tc.id
-FamiliarVariant.WAD_OF_TUMORS_L1 = Isaac.GetEntityVariantByName("Wad of Tumors L1")
-FamiliarVariant.WAD_OF_TUMORS_L2 = Isaac.GetEntityVariantByName("Wad of Tumors L2")
-FamiliarVariant.WAD_OF_TUMORS_L3 = Isaac.GetEntityVariantByName("Wad of Tumors L3")
-FamiliarVariant.WAD_OF_TUMORS_L4 = Isaac.GetEntityVariantByName("Wad of Tumors L4")
-FamiliarVariant.TUMOR_NUGGET = Isaac.GetEntityVariantByName("Tumor Nugget")
 
 ------------------------------------
 
@@ -4672,7 +4683,7 @@ function mod:CacheUpdate(player, flag)
 		player:CheckFamiliar(tc.helper, helper + tumorFull + helperNum, player:GetCollectibleRNG(tc.helper))
 		
 		if myTumors < tumorNum then
-			sfx:Play(Isaac.GetSoundIdByName("TumorCollect"), 1, 2, false, 1)
+			sfx:Play(ahSfx.tumorCollect, 1, 2, false, 1)
 		end
 		myTumors = tumorNum
 	end
@@ -5296,21 +5307,25 @@ local function CheckThatMeat()
 	end
 end
 
-local function getBossRoomId(subtype)
+--get id of boss room
+local function GetBossRoomId(subtype)
 	local level = game:GetLevel()
 	for i=0,168 do
 		local roomDesc = level:GetRoomByIdx(i)
 		if roomDesc.Data then 
-			if roomDesc.Data.Type == RoomType.ROOM_BOSS and roomDesc.Data.Subtype == subtype then
-				--print(i)
-				return i
+			if roomDesc.Data.Type == RoomType.ROOM_BOSS then
+				--print(roomDesc.Data.Subtype)
+				if roomDesc.Data.Subtype == subtype or subtype < 0 then
+					return i
+				end
 			end
 		end
 	end
 	return -1
 end
 
-local function bossRoomFlood(bsid,newBoss)
+--flood boss room
+local function BossRoomFlood(bsid,newBoss)
 	local level = game:GetLevel()
 	local roomDesc = level:GetRoomByIdx(bsid)
 	if roomDesc.Data then 
@@ -5360,6 +5375,28 @@ local function FloorVerify()
 	end
 	
 	return bossID
+end
+
+local function FloodProcessing() 
+	local room = game:GetRoom()
+	local level = game:GetLevel()
+	if (level:GetStage() == LevelStage.STAGE1_1 or level:GetStage() == LevelStage.STAGE1_2)
+	and (level:GetStageType() == StageType.STAGETYPE_REPENTANCE_B) then
+	
+		if not bossRoomId then
+			bossRoomId = GetBossRoomId(97)
+		end
+		
+		if bossRoomId > -1 then
+			local checkMirror = IsMirror()
+			if not checkMirror and sickFloodBro == false then
+				sickFloodBro = BossRoomFlood(bossRoomId,f2.nameAlt)
+			end
+			if checkMirror and sickFloodBro2 == false then
+				sickFloodBro2 = BossRoomFlood(bossRoomId,f2.nameAlt)
+			end
+		end
+	end
 end
 
 --book of revelations
@@ -5432,7 +5469,9 @@ mod:AddCallback(ModCallbacks.MC_USE_ITEM,function(_,collectible)
 				
 			if not successCheck then
 				print("Horseman generation: Failed (Invalid Room)")
-			end	
+			else
+				FloodProcessing()
+			end
 			revChance = true
 		end
 	end
@@ -5473,7 +5512,9 @@ mod:AddCallback(ModCallbacks.MC_POST_UPDATE,function(_)
 						thisDrop = CollectibleType.COLLECTIBLE_BALL_OF_BANDAGES
 					end]]
 					
-					entity:ToPickup():Morph(5,100,thisDrop,-1)
+					if (entity.SubType ~= CollectibleType.COLLECTIBLE_POLAROID and entity.SubType ~= CollectibleType.COLLECTIBLE_NEGATIVE) then
+						entity:ToPickup():Morph(5,100,thisDrop,-1)
+					end
 					break
 				end
 			end
@@ -5565,9 +5606,9 @@ if StageAPI and firstLoaded then
 	StageAPI.AddBossToBaseFloorPool({BossID = f2.nameAlt},LevelStage.STAGE1_1,StageType.STAGETYPE_REPENTANCE_B)
 	StageAPI.AddBossToBaseFloorPool({BossID = w2.name},LevelStage.STAGE2_1,StageType.STAGETYPE_REPENTANCE)
 	StageAPI.AddBossToBaseFloorPool({BossID = w2.nameAlt},LevelStage.STAGE2_1,StageType.STAGETYPE_REPENTANCE_B)
-	StageAPI.AddBossToBaseFloorPool({BossID = d2.name},LevelStage.STAGE3_1,StageType.STAGETYPE_REPENTANCE)
-	StageAPI.AddBossToBaseFloorPool({BossID = d2.nameAlt},LevelStage.STAGE3_1,StageType.STAGETYPE_REPENTANCE_B)
-	StageAPI.AddBossToBaseFloorPool({BossID = p2.name},LevelStage.STAGE4_1,StageType.STAGETYPE_REPENTANCE)
+	StageAPI.AddBossToBaseFloorPool({BossID = d2.name},LevelStage.STAGE3_1,StageType.STAGETYPE_REPENTANCE,true)
+	StageAPI.AddBossToBaseFloorPool({BossID = d2.nameAlt},LevelStage.STAGE3_1,StageType.STAGETYPE_REPENTANCE_B,true)
+	StageAPI.AddBossToBaseFloorPool({BossID = p2.name},LevelStage.STAGE4_1,StageType.STAGETYPE_REPENTANCE,true)
 	--StageAPI.AddBossToBaseFloorPool({BossID = p2.nameAlt},LevelStage.STAGE4_1,StageType.STAGETYPE_REPENTANCE_B)
 end
 
@@ -5673,28 +5714,14 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function(_)
 			end
 		end
 		
-		if (level:GetStage() == LevelStage.STAGE1_1 or level:GetStage() == LevelStage.STAGE1_2)
-		and (level:GetStageType() == StageType.STAGETYPE_REPENTANCE_B) then
-			if not bossRoomId then
-				bossRoomId = getBossRoomId(97)
-			end
-			
-			if bossRoomId > -1 then
-				if not IsMirror() and sickFloodBro == false then
-					sickFloodBro = bossRoomFlood(bossRoomId,f2.nameAlt)
-				end
-				if IsMirror() and sickFloodBro2 == false then
-					sickFloodBro2 = bossRoomFlood(bossRoomId,f2.nameAlt)
-				end
-			end
-		end
+		FloodProcessing()
 	end
 end
 )
 
 --EID--------
 if EID then
-	EID:addCollectible(CollectibleType.COLLECTIBLE_WAD_OF_TUMORS, "↑ +0.4 Tears up#LVL1: Sticky Orbital#LVL2: Shooting Orbital#LVL3: Ash LVL 1#LVL4: Ash LVL 2")
+	EID:addCollectible(tc.id, "↑ +0.4 Tears up#LVL1: Sticky Orbital#LVL2: Shooting Orbital#LVL3: Ash LVL 1#LVL4: Ash LVL 2")
 end
 
 --Enhanced Boss Bars
