@@ -5,7 +5,7 @@ local sfx = SFXManager()
 local rng = RNG()
 
 local firstLoaded = true
-local loadText = "Alt Horsemen v5.23 (+Pestilence)"
+local loadText = "Alt Horsemen v5.3 (COMPLETE)"
 local loadTextFailed = "Alt Horsemen load failed (STAGEAPI Disabled)"
 
 ------------------------------------------------------
@@ -26,8 +26,8 @@ mod.Famine2 = {
 	portrait = "gfx/bosses/famine2/portrait_famine2.png",
 	portraitAlt = "gfx/bosses/famine2/portrait_famine2_dross.png",
 	bossName = "gfx/bosses/famine2/bossname_famine2.png",
-	weight = 1,
-	weightAlt = 1,
+	weight = 0.75,
+	weightAlt = 0.75,
 	id = 630,
 	variant = 101,
 	bal = {
@@ -540,8 +540,8 @@ mod.War2 = {
 	portrait = "gfx/bosses/war2/portrait_war2.png",
 	portraitAlt = "gfx/bosses/war2/portrait_war2_ashpit.png",
 	bossName = "gfx/bosses/war2/bossname_war2.png",
-	weight = 2,
-	weightAlt = 2,
+	weight = 0.75,
+	weightAlt = 0.75,
 	id = 650,
 	variant = 101,
 	army = {
@@ -1441,8 +1441,8 @@ mod.Death2 = {
 	portrait = "gfx/bosses/death2/portrait_death2.png",
 	portraitAlt = "gfx/bosses/death2/portrait_death2_gehenna.png",
 	bossName = "gfx/bosses/death2/bossname_death2.png",
-	weight = 1,
-	weightAlt = 1,
+	weight = 0.75,
+	weightAlt = 0.75,
 	id = 660,
 	variant = 101,
 	horse = {
@@ -2885,8 +2885,8 @@ mod.Pestilence2 = {
 	portrait = "gfx/bosses/pestilence2/portrait_pestilence2.png",
 	--portraitAlt = "gfx/bosses/pestilence2/portrait_pestilence2_mortis.png",
 	bossName = "gfx/bosses/pestilence2/bossname_pestilence2.png",
-	weight = 1,
-	weightAlt = 1,
+	weight = 0.75,
+	weightAlt = 0.75,
 	id = 640,
 	variant = 101,
 	horse = {
@@ -3403,6 +3403,8 @@ function mod:Pestilence2AI(npc)
 				tear.Scale = 2
 				tear.FallingSpeed = 15;
 				tear.FallingAccel = 2;
+				tear.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
+				tear:Update()
 				
 				tear:GetData().pestBoom = true
 				tear:GetData().pestBoomTears = true
@@ -3481,6 +3483,18 @@ function mod:Pestilence2AI(npc)
 			d.idleWait = p2.bal.phase3Delay
 		end
 		
+		if d.shieldQ and not d.horse then
+			if not d.shieldTimer then
+				d.shieldTimer = p2.bal.phase3Delay
+			elseif d.shieldTimer > 0 then
+				d.shieldTimer = d.shieldTimer - 1
+			else
+				d.state = "idle2"
+				d.shieldQ = nil
+				d.shieldTimer = nil
+			end
+		end
+		
 		if d.horse then
 			npc.HitPoints = d.horse.HitPoints
 			
@@ -3517,7 +3531,6 @@ function mod:Pestilence2AI(npc)
 				d.horse:GetData().Parent = npc
 				d.horse:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
 				d.horse:AddEntityFlags(EntityFlag.FLAG_DONT_COUNT_BOSS_HP)
-				d.shieldQ = nil
 			end
 			
 			if not d.idleWait then
@@ -3560,7 +3573,7 @@ function mod:Pestilence2AI(npc)
 			local frame = sprite:GetFrame()
 			mod:SpritePlay(sprite, d.P2text .. "TongueGrab")
 			
-			if d.phase3 and not d.horse then
+			if d.phase3 and not d.horse and sprite:GetFrame() == 0 then
 				sprite:SetFrame(frame)
 			end
 			
@@ -3648,7 +3661,7 @@ function mod:Pestilence2AI(npc)
 			local frame = sprite:GetFrame()
 			mod:SpritePlay(sprite, d.P2text .. "Spew")
 			
-			if d.phase3 and not d.horse then
+			if d.phase3 and not d.horse and sprite:GetFrame() == 0 then
 				sprite:SetFrame(frame)
 			end
 			
@@ -3715,7 +3728,7 @@ function mod:Pestilence2AI(npc)
 			local frame = sprite:GetFrame()
 			mod:SpritePlay(sprite, d.P2text .. "LobSpew")
 			
-			if d.phase3 and not d.horse then
+			if d.phase3 and not d.horse and sprite:GetFrame() == 0 then
 				sprite:SetFrame(frame)
 			end
 			
@@ -3744,7 +3757,7 @@ function mod:Pestilence2AI(npc)
 			local frame = sprite:GetFrame()
 			mod:SpritePlay(sprite, d.P2text .. "Summon")
 			
-			if d.phase3 and not d.horse then
+			if d.phase3 and not d.horse and sprite:GetFrame() == 0 then
 				sprite:SetFrame(frame)
 			end
 			
@@ -4113,7 +4126,8 @@ function mod:PestProjectileBoom(tear,collided)
 		if not d.target then
 			d.target = Isaac.Spawn(1000, EffectVariant.TARGET, 0, tear.Position, Vector(0,0), tear):ToEffect()
 			local targetColor = Color(0.4,1,0.3,1)
-			d.target:SetColor(targetColor, 100, 1, false, false)
+			d.target:SetColor(targetColor, 120, 1, false, false)
+			d.target.Timeout = 100
 		end
 	end
 	
@@ -5534,7 +5548,7 @@ if StageAPI and firstLoaded then
 			Offset = Vector(0,-15),
 			Bossname = p2.bossName,
 			Weight = p2.weight,
-			Rooms = StageAPI.RoomsList("Pestilence2 Rooms", require("resources.luarooms.boss_pestilence2")),
+			Rooms = StageAPI.RoomsList("AHPestRooms", require("resources.luarooms.boss_pestilence2")),
 		}),
 		--[[p2alt = StageAPI.AddBossData(p2.nameAlt, {
 			Name = p2.name,
@@ -5542,23 +5556,23 @@ if StageAPI and firstLoaded then
 			Offset = Vector(0,-15),
 			Bossname = p2.bossName,
 			Weight = p2.weightAlt,
-			Rooms = StageAPI.RoomsList("Pestilence2 Alt Rooms", require("resources.luarooms.boss_pestilence_alt")),
+			Rooms = StageAPI.RoomsList("AHPestAltRooms", require("resources.luarooms.boss_pestilence_alt")),
 		})]]
 		d2 = StageAPI.AddBossData(d2.name, {
 			Name = d2.name,
 			Portrait = d2.portrait,
-			Offset = Vector(0,-15),
+			Offset = Vector(0,-22),
 			Bossname = d2.bossName,
 			Weight = d2.weight,
-			Rooms = StageAPI.RoomsList("Death2 Rooms", require("resources.luarooms.boss_death2")),
+			Rooms = StageAPI.RoomsList("AHDeathRooms", require("resources.luarooms.boss_death2")),
 		}),
 		d2alt = StageAPI.AddBossData(d2.nameAlt, {
 			Name = d2.name,
 			Portrait = d2.portraitAlt,
-			Offset = Vector(0,-15),
+			Offset = Vector(0,-22),
 			Bossname = d2.bossName,
 			Weight = d2.weightAlt,
-			Rooms = StageAPI.RoomsList("Death2 Alt Rooms", require("resources.luarooms.boss_death2_alt")),
+			Rooms = StageAPI.RoomsList("AHDeathAltRooms", require("resources.luarooms.boss_death2_alt")),
 		}),
 		w2 = StageAPI.AddBossData(w2.name, {
 			Name = w2.name,
@@ -5566,7 +5580,7 @@ if StageAPI and firstLoaded then
 			Offset = Vector(0,-22),
 			Bossname = w2.bossName,
 			Weight = w2.weight,
-			Rooms = StageAPI.RoomsList("War2 Rooms", require("resources.luarooms.boss_war2")),
+			Rooms = StageAPI.RoomsList("AHWarRooms", require("resources.luarooms.boss_war2")),
 		}),
 		w2alt = StageAPI.AddBossData(w2.nameAlt, {
 			Name = w2.name,
@@ -5574,7 +5588,7 @@ if StageAPI and firstLoaded then
 			Offset = Vector(0,-22),
 			Bossname = w2.bossName,
 			Weight = w2.weightAlt,
-			Rooms = StageAPI.RoomsList("War2 Alt Rooms", require("resources.luarooms.boss_war2_alt")),
+			Rooms = StageAPI.RoomsList("AHWarAltRooms", require("resources.luarooms.boss_war2_alt")),
 		}),
 		f2 = StageAPI.AddBossData(f2.name, {
 			Name = f2.name,
@@ -5582,7 +5596,7 @@ if StageAPI and firstLoaded then
 			Offset = Vector(0,-15),
 			Bossname = f2.bossName,
 			Weight = f2.weight,
-			Rooms = StageAPI.RoomsList("Famine2 Rooms", require("resources.luarooms.boss_famine2")),
+			Rooms = StageAPI.RoomsList("AHFamineRooms", require("resources.luarooms.boss_famine2")),
 		}),
 		f2alt = StageAPI.AddBossData(f2.nameAlt, {
 			Name = f2.name,
@@ -5590,7 +5604,7 @@ if StageAPI and firstLoaded then
 			Offset = Vector(0,-15),
 			Bossname = f2.bossName,
 			Weight = f2.weightAlt,
-			Rooms = StageAPI.RoomsList("Famine2 Alt Rooms", require("resources.luarooms.boss_famine2_alt")),
+			Rooms = StageAPI.RoomsList("AHFamineAltRooms", require("resources.luarooms.boss_famine2_alt")),
 		}),
 		bdrip = StageAPI.AddBossData(bdrip.name, {
 			Name = bdrip.name,
@@ -5598,7 +5612,7 @@ if StageAPI and firstLoaded then
 			Offset = Vector(50,50),
 			Bossname = bdrip.bossName,
 			Weight = 0,
-			Rooms = StageAPI.RoomsList("Big Drip Rooms", require("resources.luarooms.bigdrip")),
+			Rooms = StageAPI.RoomsList("AHBigDripRooms", require("resources.luarooms.bigdrip")),
 		}),
 	}
 	

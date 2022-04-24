@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <metadata>
-    <name>Alt Horsemen (+Pestilence)</name>
+    <name>Alt Horsemen (COMPLETE)</name>
     <directory>althorsemen</directory>
     <id>2530772508</id>
     <description>This mod adds a completely new set of harbingers for the alternate path!
@@ -35,7 +35,7 @@ When the horsemen get added into the alt path officially, this mod will cease to
 
 [url=https://twitter.com/_jubbalub]jubbalub[/url] - Tumor Item Concept
 [url=https://twitter.com/NY_Sagittarius]NotYourSagittarius[/url] - Original Character Design</description>
-    <version>1.23</version>
+    <version>1.25</version>
     <visibility>Public</visibility>
     <tag id="Lua"/>
     <tag id="Items"/>
