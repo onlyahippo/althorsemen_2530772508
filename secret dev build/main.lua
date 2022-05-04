@@ -26,8 +26,8 @@ mod.Famine2 = {
 	portrait = "gfx/bosses/famine2/portrait_famine2.png",
 	portraitAlt = "gfx/bosses/famine2/portrait_famine2_dross.png",
 	bossName = "gfx/bosses/famine2/bossname_famine2.png",
-	weight = 0.75,
-	weightAlt = 0.75,
+	weight = 1,
+	weightAlt = 1,
 	id = 630,
 	variant = 101,
 	bal = {
@@ -540,8 +540,8 @@ mod.War2 = {
 	portrait = "gfx/bosses/war2/portrait_war2.png",
 	portraitAlt = "gfx/bosses/war2/portrait_war2_ashpit.png",
 	bossName = "gfx/bosses/war2/bossname_war2.png",
-	weight = 0.75,
-	weightAlt = 0.75,
+	weight = 1,
+	weightAlt = 1,
 	id = 650,
 	variant = 101,
 	army = {
@@ -1441,8 +1441,8 @@ mod.Death2 = {
 	portrait = "gfx/bosses/death2/portrait_death2.png",
 	portraitAlt = "gfx/bosses/death2/portrait_death2_gehenna.png",
 	bossName = "gfx/bosses/death2/bossname_death2.png",
-	weight = 0.75,
-	weightAlt = 0.75,
+	weight = 1,
+	weightAlt = 1,
 	id = 660,
 	variant = 101,
 	horse = {
@@ -2789,6 +2789,9 @@ function mod:Death2Update(npc)
 	if npc.Type == d2.id and npc.Variant >= d2.variant and npc.Variant <= d2.ghost.variant then
 		mod:Death2AI(npc)
 	end
+	if npc.Type == c2.id and npc.Variant == c2.variant then
+		mod:Conquest2AI(npc)
+	end
 end
 
 mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.Death2Update, d2.id)
@@ -2885,8 +2888,8 @@ mod.Pestilence2 = {
 	portrait = "gfx/bosses/pestilence2/portrait_pestilence2.png",
 	--portraitAlt = "gfx/bosses/pestilence2/portrait_pestilence2_mortis.png",
 	bossName = "gfx/bosses/pestilence2/bossname_pestilence2.png",
-	weight = 0.75,
-	weightAlt = 0.75,
+	weight = 1,
+	weightAlt = 1,
 	id = 640,
 	variant = 101,
 	horse = {
@@ -4014,10 +4017,6 @@ function mod:FlyballAI(npc)
 	if not d.init then
 	
 		npc:AddEntityFlags(EntityFlag.FLAG_NO_PHYSICS_KNOCKBACK)
-		d.xStart = room:GetTopLeftPos().X + 15
-		d.xEnd = room:GetBottomRightPos().X - 15
-		d.yStart = room:GetTopLeftPos().Y + 7
-		d.yEnd = room:GetBottomRightPos().Y - 7
 		
 		if not d.vector then
 			d.vector = (target.Position - npc.Position):Normalized()*p2.flyball.speed
@@ -4028,12 +4027,11 @@ function mod:FlyballAI(npc)
 		npc.Velocity = d.vector
 		
 		if not d.delay then
-			if (npc.Position.X > d.xEnd or npc.Position.X < d.xStart) then
+			if room:GetGridCollisionAtPos(Vector(npc.Position.X+npc.Velocity.X,npc.Position.Y)) >= 4 then
 				d.vector = Vector(-d.vector.X,d.vector.Y)
 				d.delay = 10
 			end
-			
-			if (npc.Position.Y > d.yEnd or npc.Position.Y < d.yStart) then
+			if room:GetGridCollisionAtPos(Vector(npc.Position.X,npc.Position.Y+npc.Velocity.Y)) >= 4 then
 				d.vector = Vector(d.vector.X,-d.vector.Y)
 				d.delay = 10
 			end
@@ -4211,6 +4209,35 @@ mod:AddCallback(ModCallbacks.MC_PRE_PROJECTILE_COLLISION, function(_, tear, coll
 	end
 end)
 
+--CONQUEST2--------------------
+
+mod.Conquest2 = {
+	name = "Tainted Conquest",
+	portrait = "gfx/bosses/conquest2/portrait_conquest2.png",
+	bossName = "gfx/bosses/conquest2/bossname_conquest2.png",
+	weight = 1,
+	weightAlt = 1,
+	id = 660,
+	variant = 151,
+	bal = {
+		idleWaitMin = 30,
+		idleWaitMax = 60,
+		moveWaitMin = 5,
+		moveWaitMax = 40,
+		attackFriction = 0.85,
+		speed = 1.2,
+	}
+}
+local c2 = mod.Conquest2
+
+function mod:Conquest2AI(npc)
+	local sprite = npc:GetSprite()
+	local d = npc:GetData()
+	local target = npc:GetPlayerTarget()
+	local level = game:GetLevel()
+	local room = game:GetRoom()
+end
+
 --drip
 mod.TheBigDrip = {
 	name = "The Big Drip",
@@ -4233,11 +4260,7 @@ function mod:BigDripAI(npc)
 	
 	if not d.init then
 		npc:AddEntityFlags(EntityFlag.FLAG_NO_PHYSICS_KNOCKBACK)
-		d.xStart = room:GetTopLeftPos().X + 15
-		d.xEnd = room:GetBottomRightPos().X - 15
-		d.yStart = room:GetTopLeftPos().Y + 7
-		d.yEnd = room:GetBottomRightPos().Y - 7
-		
+
 		if not d.vector then
 			d.vector = (target.Position - npc.Position):Normalized()*5
 		end
@@ -4247,14 +4270,13 @@ function mod:BigDripAI(npc)
 		npc.Velocity = d.vector
 		
 		if not d.delay then
-			if (npc.Position.X > d.xEnd or npc.Position.X < d.xStart) then
+			if room:GetGridCollisionAtPos(Vector(npc.Position.X+npc.Velocity.X,npc.Position.Y)) >= 4 then
 				npc:PlaySound(SoundEffect.SOUND_FORESTBOSS_STOMPS, 1, 0, false, 1)
 				npc:FireBossProjectiles(20,Vector(0,0),0,ProjectileParams())
 				d.vector = (target.Position - npc.Position):Normalized()*bdrip.bal.speed
 				d.delay = 10
 			end
-			
-			if (npc.Position.Y > d.yEnd or npc.Position.Y < d.yStart) then
+			if room:GetGridCollisionAtPos(Vector(npc.Position.X,npc.Position.Y+npc.Velocity.Y)) >= 4 then
 				npc:PlaySound(SoundEffect.SOUND_FORESTBOSS_STOMPS, 1, 0, false, 1)
 				npc:FireBossProjectiles(20,Vector(0,0),0,ProjectileParams())
 				d.vector = (target.Position - npc.Position):Normalized()*bdrip.bal.speed

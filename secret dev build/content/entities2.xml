@@ -44,6 +44,11 @@
         <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0"/>
     </entity>
 	
+	<!-- Conquest -->
+	<entity anm2path="boss_conquest2.anm2" baseHP="300" boss="1" champion="0" id="660" variant="151" subtype="0" name="Tainted Conquest" hasFloorAlts="true" collisionDamage="1" collisionMass="50" collisionRadius="20" friction="1" numGridCollisionPoints="24" shadowSize="20" stageHP="0" portrait="4" bestiary="true" bestiaryTransform="0,0,1" bestiaryAnim="SlashCharge" tags="nodelirium">
+        <gibs amount="25" blood="0" bone="1" eye="0" gut="0" large="1"/>
+    </entity>
+	
 	<!-- Army -->
 	<entity anm2path="monster_army1.anm2" baseHP="7" id="651" variant="101" subtype="0" name="Army" hasFloorAlts="true" reroll="true" boss="0" champion="0" collisionDamage="1" collisionMass="5" collisionRadius="13" friction="1" numGridCollisionPoints="12" shadowSize="0" stageHP="0" portrait="2" bestiary="true" bestiaryTransform="0,0,1" bestiaryAnim="JumpOut">
         <gibs amount="6" blood="1" bone="1" eye="1" gut="1" large="0" />
