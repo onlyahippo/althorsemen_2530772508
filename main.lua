@@ -2789,9 +2789,9 @@ function mod:Death2Update(npc)
 	if npc.Type == d2.id and npc.Variant >= d2.variant and npc.Variant <= d2.ghost.variant then
 		mod:Death2AI(npc)
 	end
-	if npc.Type == c2.id and npc.Variant == c2.variant then
-		mod:Conquest2AI(npc)
-	end
+--	if npc.Type == c2.id and npc.Variant == c2.variant then
+--		mod:Conquest2AI(npc)
+--	end
 end
 
 mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.Death2Update, d2.id)
@@ -5428,7 +5428,35 @@ local function FloodProcessing()
 	end
 end
 
-local function SpawnHorseman()
+local function GetClosestBossRoom()
+	local level = game:GetLevel()
+	local rooms = level:GetRooms()
+	if level:GetCurses() & LevelCurse.CURSE_OF_LABYRINTH > 0 then
+		local neighbors={-1,-13,1,13}
+		for i = 0, rooms.Size - 1 do
+			local room = rooms:Get(i)
+			if room and room.Data then
+				if room.Data.Type == RoomType.ROOM_BOSS then
+					local count = 0
+					for i = 1, 4 do
+						local neighbor = Game():GetLevel():GetRoomByIdx(room.GridIndex+neighbors[i], 0)
+						if neighbor and neighbor.Data then
+							count = count + 1
+						end
+					end
+					
+					if count >= 2 then
+						return room
+					end
+				end
+			end
+		end
+	else
+		return rooms:Get(level:GetLastBossRoomListIndex())
+	end
+end
+
+local function SpawnHorseman(roomDesc)
 	if StageAPI then
 		local level = game:GetLevel()
 		local stage = level:GetStage()
@@ -5436,22 +5464,11 @@ local function SpawnHorseman()
 
 		if (stageType == StageType.STAGETYPE_REPENTANCE or stageType == StageType.STAGETYPE_REPENTANCE_B) then
 			local baseFloorInfo = StageAPI.GetBaseFloorInfo()
-			local xlFloorInfo
-			if level:GetCurses() & LevelCurse.CURSE_OF_LABYRINTH ~= 0 then
-				xlFloorInfo = StageAPI.GetBaseFloorInfo(level:GetStage() + 1, level:GetStageType())
-			end
 
-			local lastBossRoomListIndex = level:GetLastBossRoomListIndex()
-			local roomDesc = level:GetRooms():Get(lastBossRoomListIndex)
 			local backwards = game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH_INIT) or game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH)
 			local dimension = StageAPI.GetDimension(roomDesc)
 			local newRoom
-			if baseFloorInfo and roomDesc.Data.Type == RoomType.ROOM_BOSS and dimension == 0 and not backwards then
-				local bossFloorInfo = baseFloorInfo
-				if xlFloorInfo and roomDesc.ListIndex == lastBossRoomListIndex then
-					bossFloorInfo = xlFloorInfo
-				end
-
+			if baseFloorInfo and roomDesc.VisitedCount == 0 and roomDesc.Data.Type == RoomType.ROOM_BOSS and dimension == 0 and not backwards then
 				local bossID = FloorVerify()
 				if bossID then
 					if not StageAPI.GetBossEncountered(bossID) then
@@ -5465,11 +5482,10 @@ local function SpawnHorseman()
 							})
 
 							if roomDesc.Data.Subtype == 82 or roomDesc.Data.Subtype == 83 or roomDesc.Data.Subtype == 81 then -- Remove Great Gideon special health bar, Hornfel room properties, and Heretic pentagram effect.
-								local overwritableRoomDesc = level:GetRoomByIdx(roomDesc.SafeGridIndex, dimension)
+								local overwritableRoomDesc = level:GetRoomByIdx(roomDesc.GridIndex, dimension)
 								local replaceData = StageAPI.GetGotoDataForTypeShape(RoomType.ROOM_BOSS, roomDesc.Data.Shape)
-								overwritableRoomDesc.Data = replaceData
+								overwritableRoomDesc.OverrideData = replaceData -- apparently using overridedata works lol
 							end
-
 						end
 					end
 				end
@@ -5492,17 +5508,21 @@ local function SpawnHorseman()
 end
 
 --roll for the horsemen!
+local spawnRNG = RNG()
 mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL,function(_)
 	local level = game:GetLevel()
-	rng:SetSeed(game:GetSeeds():GetStageSeed(level:GetStage()), 0)
-	if rng:RandomInt(10) == 0 then
-		SpawnHorseman()
+	local roomDesc = GetClosestBossRoom()
+	spawnRNG:SetSeed(roomDesc.SpawnSeed, 0)
+	
+	if spawnRNG:RandomInt(10) == 0 then
+		SpawnHorseman(roomDesc)
 	end
 end)
 
 --book of revelations
 mod:AddCallback(ModCallbacks.MC_USE_ITEM,function(_,collectible)
-	SpawnHorseman()
+	local roomDesc = GetClosestBossRoom()
+	SpawnHorseman(roomDesc)
 end,CollectibleType.COLLECTIBLE_BOOK_OF_REVELATIONS)
 
 --post mod update
