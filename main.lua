@@ -5383,24 +5383,24 @@ local function FloorVerify()
 	
 	--normal
 	if (stageType == StageType.STAGETYPE_REPENTANCE and stageType ~= StageType.STAGETYPE_REPENTANCE_B) then
-		if (stage == LevelStage.STAGE1_1 or stage == LevelStage.STAGE1_2) then
+		if (stage == LevelStage.STAGE1_1 or stage == LevelStage.STAGE1_2) and not bossSeen.f2 then
 			return f2.name
-		elseif (stage == LevelStage.STAGE2_1 or stage == LevelStage.STAGE2_2) then
+		elseif (stage == LevelStage.STAGE2_1 or stage == LevelStage.STAGE2_2) and not bossSeen.w2 then
 			return w2.name
-		elseif (stage == LevelStage.STAGE3_1) then
+		elseif (stage == LevelStage.STAGE3_1) and not bossSeen.d2 then
 			return d2.name
-		elseif (stage == LevelStage.STAGE4_1) then
+		elseif (stage == LevelStage.STAGE4_1) and not bossSeen.p2 then
 			return p2.name
 		end
 	--alt
 	elseif (stageType ~= StageType.STAGETYPE_REPENTANCE and stageType == StageType.STAGETYPE_REPENTANCE_B) then
-		if (stage == LevelStage.STAGE1_1 or stage == LevelStage.STAGE1_2) then
+		if (stage == LevelStage.STAGE1_1 or stage == LevelStage.STAGE1_2) and not bossSeen.f2 then
 			return f2.nameAlt
-		elseif (stage == LevelStage.STAGE2_1 or stage == LevelStage.STAGE2_2) then
+		elseif (stage == LevelStage.STAGE2_1 or stage == LevelStage.STAGE2_2) and not bossSeen.w2 then
 			return w2.nameAlt
-		elseif (stage == LevelStage.STAGE3_1) then
+		elseif (stage == LevelStage.STAGE3_1) and not bossSeen.d2 then
 			return d2.nameAlt
-		--[[elseif (stage == LevelStage.STAGE4_1) then
+		--[[elseif (stage == LevelStage.STAGE4_1) and not bossSeen.p2 then
 			return p2.nameAlt]]
 		end
 	end
