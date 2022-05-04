@@ -2789,9 +2789,9 @@ function mod:Death2Update(npc)
 	if npc.Type == d2.id and npc.Variant >= d2.variant and npc.Variant <= d2.ghost.variant then
 		mod:Death2AI(npc)
 	end
-	if npc.Type == c2.id and npc.Variant == c2.variant then
-		mod:Conquest2AI(npc)
-	end
+--	if npc.Type == c2.id and npc.Variant == c2.variant then
+--		mod:Conquest2AI(npc)
+--	end
 end
 
 mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.Death2Update, d2.id)
@@ -4681,11 +4681,7 @@ local myTumors = 0
 --cache update
 function mod:CacheUpdate(player, flag)
     if flag == CacheFlag.CACHE_FAMILIARS then
-		local boxOfFriends = player:GetEffects():GetCollectibleEffectNum(CollectibleType.COLLECTIBLE_BOX_OF_FRIENDS)
-		local tumorNum = player:GetCollectibleNum(tc.id)
-		if tumorNum > 0 then
-			tumorNum = player:GetCollectibleNum(tc.id) + boxOfFriends
-		end
+		local tumorNum = player:GetCollectibleNum(tc.id) + player:GetEffects():GetCollectibleEffectNum(tc.id)
 		local tumorSub = tumorNum
 		local tumorFull = 0
 		while tumorSub > 4 do
@@ -4697,7 +4693,7 @@ function mod:CacheUpdate(player, flag)
 		local tumorS3 = 0
 		local tumorS4 = 0
 		
-		local helperNum = player:GetCollectibleNum(tc.helperid) --just in case you have the actual item
+		local helperNum = player:GetCollectibleNum(tc.helperid) + player:GetEffects():GetCollectibleEffectNum(tc.helperid) --just in case you have the actual item
 		local helper = 0
 		if tumorSub == 1 then
 			tumorS1 = 1
@@ -4710,13 +4706,13 @@ function mod:CacheUpdate(player, flag)
 			tumorS4 = 1
 			helper = 1
 		end
-
-		player:CheckFamiliar(tc.variant1, tumorS1, player:GetCollectibleRNG(tc.id))
-		player:CheckFamiliar(tc.variant2, tumorS2, player:GetCollectibleRNG(tc.id))
-		player:CheckFamiliar(tc.variant3, tumorS3, player:GetCollectibleRNG(tc.id))
-		player:CheckFamiliar(tc.variant4, tumorS4 + tumorFull, player:GetCollectibleRNG(tc.id))
+		local wadrng = player:GetCollectibleRNG(tc.id)
+		player:CheckFamiliar(tc.variant1, tumorS1, wadrng)
+		player:CheckFamiliar(tc.variant2, tumorS2, wadrng)
+		player:CheckFamiliar(tc.variant3, tumorS3, wadrng)
+		player:CheckFamiliar(tc.variant4, tumorS4 + tumorFull, wadrng)
 		
-		player:CheckFamiliar(tc.helper, helper + tumorFull + helperNum, player:GetCollectibleRNG(tc.helper))
+		player:CheckFamiliar(tc.helper, helper + tumorFull + helperNum, wadrng)
 		
 		if myTumors < tumorNum then
 			sfx:Play(ahSfx.tumorCollect, 1, 2, false, 1)
@@ -5313,7 +5309,7 @@ local sickFloodBro
 local sickFloodBro2
 local bossRoomId
 
-local revChance = false
+local bossSpawned = false
 local bossEntered = false
 local bossGen
 local tumorConstruct
@@ -5384,33 +5380,30 @@ local function FloorVerify()
 	local level = game:GetLevel()
 	local stage = level:GetStage()
 	local stageType = level:GetStageType()
-	local bossID = nil
-		
+	
 	--normal
 	if (stageType == StageType.STAGETYPE_REPENTANCE and stageType ~= StageType.STAGETYPE_REPENTANCE_B) then
-		if (stage == LevelStage.STAGE1_1 or stage == LevelStage.STAGE1_2) and not bossSeen.f2 then
-			bossID = f2.name
-		elseif (stage == LevelStage.STAGE2_1 or stage == LevelStage.STAGE2_2) and not bossSeen.w2 then
-			bossID = w2.name
-		elseif (stage == LevelStage.STAGE3_1) and not bossSeen.d2 then
-			bossID = d2.name
-		elseif (stage == LevelStage.STAGE4_1) and not bossSeen.p2 then
-			bossID = p2.name
+		if (stage == LevelStage.STAGE1_1 or stage == LevelStage.STAGE1_2) then
+			return f2.name
+		elseif (stage == LevelStage.STAGE2_1 or stage == LevelStage.STAGE2_2) then
+			return w2.name
+		elseif (stage == LevelStage.STAGE3_1) then
+			return d2.name
+		elseif (stage == LevelStage.STAGE4_1) then
+			return p2.name
 		end
 	--alt
 	elseif (stageType ~= StageType.STAGETYPE_REPENTANCE and stageType == StageType.STAGETYPE_REPENTANCE_B) then
-		if (stage == LevelStage.STAGE1_1 or stage == LevelStage.STAGE1_2) and not bossSeen.f2 then
-			bossID = f2.nameAlt
-		elseif (stage == LevelStage.STAGE2_1 or stage == LevelStage.STAGE2_2) and not bossSeen.w2 then
-			bossID = w2.nameAlt
-		elseif (stage == LevelStage.STAGE3_1) and not bossSeen.d2 then
-			bossID = d2.nameAlt
-		--[[elseif (stage == LevelStage.STAGE4_1) and not bossSeen.p2 then
-			bossID = p2.nameAlt]]
+		if (stage == LevelStage.STAGE1_1 or stage == LevelStage.STAGE1_2) then
+			return f2.nameAlt
+		elseif (stage == LevelStage.STAGE2_1 or stage == LevelStage.STAGE2_2) then
+			return w2.nameAlt
+		elseif (stage == LevelStage.STAGE3_1) then
+			return d2.nameAlt
+		--[[elseif (stage == LevelStage.STAGE4_1) then
+			return p2.nameAlt]]
 		end
 	end
-	
-	return bossID
 end
 
 local function FloodProcessing() 
@@ -5435,82 +5428,101 @@ local function FloodProcessing()
 	end
 end
 
---book of revelations
-mod:AddCallback(ModCallbacks.MC_USE_ITEM,function(_,collectible)
+local function GetClosestBossRoom()
 	local level = game:GetLevel()
-	local stage = level:GetStage()
-	local stageType = level:GetStageType()
-
-	if (stageType == StageType.STAGETYPE_REPENTANCE or stageType == StageType.STAGETYPE_REPENTANCE_B) then
-		if not revChance and not bossEntered and StageAPI then
-			local baseFloorInfo = StageAPI.GetBaseFloorInfo()
-			local backwards = game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH_INIT) or game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH)
-			local bossID = FloorVerify()
-			local successCheck = false
-
-			--print(bossID)
-
-				if bossID then
-				
-					local laby
-					if level:GetCurses() & LevelCurse.CURSE_OF_LABYRINTH ~= 0 then
-						laby = true
+	local rooms = level:GetRooms()
+	if level:GetCurses() & LevelCurse.CURSE_OF_LABYRINTH > 0 then
+		local neighbors={-1,-13,1,13}
+		for i = 0, rooms.Size - 1 do
+			local room = rooms:Get(i)
+			if room and room.Data then
+				if room.Data.Type == RoomType.ROOM_BOSS then
+					local count = 0
+					for i = 1, 4 do
+						local neighbor = Game():GetLevel():GetRoomByIdx(room.GridIndex+neighbors[i], 0)
+						if neighbor and neighbor.Data then
+							count = count + 1
+						end
 					end
 					
-					--print("detected possible boss")
-					
-					local roomsList = level:GetRooms()
-					for i = 0, roomsList.Size - 1 do
-						local roomDesc = roomsList:Get(i)
-						if roomDesc and not laby then
-							local dimension = StageAPI.GetDimension(roomDesc)
-							local newRoom
-							
-							if roomDesc.Data.Type == RoomType.ROOM_BOSS and roomDesc.Data.Shape ~= RoomShape.ROOMSHAPE_2x1 and (roomDesc.Data.Subtype ~= 82 and roomDesc.Data.Subtype ~= 83)
-							and dimension == 0 and not backwards and i == level:GetLastBossRoomListIndex() then
-								local bossData = StageAPI.GetBossData(bossID)
-								if bossData and not bossData.BaseGameBoss and bossData.Rooms then
-									newRoom = StageAPI.GenerateBossRoom({
-										BossID = bossID,
-										NoPlayBossAnim = true
-									}, {
-										RoomDescriptor = roomDesc
-									})
-									
-									successCheck = true
-									print("Horseman generation: Success!")
-									
-									--[[if roomDesc.Data.Subtype == 82 or roomDesc.Data.Subtype == 83 then
-										print("jk this ons gonna be monstro")
-										local overwritableRoomDesc = level:GetRoomByIdx(roomDesc.SafeGridIndex, dimension)
-										local replaceData = StageAPI.GetGotoDataForTypeShape(RoomType.ROOM_BOSS, roomDesc.Data.Shape)
-										overwritableRoomDesc.Data = replaceData
-									end]]
-								end
-								
-								if newRoom then						
-									local listIndex = roomDesc.ListIndex
-									StageAPI.SetLevelRoom(newRoom, listIndex, dimension)
-									if roomDesc.Data.Type == RoomType.ROOM_BOSS and baseFloorInfo.HasMirrorLevel and dimension == 0 then
-										StageAPI.Log("Mirroring!")
-										local mirroredRoom = newRoom:Copy(roomDesc)
-										local mirroredDesc = level:GetRoomByIdx(roomDesc.SafeGridIndex, 1)
-										StageAPI.SetLevelRoom(mirroredRoom, mirroredDesc.ListIndex, 1)
-									end
-								end
+					if count >= 2 then
+						return room
+					end
+				end
+			end
+		end
+	else
+		return rooms:Get(level:GetLastBossRoomListIndex())
+	end
+end
+
+local function SpawnHorseman(roomDesc)
+	if StageAPI then
+		local level = game:GetLevel()
+		local stage = level:GetStage()
+		local stageType = level:GetStageType()
+
+		if (stageType == StageType.STAGETYPE_REPENTANCE or stageType == StageType.STAGETYPE_REPENTANCE_B) then
+			local baseFloorInfo = StageAPI.GetBaseFloorInfo()
+
+			local backwards = game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH_INIT) or game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH)
+			local dimension = StageAPI.GetDimension(roomDesc)
+			local newRoom
+			if baseFloorInfo and roomDesc.VisitedCount == 0 and roomDesc.Data.Type == RoomType.ROOM_BOSS and dimension == 0 and not backwards then
+				local bossID = FloorVerify()
+				if bossID then
+					if not StageAPI.GetBossEncountered(bossID) then
+						local bossData = StageAPI.GetBossData(bossID)
+						if bossData and not bossData.BaseGameBoss and bossData.Rooms then
+							newRoom = StageAPI.GenerateBossRoom({
+								BossID = bossID,
+								NoPlayBossAnim = true
+							}, {
+								RoomDescriptor = roomDesc
+							})
+
+							if roomDesc.Data.Subtype == 82 or roomDesc.Data.Subtype == 83 or roomDesc.Data.Subtype == 81 then -- Remove Great Gideon special health bar, Hornfel room properties, and Heretic pentagram effect.
+								local overwritableRoomDesc = level:GetRoomByIdx(roomDesc.GridIndex, dimension)
+								local replaceData = StageAPI.GetGotoDataForTypeShape(RoomType.ROOM_BOSS, roomDesc.Data.Shape)
+								overwritableRoomDesc.OverrideData = replaceData -- apparently using overridedata works lol
 							end
 						end
 					end
 				end
-				
-			if not successCheck then
-				print("Horseman generation: Failed (Invalid Room)")
-			else
-				FloodProcessing()
 			end
-			revChance = true
+			
+			if newRoom then
+				local listIndex = roomDesc.ListIndex
+				StageAPI.SetLevelRoom(newRoom, listIndex, dimension)
+				if roomDesc.Data.Type == RoomType.ROOM_BOSS and baseFloorInfo.HasMirrorLevel and dimension == 0 then
+					StageAPI.Log("Mirroring!")
+					local mirroredRoom = newRoom:Copy(roomDesc)
+					local mirroredDesc = level:GetRoomByIdx(roomDesc.SafeGridIndex, 1)
+					StageAPI.SetLevelRoom(mirroredRoom, mirroredDesc.ListIndex, 1)
+				end
+				FloodProcessing()
+				print("horseman spawned")
+			end
 		end
 	end
+end
+
+--roll for the horsemen!
+local spawnRNG = RNG()
+mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL,function(_)
+	local level = game:GetLevel()
+	local roomDesc = GetClosestBossRoom()
+	spawnRNG:SetSeed(roomDesc.SpawnSeed, 0)
+	
+	if spawnRNG:RandomInt(10) == 0 then
+		SpawnHorseman(roomDesc)
+	end
+end)
+
+--book of revelations
+mod:AddCallback(ModCallbacks.MC_USE_ITEM,function(_,collectible)
+	local roomDesc = GetClosestBossRoom()
+	SpawnHorseman(roomDesc)
 end,CollectibleType.COLLECTIBLE_BOOK_OF_REVELATIONS)
 
 --post mod update
@@ -5571,6 +5583,7 @@ if StageAPI and firstLoaded then
 			Bossname = p2.bossName,
 			Weight = p2.weight,
 			Rooms = StageAPI.RoomsList("AHPestRooms", require("resources.luarooms.boss_pestilence2")),
+			Horseman = true,
 		}),
 		--[[p2alt = StageAPI.AddBossData(p2.nameAlt, {
 			Name = p2.name,
@@ -5579,6 +5592,7 @@ if StageAPI and firstLoaded then
 			Bossname = p2.bossName,
 			Weight = p2.weightAlt,
 			Rooms = StageAPI.RoomsList("AHPestAltRooms", require("resources.luarooms.boss_pestilence_alt")),
+			Horseman = true,
 		})]]
 		d2 = StageAPI.AddBossData(d2.name, {
 			Name = d2.name,
@@ -5587,6 +5601,7 @@ if StageAPI and firstLoaded then
 			Bossname = d2.bossName,
 			Weight = d2.weight,
 			Rooms = StageAPI.RoomsList("AHDeathRooms", require("resources.luarooms.boss_death2")),
+			Horseman = true,
 		}),
 		d2alt = StageAPI.AddBossData(d2.nameAlt, {
 			Name = d2.name,
@@ -5595,6 +5610,7 @@ if StageAPI and firstLoaded then
 			Bossname = d2.bossName,
 			Weight = d2.weightAlt,
 			Rooms = StageAPI.RoomsList("AHDeathAltRooms", require("resources.luarooms.boss_death2_alt")),
+			Horseman = true,
 		}),
 		w2 = StageAPI.AddBossData(w2.name, {
 			Name = w2.name,
@@ -5603,6 +5619,7 @@ if StageAPI and firstLoaded then
 			Bossname = w2.bossName,
 			Weight = w2.weight,
 			Rooms = StageAPI.RoomsList("AHWarRooms", require("resources.luarooms.boss_war2")),
+			Horseman = true,
 		}),
 		w2alt = StageAPI.AddBossData(w2.nameAlt, {
 			Name = w2.name,
@@ -5611,6 +5628,7 @@ if StageAPI and firstLoaded then
 			Bossname = w2.bossName,
 			Weight = w2.weightAlt,
 			Rooms = StageAPI.RoomsList("AHWarAltRooms", require("resources.luarooms.boss_war2_alt")),
+			Horseman = true,
 		}),
 		f2 = StageAPI.AddBossData(f2.name, {
 			Name = f2.name,
@@ -5619,6 +5637,7 @@ if StageAPI and firstLoaded then
 			Bossname = f2.bossName,
 			Weight = f2.weight,
 			Rooms = StageAPI.RoomsList("AHFamineRooms", require("resources.luarooms.boss_famine2")),
+			Horseman = true,
 		}),
 		f2alt = StageAPI.AddBossData(f2.nameAlt, {
 			Name = f2.name,
@@ -5627,6 +5646,7 @@ if StageAPI and firstLoaded then
 			Bossname = f2.bossName,
 			Weight = f2.weightAlt,
 			Rooms = StageAPI.RoomsList("AHFamineAltRooms", require("resources.luarooms.boss_famine2_alt")),
+			Horseman = true,
 		}),
 		bdrip = StageAPI.AddBossData(bdrip.name, {
 			Name = bdrip.name,
@@ -5637,15 +5657,6 @@ if StageAPI and firstLoaded then
 			Rooms = StageAPI.RoomsList("AHBigDripRooms", require("resources.luarooms.bigdrip")),
 		}),
 	}
-	
-	StageAPI.AddBossToBaseFloorPool({BossID = f2.name},LevelStage.STAGE1_1,StageType.STAGETYPE_REPENTANCE)
-	StageAPI.AddBossToBaseFloorPool({BossID = f2.nameAlt},LevelStage.STAGE1_1,StageType.STAGETYPE_REPENTANCE_B)
-	StageAPI.AddBossToBaseFloorPool({BossID = w2.name},LevelStage.STAGE2_1,StageType.STAGETYPE_REPENTANCE)
-	StageAPI.AddBossToBaseFloorPool({BossID = w2.nameAlt},LevelStage.STAGE2_1,StageType.STAGETYPE_REPENTANCE_B)
-	StageAPI.AddBossToBaseFloorPool({BossID = d2.name},LevelStage.STAGE3_1,StageType.STAGETYPE_REPENTANCE,true)
-	StageAPI.AddBossToBaseFloorPool({BossID = d2.nameAlt},LevelStage.STAGE3_1,StageType.STAGETYPE_REPENTANCE_B,true)
-	StageAPI.AddBossToBaseFloorPool({BossID = p2.name},LevelStage.STAGE4_1,StageType.STAGETYPE_REPENTANCE,true)
-	--StageAPI.AddBossToBaseFloorPool({BossID = p2.nameAlt},LevelStage.STAGE4_1,StageType.STAGETYPE_REPENTANCE_B)
 end
 
 --New Game
@@ -5679,7 +5690,7 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL ,function(_)
 	meatCheck = false
 	bandageCheck = false
 	bossGen = nil
-	revChance = false
+	bossSpawned = false
 	bossEntered = false
 	sickFloodBro = false
 	sickFloodBro2 = false

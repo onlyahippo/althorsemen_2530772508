@@ -1,0 +1,3 @@
+<items gfxroot="gfx/items/" version="1" deathanm2="gfx/death_items.anm2">
+	<familiar achievement="407" id="0" cache="firedelay" name="Wad of Tumors" description="Gotta end 'em all!" gfx="collectibles_wadoftumors.png" quality="3" tags="summonable monstermanual tearsup offensive" />
+</items>

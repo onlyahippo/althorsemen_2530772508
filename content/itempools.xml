@@ -1,0 +1,10 @@
+<ItemPools>
+	<Pool Name="greedBoss">
+		<!--Wad of Tumors-->
+		<Item Name="Wad of Tumors" Weight="1" DecreaseBy="1" RemoveOn="0.1"/>
+	</Pool>
+	<Pool Name="babyShop">
+		<!--Wad of Tumors-->
+		<Item Name="Wad of Tumors" Weight="1" DecreaseBy="1" RemoveOn="0.1"/>
+	</Pool>
+</ItemPools>
