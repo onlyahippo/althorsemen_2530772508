@@ -27,7 +27,6 @@ mod.Famine2 = {
 	portraitAlt = "gfx/bosses/famine2/portrait_famine2_dross.png",
 	bossName = "gfx/bosses/famine2/bossname_famine2.png",
 	weight = 1,
-	weightAlt = 1,
 	id = 630,
 	variant = 101,
 	bal = {
@@ -541,7 +540,6 @@ mod.War2 = {
 	portraitAlt = "gfx/bosses/war2/portrait_war2_ashpit.png",
 	bossName = "gfx/bosses/war2/bossname_war2.png",
 	weight = 1,
-	weightAlt = 1,
 	id = 650,
 	variant = 101,
 	army = {
@@ -1442,7 +1440,6 @@ mod.Death2 = {
 	portraitAlt = "gfx/bosses/death2/portrait_death2_gehenna.png",
 	bossName = "gfx/bosses/death2/bossname_death2.png",
 	weight = 1,
-	weightAlt = 1,
 	id = 660,
 	variant = 101,
 	horse = {
@@ -2889,7 +2886,6 @@ mod.Pestilence2 = {
 	--portraitAlt = "gfx/bosses/pestilence2/portrait_pestilence2_mortis.png",
 	bossName = "gfx/bosses/pestilence2/bossname_pestilence2.png",
 	weight = 1,
-	weightAlt = 1,
 	id = 640,
 	variant = 101,
 	horse = {
@@ -4216,7 +4212,6 @@ mod.Conquest2 = {
 	portrait = "gfx/bosses/conquest2/portrait_conquest2.png",
 	bossName = "gfx/bosses/conquest2/bossname_conquest2.png",
 	weight = 1,
-	weightAlt = 1,
 	id = 660,
 	variant = 151,
 	bal = {
@@ -5383,24 +5378,24 @@ local function FloorVerify()
 	
 	--normal
 	if (stageType == StageType.STAGETYPE_REPENTANCE and stageType ~= StageType.STAGETYPE_REPENTANCE_B) then
-		if (stage == LevelStage.STAGE1_1 or stage == LevelStage.STAGE1_2) then
+		if (stage == LevelStage.STAGE1_1 or stage == LevelStage.STAGE1_2) and not bossSeen.f2 then
 			return f2.name
-		elseif (stage == LevelStage.STAGE2_1 or stage == LevelStage.STAGE2_2) then
+		elseif (stage == LevelStage.STAGE2_1 or stage == LevelStage.STAGE2_2) and not bossSeen.w2 then
 			return w2.name
-		elseif (stage == LevelStage.STAGE3_1) then
+		elseif (stage == LevelStage.STAGE3_1) and not bossSeen.d2 then
 			return d2.name
-		elseif (stage == LevelStage.STAGE4_1) then
+		elseif (stage == LevelStage.STAGE4_1) and not bossSeen.p2 then
 			return p2.name
 		end
 	--alt
 	elseif (stageType ~= StageType.STAGETYPE_REPENTANCE and stageType == StageType.STAGETYPE_REPENTANCE_B) then
-		if (stage == LevelStage.STAGE1_1 or stage == LevelStage.STAGE1_2) then
+		if (stage == LevelStage.STAGE1_1 or stage == LevelStage.STAGE1_2) and not bossSeen.f2 then
 			return f2.nameAlt
-		elseif (stage == LevelStage.STAGE2_1 or stage == LevelStage.STAGE2_2) then
+		elseif (stage == LevelStage.STAGE2_1 or stage == LevelStage.STAGE2_2) and not bossSeen.w2 then
 			return w2.nameAlt
-		elseif (stage == LevelStage.STAGE3_1) then
+		elseif (stage == LevelStage.STAGE3_1) and not bossSeen.d2 then
 			return d2.nameAlt
-		--[[elseif (stage == LevelStage.STAGE4_1) then
+		--[[elseif (stage == LevelStage.STAGE4_1) and not bossSeen.p2 then
 			return p2.nameAlt]]
 		end
 	end
@@ -5461,6 +5456,8 @@ local function SpawnHorseman(roomDesc)
 		local level = game:GetLevel()
 		local stage = level:GetStage()
 		local stageType = level:GetStageType()
+		
+		local successCheck = false
 
 		if (stageType == StageType.STAGETYPE_REPENTANCE or stageType == StageType.STAGETYPE_REPENTANCE_B) then
 			local baseFloorInfo = StageAPI.GetBaseFloorInfo()
@@ -5468,7 +5465,8 @@ local function SpawnHorseman(roomDesc)
 			local backwards = game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH_INIT) or game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH)
 			local dimension = StageAPI.GetDimension(roomDesc)
 			local newRoom
-			if baseFloorInfo and roomDesc.VisitedCount == 0 and roomDesc.Data.Type == RoomType.ROOM_BOSS and dimension == 0 and not backwards then
+			if baseFloorInfo and roomDesc.VisitedCount == 0 and roomDesc.Data.Type == RoomType.ROOM_BOSS and roomDesc.Data.Shape ~= RoomShape.ROOMSHAPE_2x1 
+			and (roomDesc.Data.Subtype ~= 82 and roomDesc.Data.Subtype ~= 83) and dimension == 0 and not backwards then
 				local bossID = FloorVerify()
 				if bossID then
 					if not StageAPI.GetBossEncountered(bossID) then
@@ -5500,9 +5498,14 @@ local function SpawnHorseman(roomDesc)
 					local mirroredDesc = level:GetRoomByIdx(roomDesc.SafeGridIndex, 1)
 					StageAPI.SetLevelRoom(mirroredRoom, mirroredDesc.ListIndex, 1)
 				end
+				successCheck = true
 				FloodProcessing()
-				print("horseman spawned")
+				print("Horseman generation: Success!")
 			end
+		end
+		
+		if not successCheck then
+			print("Horseman generation: Failed (Invalid Room)")
 		end
 	end
 end
@@ -5512,6 +5515,17 @@ local spawnRNG = RNG()
 mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL,function(_)
 	local level = game:GetLevel()
 	local roomDesc = GetClosestBossRoom()
+	
+	doHorseDrop = false
+	meatCheck = false
+	bandageCheck = false
+	bossGen = nil
+	bossSpawned = false
+	bossEntered = false
+	sickFloodBro = false
+	sickFloodBro2 = false
+	bossRoomId = nil
+	
 	spawnRNG:SetSeed(roomDesc.SpawnSeed, 0)
 	
 	if spawnRNG:RandomInt(10) == 0 then
@@ -5590,7 +5604,7 @@ if StageAPI and firstLoaded then
 			Portrait = p2.portraitAlt,
 			Offset = Vector(0,-15),
 			Bossname = p2.bossName,
-			Weight = p2.weightAlt,
+			Weight = p2.weight,
 			Rooms = StageAPI.RoomsList("AHPestAltRooms", require("resources.luarooms.boss_pestilence_alt")),
 			Horseman = true,
 		})]]
@@ -5608,7 +5622,7 @@ if StageAPI and firstLoaded then
 			Portrait = d2.portraitAlt,
 			Offset = Vector(0,-22),
 			Bossname = d2.bossName,
-			Weight = d2.weightAlt,
+			Weight = d2.weight,
 			Rooms = StageAPI.RoomsList("AHDeathAltRooms", require("resources.luarooms.boss_death2_alt")),
 			Horseman = true,
 		}),
@@ -5626,7 +5640,7 @@ if StageAPI and firstLoaded then
 			Portrait = w2.portraitAlt,
 			Offset = Vector(0,-22),
 			Bossname = w2.bossName,
-			Weight = w2.weightAlt,
+			Weight = w2.weight,
 			Rooms = StageAPI.RoomsList("AHWarAltRooms", require("resources.luarooms.boss_war2_alt")),
 			Horseman = true,
 		}),
@@ -5644,7 +5658,7 @@ if StageAPI and firstLoaded then
 			Portrait = f2.portraitAlt,
 			Offset = Vector(0,-15),
 			Bossname = f2.bossName,
-			Weight = f2.weightAlt,
+			Weight = f2.weight,
 			Rooms = StageAPI.RoomsList("AHFamineAltRooms", require("resources.luarooms.boss_famine2_alt")),
 			Horseman = true,
 		}),
@@ -5681,20 +5695,6 @@ mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, function(_, isContinue)
 			bossSeen[k] = false
 		end
 	end
-end
-)
-
---New Level
-mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL ,function(_)
-	doHorseDrop = false
-	meatCheck = false
-	bandageCheck = false
-	bossGen = nil
-	bossSpawned = false
-	bossEntered = false
-	sickFloodBro = false
-	sickFloodBro2 = false
-	bossRoomId = nil
 end
 )
 
