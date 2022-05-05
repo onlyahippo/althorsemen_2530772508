@@ -16,6 +16,8 @@ mod.CustomSFX = {
 }
 local ahSfx = mod.CustomSFX
 
+mod.HorseChance = 20
+
 ------------------------BOSSES------------------------
 ------------------------------------------------------
 
@@ -5451,13 +5453,11 @@ local function GetClosestBossRoom()
 	end
 end
 
-local function SpawnHorseman(roomDesc)
+local function SpawnHorseman(roomDesc, usedRev)
 	if StageAPI then
 		local level = game:GetLevel()
 		local stage = level:GetStage()
 		local stageType = level:GetStageType()
-		
-		local successCheck = false
 
 		if (stageType == StageType.STAGETYPE_REPENTANCE or stageType == StageType.STAGETYPE_REPENTANCE_B) then
 			local baseFloorInfo = StageAPI.GetBaseFloorInfo()
@@ -5465,6 +5465,8 @@ local function SpawnHorseman(roomDesc)
 			local backwards = game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH_INIT) or game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH)
 			local dimension = StageAPI.GetDimension(roomDesc)
 			local newRoom
+			local successCheck = false
+			
 			if baseFloorInfo and roomDesc.VisitedCount == 0 and roomDesc.Data.Type == RoomType.ROOM_BOSS and roomDesc.Data.Shape ~= RoomShape.ROOMSHAPE_2x1 
 			and (roomDesc.Data.Subtype ~= 82 and roomDesc.Data.Subtype ~= 83) and dimension == 0 and not backwards then
 				local bossID = FloorVerify()
@@ -5484,6 +5486,12 @@ local function SpawnHorseman(roomDesc)
 								local replaceData = StageAPI.GetGotoDataForTypeShape(RoomType.ROOM_BOSS, roomDesc.Data.Shape)
 								overwritableRoomDesc.OverrideData = replaceData -- apparently using overridedata works lol
 							end
+							
+							successCheck = true
+							
+							if usedRev then
+								print("Horseman generation: Success!")
+							end
 						end
 					end
 				end
@@ -5498,14 +5506,15 @@ local function SpawnHorseman(roomDesc)
 					local mirroredDesc = level:GetRoomByIdx(roomDesc.SafeGridIndex, 1)
 					StageAPI.SetLevelRoom(mirroredRoom, mirroredDesc.ListIndex, 1)
 				end
-				successCheck = true
-				FloodProcessing()
-				print("Horseman generation: Success!")
 			end
-		end
-		
-		if not successCheck then
-			print("Horseman generation: Failed (Invalid Room)")
+			
+			if usedRev then
+				if not successCheck then
+					print("Horseman generation: Failed (Invalid Room)")
+				else
+					FloodProcessing()
+				end
+			end
 		end
 	end
 end
@@ -5528,15 +5537,15 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL,function(_)
 	
 	spawnRNG:SetSeed(roomDesc.SpawnSeed, 0)
 	
-	if spawnRNG:RandomInt(10) == 0 then
-		SpawnHorseman(roomDesc)
+	if spawnRNG:RandomInt(100)+1 <= mod.HorseChance then
+		SpawnHorseman(roomDesc, false)
 	end
 end)
 
 --book of revelations
 mod:AddCallback(ModCallbacks.MC_USE_ITEM,function(_,collectible)
 	local roomDesc = GetClosestBossRoom()
-	SpawnHorseman(roomDesc)
+	SpawnHorseman(roomDesc, true)
 end,CollectibleType.COLLECTIBLE_BOOK_OF_REVELATIONS)
 
 --post mod update
