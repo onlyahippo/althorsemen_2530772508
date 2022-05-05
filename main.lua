@@ -5481,13 +5481,6 @@ local function SpawnHorseman(roomDesc, usedRev)
 							}, {
 								RoomDescriptor = roomDesc
 							})
-
-							if roomDesc.Data.Subtype == 82 or roomDesc.Data.Subtype == 83 or roomDesc.Data.Subtype == 81 then -- Remove Great Gideon special health bar, Hornfel room properties, and Heretic pentagram effect.
-								local overwritableRoomDesc = level:GetRoomByIdx(roomDesc.GridIndex, dimension)
-								local replaceData = StageAPI.GetGotoDataForTypeShape(RoomType.ROOM_BOSS, roomDesc.Data.Shape)
-								overwritableRoomDesc.Data = replaceData
-								print("weird room")
-							end
 							
 							successCheck = true
 							
@@ -5507,13 +5500,12 @@ local function SpawnHorseman(roomDesc, usedRev)
 					local mirroredDesc = level:GetRoomByIdx(roomDesc.SafeGridIndex, 1)
 					StageAPI.SetLevelRoom(mirroredRoom, mirroredDesc.ListIndex, 1)
 				end
+				FloodProcessing()
 			end
 			
 			if usedRev then
 				if not successCheck then
 					print("Horseman generation: Failed (Invalid Room)")
-				else
-					FloodProcessing()
 				end
 			end
 		end
@@ -5537,9 +5529,7 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL,function(_)
 	bossRoomId = nil
 	
 	spawnRNG:SetSeed(roomDesc.SpawnSeed, 0)
-	
-	--StageAPI.SetCurrentBossRoomInPlace(FloorVerify(), roomDesc)
-	
+		
 	if spawnRNG:RandomFloat() <= mod.HorseChance then
 		SpawnHorseman(roomDesc, false)
 		StageAPI.DetectBaseLayoutChanges(true)
