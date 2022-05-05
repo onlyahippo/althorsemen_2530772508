@@ -28,7 +28,7 @@ mod.Famine2 = {
 	portrait = "gfx/bosses/famine2/portrait_famine2.png",
 	portraitAlt = "gfx/bosses/famine2/portrait_famine2_dross.png",
 	bossName = "gfx/bosses/famine2/bossname_famine2.png",
-	weight = 1,
+	weight = 0,
 	id = 630,
 	variant = 101,
 	bal = {
@@ -541,7 +541,7 @@ mod.War2 = {
 	portrait = "gfx/bosses/war2/portrait_war2.png",
 	portraitAlt = "gfx/bosses/war2/portrait_war2_ashpit.png",
 	bossName = "gfx/bosses/war2/bossname_war2.png",
-	weight = 1,
+	weight = 0,
 	id = 650,
 	variant = 101,
 	army = {
@@ -1441,7 +1441,7 @@ mod.Death2 = {
 	portrait = "gfx/bosses/death2/portrait_death2.png",
 	portraitAlt = "gfx/bosses/death2/portrait_death2_gehenna.png",
 	bossName = "gfx/bosses/death2/bossname_death2.png",
-	weight = 1,
+	weight = 0,
 	id = 660,
 	variant = 101,
 	horse = {
@@ -2887,7 +2887,7 @@ mod.Pestilence2 = {
 	portrait = "gfx/bosses/pestilence2/portrait_pestilence2.png",
 	--portraitAlt = "gfx/bosses/pestilence2/portrait_pestilence2_mortis.png",
 	bossName = "gfx/bosses/pestilence2/bossname_pestilence2.png",
-	weight = 1,
+	weight = 0,
 	id = 640,
 	variant = 101,
 	horse = {
@@ -4213,7 +4213,7 @@ mod.Conquest2 = {
 	name = "Tainted Conquest",
 	portrait = "gfx/bosses/conquest2/portrait_conquest2.png",
 	bossName = "gfx/bosses/conquest2/bossname_conquest2.png",
-	weight = 1,
+	weight = 0,
 	id = 660,
 	variant = 151,
 	bal = {
@@ -5453,79 +5453,13 @@ local function GetClosestBossRoom()
 	end
 end
 
-local function SpawnHorseman(roomDesc, usedRev)
-	if StageAPI then
-		local level = game:GetLevel()
-		local stage = level:GetStage()
-		local stageType = level:GetStageType()
-
-		if (stageType == StageType.STAGETYPE_REPENTANCE or stageType == StageType.STAGETYPE_REPENTANCE_B) then
-			local baseFloorInfo = StageAPI.GetBaseFloorInfo()
-
-			local backwards = game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH_INIT) or game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH)
-			local dimension = StageAPI.GetDimension(roomDesc)
-			local newRoom
-			local successCheck = false
-			local bossID = FloorVerify()
-			
-			if baseFloorInfo and roomDesc.VisitedCount == 0 and roomDesc.Data.Type == RoomType.ROOM_BOSS and roomDesc.Data.Shape ~= RoomShape.ROOMSHAPE_2x1 
-			and (roomDesc.Data.Subtype ~= 82 and roomDesc.Data.Subtype ~= 83) and dimension == 0 and not backwards then
-				local bossID = FloorVerify()
-				if bossID then
-					if not StageAPI.GetBossEncountered(bossID) then
-						local bossData = StageAPI.GetBossData(bossID)
-						if bossData and not bossData.BaseGameBoss and bossData.Rooms then
-							newRoom = StageAPI.GenerateBossRoom({
-								BossID = bossID,
-								NoPlayBossAnim = true
-							}, {
-								RoomDescriptor = roomDesc
-							})
-
-							if roomDesc.Data.Subtype == 82 or roomDesc.Data.Subtype == 83 or roomDesc.Data.Subtype == 81 then -- Remove Great Gideon special health bar, Hornfel room properties, and Heretic pentagram effect.
-								local overwritableRoomDesc = level:GetRoomByIdx(roomDesc.GridIndex, dimension)
-								local replaceData = StageAPI.GetGotoDataForTypeShape(RoomType.ROOM_BOSS, roomDesc.Data.Shape)
-								overwritableRoomDesc.Data = replaceData
-								print("weird room")
-							end
-							
-							successCheck = true
-							
-							if usedRev then
-								print("Horseman generation: Success!")
-							end
-						end
-					end
-				end
-			end
-			
-			if newRoom then
-				StageAPI.SetLevelRoom(newRoom, roomDesc.ListIndex, dimension)
-				if roomDesc.Data.Type == RoomType.ROOM_BOSS and baseFloorInfo.HasMirrorLevel and dimension == 0 then
-					StageAPI.Log("Mirroring!")
-					local mirroredRoom = newRoom:Copy(roomDesc)
-					local mirroredDesc = level:GetRoomByIdx(roomDesc.SafeGridIndex, 1)
-					StageAPI.SetLevelRoom(mirroredRoom, mirroredDesc.ListIndex, 1)
-				end
-			end
-			
-			if usedRev then
-				if not successCheck then
-					print("Horseman generation: Failed (Invalid Room)")
-				else
-					FloodProcessing()
-				end
-			end
-		end
-	end
+local function ForceHorseman()
+	local altBosses = {Pool = {}}
+	altBosses.Pool[1] = FloorVerify()
+	return altBosses
 end
 
---roll for the horsemen!
-local spawnRNG = RNG()
-mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL,function(_)
-	local level = game:GetLevel()
-	local roomDesc = GetClosestBossRoom()
-	
+mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL,function(_)	
 	doHorseDrop = false
 	meatCheck = false
 	bandageCheck = false
@@ -5535,22 +5469,26 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL,function(_)
 	sickFloodBro = false
 	sickFloodBro2 = false
 	bossRoomId = nil
-	
+end)
+
+local revUsed = false
+local spawnRNG = RNG()
+StageAPI.AddCallback("Althorsemen", "PRE_BOSS_SELECT", 1, function(bosses, _rng, roomDesc, ignoreNoOptions)
+	local stageType = game:GetLevel():GetStageType()
 	spawnRNG:SetSeed(roomDesc.SpawnSeed, 0)
-	
-	--StageAPI.SetCurrentBossRoomInPlace(FloorVerify(), roomDesc)
-	
-	if spawnRNG:RandomFloat() <= mod.HorseChance then
-		SpawnHorseman(roomDesc, false)
-		StageAPI.DetectBaseLayoutChanges(true)
+	if (stageType == StageType.STAGETYPE_REPENTANCE or stageType == StageType.STAGETYPE_REPENTANCE_B) then
+		if revUsed or (spawnRNG:RandomFloat() < mod.HorseChance) then
+			revUsed = false
+			print("horseman spawned")
+			return ForceHorseman()
+		end
 	end
 end)
 
 --book of revelations
 mod:AddCallback(ModCallbacks.MC_USE_ITEM,function(_,collectible)
-	local roomDesc = GetClosestBossRoom()
-	SpawnHorseman(roomDesc, true)
-	StageAPI.DetectBaseLayoutChanges(true)
+	revUsed = true
+	StageAPI.GenerateBaseRoom(GetClosestBossRoom())
 end,CollectibleType.COLLECTIBLE_BOOK_OF_REVELATIONS)
 
 StageAPI.AddCallback("Althorsemen", "PRE_STAGEAPI_SELECT_BOSS_ITEM", 1, function(pickup, currentRoom)
@@ -5647,6 +5585,14 @@ if StageAPI and firstLoaded then
 			Rooms = StageAPI.RoomsList("AHBigDripRooms", require("resources.luarooms.bigdrip")),
 		}),
 	}
+	StageAPI.AddBossToBaseFloorPool({BossID = f2.name},LevelStage.STAGE1_1,StageType.STAGETYPE_REPENTANCE)
+	StageAPI.AddBossToBaseFloorPool({BossID = f2.nameAlt},LevelStage.STAGE1_1,StageType.STAGETYPE_REPENTANCE_B)
+	StageAPI.AddBossToBaseFloorPool({BossID = w2.name},LevelStage.STAGE2_1,StageType.STAGETYPE_REPENTANCE)
+	StageAPI.AddBossToBaseFloorPool({BossID = w2.nameAlt},LevelStage.STAGE2_1,StageType.STAGETYPE_REPENTANCE_B)
+	StageAPI.AddBossToBaseFloorPool({BossID = d2.name},LevelStage.STAGE3_1,StageType.STAGETYPE_REPENTANCE,true)
+	StageAPI.AddBossToBaseFloorPool({BossID = d2.nameAlt},LevelStage.STAGE3_1,StageType.STAGETYPE_REPENTANCE_B,true)
+	StageAPI.AddBossToBaseFloorPool({BossID = p2.name},LevelStage.STAGE4_1,StageType.STAGETYPE_REPENTANCE,true)
+
 end
 
 --New Game
