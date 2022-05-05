@@ -16,7 +16,7 @@ mod.CustomSFX = {
 }
 local ahSfx = mod.CustomSFX
 
-mod.HorseChance = 20
+mod.HorseChance = 0.2
 
 ------------------------BOSSES------------------------
 ------------------------------------------------------
@@ -5466,6 +5466,7 @@ local function SpawnHorseman(roomDesc, usedRev)
 			local dimension = StageAPI.GetDimension(roomDesc)
 			local newRoom
 			local successCheck = false
+			local bossID = FloorVerify()
 			
 			if baseFloorInfo and roomDesc.VisitedCount == 0 and roomDesc.Data.Type == RoomType.ROOM_BOSS and roomDesc.Data.Shape ~= RoomShape.ROOMSHAPE_2x1 
 			and (roomDesc.Data.Subtype ~= 82 and roomDesc.Data.Subtype ~= 83) and dimension == 0 and not backwards then
@@ -5484,7 +5485,8 @@ local function SpawnHorseman(roomDesc, usedRev)
 							if roomDesc.Data.Subtype == 82 or roomDesc.Data.Subtype == 83 or roomDesc.Data.Subtype == 81 then -- Remove Great Gideon special health bar, Hornfel room properties, and Heretic pentagram effect.
 								local overwritableRoomDesc = level:GetRoomByIdx(roomDesc.GridIndex, dimension)
 								local replaceData = StageAPI.GetGotoDataForTypeShape(RoomType.ROOM_BOSS, roomDesc.Data.Shape)
-								overwritableRoomDesc.OverrideData = replaceData -- apparently using overridedata works lol
+								overwritableRoomDesc.Data = replaceData
+								print("weird room")
 							end
 							
 							successCheck = true
@@ -5498,8 +5500,7 @@ local function SpawnHorseman(roomDesc, usedRev)
 			end
 			
 			if newRoom then
-				local listIndex = roomDesc.ListIndex
-				StageAPI.SetLevelRoom(newRoom, listIndex, dimension)
+				StageAPI.SetLevelRoom(newRoom, roomDesc.ListIndex, dimension)
 				if roomDesc.Data.Type == RoomType.ROOM_BOSS and baseFloorInfo.HasMirrorLevel and dimension == 0 then
 					StageAPI.Log("Mirroring!")
 					local mirroredRoom = newRoom:Copy(roomDesc)
@@ -5537,8 +5538,11 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL,function(_)
 	
 	spawnRNG:SetSeed(roomDesc.SpawnSeed, 0)
 	
-	if spawnRNG:RandomInt(100)+1 <= mod.HorseChance then
+	--StageAPI.SetCurrentBossRoomInPlace(FloorVerify(), roomDesc)
+	
+	if spawnRNG:RandomFloat() <= mod.HorseChance then
 		SpawnHorseman(roomDesc, false)
+		StageAPI.DetectBaseLayoutChanges(true)
 	end
 end)
 
@@ -5546,53 +5550,16 @@ end)
 mod:AddCallback(ModCallbacks.MC_USE_ITEM,function(_,collectible)
 	local roomDesc = GetClosestBossRoom()
 	SpawnHorseman(roomDesc, true)
+	StageAPI.DetectBaseLayoutChanges(true)
 end,CollectibleType.COLLECTIBLE_BOOK_OF_REVELATIONS)
 
---post mod update
-mod:AddCallback(ModCallbacks.MC_POST_UPDATE,function(_)
-	local room = game:GetRoom()
-	
-	--SOUND TEST
-	--[[for i = 1, 817 do
-		if SFXManager():IsPlaying(i) then print(i) end
-	end]]--
-	
-	--FIND ENTITY
-	--[[for i, entity in ipairs(Isaac.FindByType(1000)) do
-			print(entity.Variant)
-	end]]--
-
-	if room:GetType() == RoomType.ROOM_BOSS then
-		if doHorseDrop then
-			for i, entity in ipairs(Isaac.FindByType(5, 100)) do
-				if entity.Position.X <= room:GetCenterPos().X and entity.Position.Y > room:GetCenterPos().Y then
-					doHorseDrop = false
-					local thisDrop = tc.id 
-					
-					--local dice = mod:RandomInt(2)
-					
-					--[[if dice == 1 then
-						thisDrop = CollectibleType.COLLECTIBLE_CUBE_OF_MEAT
-					else
-						thisDrop = CollectibleType.COLLECTIBLE_BALL_OF_BANDAGES
-					end
-					
-					if meatCheck then
-						thisDrop = CollectibleType.COLLECTIBLE_CUBE_OF_MEAT
-					elseif bandageCheck then
-						thisDrop = CollectibleType.COLLECTIBLE_BALL_OF_BANDAGES
-					end]]
-					
-					if (entity.SubType ~= CollectibleType.COLLECTIBLE_POLAROID and entity.SubType ~= CollectibleType.COLLECTIBLE_NEGATIVE) then
-						entity:ToPickup():Morph(5,100,thisDrop,-1)
-					end
-					break
-				end
-			end
-		end
-	end
-end
-)
+StageAPI.AddCallback("Althorsemen", "PRE_STAGEAPI_SELECT_BOSS_ITEM", 1, function(pickup, currentRoom)
+    if doHorseDrop then
+		doHorseDrop = false
+		pickup:Morph(pickup.Type, pickup.Variant, tc.id)
+		return true
+    end
+end)
 
 -------------------------SYSTEMS--------------------------
 ----------------------------------------------------------
