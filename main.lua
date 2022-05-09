@@ -222,7 +222,7 @@ function mod:Famine2AI(npc)
 		
 			mod:SpritePlay(sprite,"AttackDashStart")
 			npc:PlaySound(SoundEffect.SOUND_MONSTER_YELL_A, 1, 0, false, 1)
-			npc.Velocity = Vector(0,0)
+			npc.Velocity = Vector.Zero
 			if target.Position.X < npc.Position.X then
 				d.roomBegin, d.roomEnd, d.dir, sprite.FlipX = mod:HorseChargeSetup(-1,cWrap)
 			else
@@ -330,7 +330,7 @@ function mod:Famine2AI(npc)
 			local params = ProjectileParams()
 			params.HeightModifier = 15
 			params.Variant = d.tearType
-			npc:FireBossProjectiles(20,Vector(0,0),0,params)
+			npc:FireBossProjectiles(20,Vector.Zero,0,params)
 			npc:PlaySound(SoundEffect.SOUND_BOSS2INTRO_WATER_EXPLOSION, 1, 0, false, 1)
 		end
 		
@@ -391,7 +391,7 @@ function mod:Famine2AI(npc)
 				local params = ProjectileParams()
 				params.HeightModifier = 15
 				params.Variant = d.tearType
-				npc:FireBossProjectiles(20,Vector(0,0),0,params)
+				npc:FireBossProjectiles(20,Vector.Zero,0,params)
 				npc:PlaySound(SoundEffect.SOUND_BOSS2INTRO_WATER_EXPLOSION, 1, 0, false, 1)
 				d.hit = npc.HitPoints
 			end
@@ -520,7 +520,7 @@ function mod:Famine2AI(npc)
 			local params = ProjectileParams()
 			params.HeightModifier = 10
 			params.Variant = d.tearType
-			npc:FireBossProjectiles(20,Vector(0,0),0,params)
+			npc:FireBossProjectiles(20,Vector.Zero,0,params)
 		end
 	end
 end
@@ -805,7 +805,7 @@ function mod:War2AI(npc)
 		if not d.substate then
 			mod:SpritePlay(sprite,"AttackDashStart")
 			npc:PlaySound(SoundEffect.SOUND_MONSTER_YELL_A, 1, 0, false, 1)
-			npc.Velocity = Vector(0,0)
+			npc.Velocity = Vector.Zero
 			if target.Position.X < npc.Position.X then
 				d.roomBegin, d.roomEnd, d.dir, sprite.FlipX = mod:HorseChargeSetup(-1,cWrap)
 			else
@@ -839,7 +839,7 @@ function mod:War2AI(npc)
 				end	
 				mod:SpritePlay(sprite,"AttackDashAgain")
 				npc.Position = Vector(d.roomBegin+(iWrap*d.dir),(target.Position.Y))
-				npc.Velocity = Vector(0,0)
+				npc.Velocity = Vector.Zero
 				d.substate = 3
 			end			
 		--charge windup
@@ -862,7 +862,7 @@ function mod:War2AI(npc)
 				d.chargeCount = d.chargeCount - 1
 				d.substate = 4
 			end
-			npc.Velocity = Vector(0,0)
+			npc.Velocity = Vector.Zero
 		--charge fire
 		elseif d.substate == 4 then
 			npc.Velocity = Vector(15*w2.bal.chargeSpeed*d.dir, 0)
@@ -878,7 +878,7 @@ function mod:War2AI(npc)
 					end	
 					mod:SpritePlay(sprite,"AttackDashAgain")
 					npc.Position = Vector(d.roomBegin+(iWrap*d.dir),(target.Position.Y))
-					npc.Velocity = Vector(0,0)
+					npc.Velocity = Vector.Zero
 					d.substate = 3
 				end		
 			else	
@@ -954,9 +954,9 @@ function mod:War2AI(npc)
 		end
 		
 		if sprite:IsFinished("BigBoomTime") then
-			local boom = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.BOMB_EXPLOSION, 0, npc.Position, Vector(0,0), player):ToEffect()
+			local boom = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.BOMB_EXPLOSION, 0, npc.Position, Vector.Zero, player):ToEffect()
 			boom.SpriteScale = Vector(2,2)
-			local boom = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF02, 1, npc.Position, Vector(0,0), player):ToEffect()
+			local boom = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF02, 1, npc.Position, Vector.Zero, player):ToEffect()
 			boom.SpriteScale = Vector(2,2)
 			
 			for i, entity in ipairs(Isaac.FindByType(w2.army.id, w2.army.variant)) do
@@ -1041,7 +1041,7 @@ function mod:War2AI(npc)
 			fire.EntityCollisionClass = EntityCollisionClass.ENTCOLL_PLAYERONLY
 			fire:GetSprite():Load("gfx/grid/effect_005_fire.anm2", true)
 			
-			local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector(0,0), npc):ToEffect()
+			local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector.Zero, npc):ToEffect()
 			poof.SpriteScale = Vector(0.5,0.5)
 			poof.Color = Color(0.8,0.6,0.4,1)
 		end
@@ -1165,11 +1165,11 @@ function mod:War2AI(npc)
 				
 				if not d.phase2 then
 					--regular army
-					local army = Isaac.Spawn(w2.army.id, w2.army.variant, minionDice, d.minionPos, Vector(0,0), npc)
+					local army = Isaac.Spawn(w2.army.id, w2.army.variant, minionDice, d.minionPos, Vector.Zero, npc)
 					army:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
 				else
 					--bomb army
-					local army = Isaac.Spawn(w2.army.id, w2.army.variantBomb, minionDice, d.minionPos, Vector(0,0), npc)
+					local army = Isaac.Spawn(w2.army.id, w2.army.variantBomb, minionDice, d.minionPos, Vector.Zero, npc)
 					army:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
 				end
 			end
@@ -1185,7 +1185,7 @@ function mod:War2AI(npc)
 		if d.phase2 then
 			npc:PlaySound(SoundEffect.SOUND_FIREDEATH_HISS, 1, 0, false, 1)
 			Isaac.Explode(npc.Position, npc, 0)
-			local fire = Isaac.Spawn(33, 10, 0,npc.Position, Vector(0,0), npc)
+			local fire = Isaac.Spawn(33, 10, 0,npc.Position, Vector.Zero, npc)
 		end
 		
 		
@@ -1199,7 +1199,7 @@ function mod:War2AI(npc)
 		d.minionPos = room:GetGridPosition(posGrid)
 		minionDice = mod:RandomInt(4)
 		
-		local army = Isaac.Spawn(w2.army.id, w2.army.variant, minionDice, d.minionPos, Vector(0,0), npc)
+		local army = Isaac.Spawn(w2.army.id, w2.army.variant, minionDice, d.minionPos, Vector.Zero, npc)
 		army:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
 		army:GetData().popoff = 12
 		army:GetData().frameToPop = 4
@@ -1320,7 +1320,7 @@ function mod:ArmyAI(npc)
 				if d.popoff < 5 then nextFrame = nextFrame + 4 end
 				if d.popoff < 3 then nextFrame = nextFrame + 10 end
 				
-				local army = Isaac.Spawn(w2.army.id, w2.army.variant, minionDice, d.minionPos, Vector(0,0), npc)
+				local army = Isaac.Spawn(w2.army.id, w2.army.variant, minionDice, d.minionPos, Vector.Zero, npc)
 				army:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
 				army:GetData().popoff = d.popoff - 1
 				army:GetData().frameToPop = nextFrame
@@ -1775,7 +1775,7 @@ function mod:Death2AI(npc)
 			if d.scytheNum >= 0 then
 				local posx = 0
 				local posy = 0
-				local scythePos = Vector(0,0) 
+				local scythePos = Vector.Zero 
 				local getDir = "down"
 				local scytheSpeed = d2.scythe.accel
 				
@@ -1887,7 +1887,7 @@ function mod:Death2AI(npc)
 				
 				if d.scytheNum ~= d.scytheGap and d.scytheNum ~= d.scytheGap-1 then 
 					scythePos = Vector(posx,posy)
-					local scythe = Isaac.Spawn(d2.scythe.id, d2.scythe.variant, 0, scythePos, Vector(0,0), npc)
+					local scythe = Isaac.Spawn(d2.scythe.id, d2.scythe.variant, 0, scythePos, Vector.Zero, npc)
 					scythe:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
 					scythe:GetData().scytheDir = getDir
 					scythe:GetData().scythePause = d.scytheNum
@@ -2042,7 +2042,7 @@ function mod:Death2AI(npc)
 			if target.Position.X < npc.Position.X then sprite.FlipX = true
 			else sprite.FlipX = false end
 		
-			local cloud = Isaac.Spawn(d2.cloud.id, d2.cloud.variant, 0, npc.Position, Vector(0,0), npc)
+			local cloud = Isaac.Spawn(d2.cloud.id, d2.cloud.variant, 0, npc.Position, Vector.Zero, npc)
 			cloud:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
 			
 			npc:PlaySound(SoundEffect.SOUND_BLACK_POOF, 1, 0, false, 1)
@@ -2091,7 +2091,7 @@ function mod:Death2AI(npc)
 		
 		if sprite:IsFinished("HorseLaunch") then		
 			local spawnVec = Vector(npc.Position.X+10*d.launchDir,npc.Position.Y) 
-			d.horseNpc = Isaac.Spawn(d2.horse.id, d2.horse.variant, 0, spawnVec, Vector(0,0), npc)
+			d.horseNpc = Isaac.Spawn(d2.horse.id, d2.horse.variant, 0, spawnVec, Vector.Zero, npc)
 			d.horseNpc:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
 			d.horseNpc:AddEntityFlags(EntityFlag.FLAG_NO_TARGET)
 			d.horseNpc:AddEntityFlags(EntityFlag.FLAG_NO_STATUS_EFFECTS)
@@ -2183,7 +2183,7 @@ function mod:Death2AI(npc)
 					end
 					
 					if d.ghostNum < d.ghostCount then
-						local ghost = Isaac.Spawn(d2.ghost.id, d2.ghost.variant, 0, d.ghostPos, Vector(0,0), npc)
+						local ghost = Isaac.Spawn(d2.ghost.id, d2.ghost.variant, 0, d.ghostPos, Vector.Zero, npc)
 						ghost:GetData().parentNpc = npc
 						ghost:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
 						
@@ -2242,7 +2242,7 @@ function mod:Death2AI(npc)
 						d.ghostPos = Isaac.GetRandomPosition()
 						distance = math.sqrt(((target.Position.X-d.ghostPos.X)^2)+((target.Position.Y-d.ghostPos.Y)^2))
 					end
-					local ghost = Isaac.Spawn(d2.ghost.id, d2.ghost.variant, 0, d.ghostPos, Vector(0,0), npc)
+					local ghost = Isaac.Spawn(d2.ghost.id, d2.ghost.variant, 0, d.ghostPos, Vector.Zero, npc)
 					ghost:GetData().parentNpc = npc
 					ghost:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
 				
@@ -2427,7 +2427,7 @@ function mod:Death2AI(npc)
 					d.scytheTimer = nil
 					d.steerPower = nil
 					d.horseAccel = nil
-					npc.Velocity = Vector(0,0)
+					npc.Velocity = Vector.Zero
 					d.dir = d.dir*-1
 					d.substate = 2
 				end
@@ -2668,7 +2668,7 @@ function mod:Death2AI(npc)
 		--transform
 		elseif d.substate == 1 then
 			if sprite:IsEventTriggered("Effect") then
-				local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector(0,0), player):ToEffect()
+				local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector.Zero, player):ToEffect()
 				poof.Color = d.poofColor
 				npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_PLAYERONLY
 				
@@ -2718,7 +2718,7 @@ function mod:Death2AI(npc)
 			elseif d.stateTimer > 0 then
 				d.stateTimer = d.stateTimer - 1 
 			else
-				local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector(0,0), npc):ToEffect()
+				local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector.Zero, npc):ToEffect()
 				poof.Color = npc:GetData().poofColor
 				npc:Remove()
 			end
@@ -2736,7 +2736,7 @@ function mod:Death2AI(npc)
 		if not d.touched then
 			local distance = math.sqrt(((target.Position.X-npc.Position.X)^2)+((target.Position.Y-npc.Position.Y)^2))
 			if distance < d2.cloud.hitSphere then
-				local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, target.Position, Vector(0,0), npc):ToEffect()
+				local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, target.Position, Vector.Zero, npc):ToEffect()
 				poof.Color = npc:GetData().poofColor
 				
 				local slowValue = d2.cloud.slowValue
@@ -2777,7 +2777,7 @@ function mod:Death2AI(npc)
 			
 			d.stateTimer = d.stateTimer - 1 
 		else
-			local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector(0,0), npc):ToEffect()
+			local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector.Zero, npc):ToEffect()
 			poof.Color = d.poofColor
 			npc:Remove()
 		end
@@ -2828,7 +2828,7 @@ function mod:deathRender(npc)
 		elseif sprite:GetFrame() >= 10 and sprite:GetFrame() <= 50 then
 			if sprite:GetFrame()%4 == 0 and d.deathState ~= sprite:GetFrame() then
 				local ghostPos = Isaac.GetRandomPosition()
-				local ghost = Isaac.Spawn(d2.ghost.id, d2.ghost.variant, 0, ghostPos, Vector(0,0), npc)
+				local ghost = Isaac.Spawn(d2.ghost.id, d2.ghost.variant, 0, ghostPos, Vector.Zero, npc)
 				ghost:GetData().deathPhase = true
 				ghost:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
 				d.deathState = sprite:GetFrame()
@@ -2871,7 +2871,7 @@ function mod:PurpleBoneTrail(npc)
 			d.init = true
 		end
 		if npc.FrameCount % 3 == 0 then
-			local trail = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.HAEMO_TRAIL, 0, npc.Position+Vector(0,-15), Vector(0,0), npc):ToEffect()
+			local trail = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.HAEMO_TRAIL, 0, npc.Position+Vector(0,-15), Vector.Zero, npc):ToEffect()
 			trail.Color = d.floorColor
 			trail.Scale = 0.7
 		end
@@ -3109,7 +3109,7 @@ function mod:Pestilence2AI(npc)
 				npc:PlaySound(SoundEffect.SOUND_MONSTER_GRUNT_4, 1, 0, false, 1)
 				for i=0,3 do
 					local targetPos = Vector(1,0):Rotated(i*90)
-					local tracer = Isaac.Spawn(1000, EffectVariant.GENERIC_TRACER, 0, npc.Position, Vector(0,0), npc):ToEffect()
+					local tracer = Isaac.Spawn(1000, EffectVariant.GENERIC_TRACER, 0, npc.Position, Vector.Zero, npc):ToEffect()
 					tracer.LifeSpan = 20
 					tracer.Timeout = tracer.LifeSpan
 					tracer.TargetPosition = targetPos
@@ -3169,7 +3169,7 @@ function mod:Pestilence2AI(npc)
 				local shotRotated = d.shotRotated * d.shotDir
 				local vector = Vector(0,1):Normalized() * p2.bal.burstStrength
 				
-				local fart = Isaac.Spawn(1000, EffectVariant.FART, 0, npc.Position, Vector(0,0), npc)
+				local fart = Isaac.Spawn(1000, EffectVariant.FART, 0, npc.Position, Vector.Zero, npc)
 				npc:PlaySound(SoundEffect.SOUND_FART_GURG, 1, 0, false, 1)
 				
 				for i=0,3 do
@@ -3214,7 +3214,7 @@ function mod:Pestilence2AI(npc)
 		elseif d.substate == 1 then
 		
 			if not d.cord then
-				d.cord = Isaac.Spawn(865, 10, 0, npc.Position, Vector(0,0), npc)
+				d.cord = Isaac.Spawn(865, 10, 0, npc.Position, Vector.Zero, npc)
 				d.cord.Parent = npc
 				d.cord.Target = target
 				npc:PlaySound(SoundEffect.SOUND_MEATY_DEATHS, 1, 0, false, 1)
@@ -3286,7 +3286,7 @@ function mod:Pestilence2AI(npc)
 		elseif sprite:IsEventTriggered("Shoot") then
 		
 			local position = npc.Position + Vector(20,0):Rotated(mod:RandomInt(360))
-			local charger = Isaac.Spawn(EntityType.ENTITY_CHARGER_L2, 0, 0, position, Vector(0,0), npc)
+			local charger = Isaac.Spawn(EntityType.ENTITY_CHARGER_L2, 0, 0, position, Vector.Zero, npc)
 			charger.HitPoints = charger.MaxHitPoints*0.75
 			
 			npc:PlaySound(SoundEffect.SOUND_SUMMONSOUND, 1, 0, false, 1)
@@ -3309,7 +3309,7 @@ function mod:Pestilence2AI(npc)
 					d.cord = {}
 					for i = 1, game:GetNumPlayers() do
 						local player = game:GetPlayer(i)
-						d.cord[i] = Isaac.Spawn(865, 10, 0, npc.Position, Vector(0,0), npc)
+						d.cord[i] = Isaac.Spawn(865, 10, 0, npc.Position, Vector.Zero, npc)
 						d.cord[i].Parent = npc
 						d.cord[i].Target = player
 						d.cord[i]:GetSprite():ReplaceSpritesheet(0, "gfx/bosses/pestilence2/blank.png")
@@ -3335,7 +3335,7 @@ function mod:Pestilence2AI(npc)
 			
 			if sprite:IsFinished("FlyAway") then			
 				npc.Visible = false
-				npc.Velocity = Vector(0,0)
+				npc.Velocity = Vector.Zero
 				d.increase = nil
 				d.P2text = "P2_"
 				d.substate = nil
@@ -3397,7 +3397,7 @@ function mod:Pestilence2AI(npc)
 				end
 				
 				--airdrop projectile
-				local tear = Isaac.Spawn(EntityType.ENTITY_PROJECTILE, ProjectileVariant.PROJECTILE_NORMAL, 0, randPos, Vector(0,0), npc):ToProjectile();
+				local tear = Isaac.Spawn(EntityType.ENTITY_PROJECTILE, ProjectileVariant.PROJECTILE_NORMAL, 0, randPos, Vector.Zero, npc):ToProjectile();
 				tear:GetSprite().Color = d.tearColor2
 				tear.CollisionDamage = 0
 				tear.Height = -500
@@ -3419,7 +3419,7 @@ function mod:Pestilence2AI(npc)
 		
 			npc.Visible = true
 			if not d.target then
-				d.target = Isaac.Spawn(1000, EffectVariant.TARGET, 0, npc.Position, Vector(0,0), npc):ToEffect()
+				d.target = Isaac.Spawn(1000, EffectVariant.TARGET, 0, npc.Position, Vector.Zero, npc):ToEffect()
 				local targetColor = Color(0.4,1,0.3,1)
 				d.target:SetColor(targetColor, 400, 1, false, false)
 			end
@@ -3437,7 +3437,7 @@ function mod:Pestilence2AI(npc)
 			
 				game:ShakeScreen(10)
 				npc:PlaySound(SoundEffect.SOUND_FORESTBOSS_STOMPS, 1, 0, false, 1)
-				npc.SpriteOffset = Vector(0,0)
+				npc.SpriteOffset = Vector.Zero
 				d.target:Remove()
 				d.increase = nil
 				mod:SpritePlay(sprite, "Fell")
@@ -3527,7 +3527,7 @@ function mod:Pestilence2AI(npc)
 			end
 			
 			if d.phase3 and not d.horse and d.idleWait == p2.bal.phase3Delay - p2.bal.delayBeforeHorse then
-				d.horse = Isaac.Spawn(p2.horse.id, p2.horse.variant, 0, Vector(d.xEndPos,0), Vector(0,0), npc)
+				d.horse = Isaac.Spawn(p2.horse.id, p2.horse.variant, 0, Vector(d.xEndPos,0), Vector.Zero, npc)
 				d.horse:GetData().grabDir = -d.grabDir
 				d.horse:GetData().Parent = npc
 				d.horse:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
@@ -3586,7 +3586,7 @@ function mod:Pestilence2AI(npc)
 						if enemyNum < p2.bal.tinyMaggotMax then
 							local randPos = Vector(d.xEndPos+(-d.grabDir*mod:RandomInt(50)),Isaac.GetRandomPosition().Y)
 							--airdrop maggot projectiles
-							d.magTears[i] = Isaac.Spawn(EntityType.ENTITY_PROJECTILE, ProjectileVariant.PROJECTILE_NORMAL, 0, randPos, Vector(0,0), npc):ToProjectile();
+							d.magTears[i] = Isaac.Spawn(EntityType.ENTITY_PROJECTILE, ProjectileVariant.PROJECTILE_NORMAL, 0, randPos, Vector.Zero, npc):ToProjectile();
 							d.magTears[i].Height = -600 - mod:RandomInt(1,500)
 							d.magTears[i].FallingSpeed = 15;
 							d.magTears[i].FallingAccel = 2;
@@ -3703,7 +3703,7 @@ function mod:Pestilence2AI(npc)
 				if sprite:IsEventTriggered("Burst") then
 					local vector = (target.Position-npc.Position):Normalized() * p2.bal.burstStrength
 					
-					local fart = Isaac.Spawn(1000, EffectVariant.FART, 0, npc.Position, Vector(0,0), npc)
+					local fart = Isaac.Spawn(1000, EffectVariant.FART, 0, npc.Position, Vector.Zero, npc)
 					npc:PlaySound(SoundEffect.SOUND_FART_GURG, 1, 0, false, 1)
 					
 					local tear = Isaac.Spawn(EntityType.ENTITY_PROJECTILE, ProjectileVariant.PROJECTILE_NORMAL, 0, npc.Position, vector, npc):ToProjectile()
@@ -3767,7 +3767,7 @@ function mod:Pestilence2AI(npc)
 			elseif sprite:IsEventTriggered("Shoot") then
 			
 				local position = npc.Position + Vector(d.grabDir*20,0):Rotated(mod:RandomInt(-90,90))
-				local charger = Isaac.Spawn(EntityType.ENTITY_CHARGER_L2, 0, 0, position, Vector(0,0), npc)
+				local charger = Isaac.Spawn(EntityType.ENTITY_CHARGER_L2, 0, 0, position, Vector.Zero, npc)
 				charger.HitPoints = charger.MaxHitPoints*0.75
 				
 				npc:PlaySound(SoundEffect.SOUND_SUMMONSOUND, 1, 0, false, 1)
@@ -3852,7 +3852,7 @@ function mod:Pestilence2HorseAI(npc)
 			if sprite:IsEventTriggered("Shoot") then
 				game:SpawnParticles(npc.Position, EffectVariant.BLOOD_EXPLOSION, 1, 1)
 				npc:PlaySound(SoundEffect.SOUND_MEATY_DEATHS, 1, 0, false, 1)
-				npc.SpriteOffset = Vector(0,0)
+				npc.SpriteOffset = Vector.Zero
 			end
 			
 			if sprite:IsFinished("Submerge") then
@@ -3990,7 +3990,7 @@ function mod:Pestilence2CorpseAI(npc)
 
 	npc.Friction = 0.8
 	if npc:IsDead() then
-		local fart = Isaac.Spawn(1000, EffectVariant.FART, 0, npc.Position, Vector(0,0), npc):ToEffect()
+		local fart = Isaac.Spawn(1000, EffectVariant.FART, 0, npc.Position, Vector.Zero, npc):ToEffect()
 		fart:GetSprite().Scale = Vector(2,2)
 		
 		--oilyspoily told me to do this so i did
@@ -4044,7 +4044,7 @@ function mod:FlyballAI(npc)
 	--[[if npc:IsDead() then
 		if target:ToPlayer().Damage >= 10 and target:ToPlayer().FireDelay <= 15 then
 			for i=1,3 do
-				local fly = Isaac.Spawn(EntityType.ENTITY_ARMYFLY, 0, 0, npc.Position, Vector(0,0), npc)
+				local fly = Isaac.Spawn(EntityType.ENTITY_ARMYFLY, 0, 0, npc.Position, Vector.Zero, npc)
 				fly:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
 			end
 		end
@@ -4085,7 +4085,7 @@ function mod:pestilenceRender(npc)
 		if sprite:IsEventTriggered("Target") and not d.corpse then
 			d.grabDir = d.grabDir or 1
 			local offset = Vector(d.grabDir*38,0)
-			local corpse = Isaac.Spawn(p2.corpse.id, p2.corpse.variant, 0, npc.Position+offset, Vector(0,0), npc)
+			local corpse = Isaac.Spawn(p2.corpse.id, p2.corpse.variant, 0, npc.Position+offset, Vector.Zero, npc)
 			corpse:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
 			
 			if npc:GetSprite().FlipX then
@@ -4120,7 +4120,7 @@ function mod:PestProjectileBoom(tear,collided)
 
 	if d.pestBoomTarget then
 		if not d.target then
-			d.target = Isaac.Spawn(1000, EffectVariant.TARGET, 0, tear.Position, Vector(0,0), tear):ToEffect()
+			d.target = Isaac.Spawn(1000, EffectVariant.TARGET, 0, tear.Position, Vector.Zero, tear):ToEffect()
 			local targetColor = Color(0.4,1,0.3,1)
 			d.target:SetColor(targetColor, 120, 1, false, false)
 			d.target.Timeout = 100
@@ -4140,7 +4140,7 @@ function mod:PestProjectileBoom(tear,collided)
 		local boomColor = Color(1,1,1,1)
 		boomColor:SetColorize(1.3,2,0.7,1)
 		
-		local explode = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.BOMB_EXPLOSION, 0, tear.Position, Vector(0,0), tear):ToEffect()
+		local explode = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.BOMB_EXPLOSION, 0, tear.Position, Vector.Zero, tear):ToEffect()
 		explode:GetSprite().Color = boomColor
 		
 		for i, entity in ipairs(Isaac.FindInRadius(tear.Position, p2.bal.boomRange)) do
@@ -4149,7 +4149,7 @@ function mod:PestProjectileBoom(tear,collided)
 			end
 		end
 		
-		local gas = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.SMOKE_CLOUD, 0, tear.Position, Vector(0,0), tear):ToEffect()
+		local gas = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.SMOKE_CLOUD, 0, tear.Position, Vector.Zero, tear):ToEffect()
 		if not d.pestGasLife then
 			gas.LifeSpan = p2.bal.gasLifeSpan
 		else
@@ -4179,7 +4179,7 @@ end
 function mod:PestMagBullet(tear,collided)
 	local d = tear:GetData()
 	if tear:IsDead() or collided then
-		local maggot = Isaac.Spawn(EntityType.ENTITY_SMALL_MAGGOT, 0, 0, tear.Position, Vector(0,0), tear)
+		local maggot = Isaac.Spawn(EntityType.ENTITY_SMALL_MAGGOT, 0, 0, tear.Position, Vector.Zero, tear)
 		maggot:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
 		maggot:GetSprite():Play("Land")
 		tear:Remove()
@@ -4269,13 +4269,13 @@ function mod:BigDripAI(npc)
 		if not d.delay then
 			if room:GetGridCollisionAtPos(Vector(npc.Position.X+npc.Velocity.X,npc.Position.Y)) >= 4 then
 				npc:PlaySound(SoundEffect.SOUND_FORESTBOSS_STOMPS, 1, 0, false, 1)
-				npc:FireBossProjectiles(20,Vector(0,0),0,ProjectileParams())
+				npc:FireBossProjectiles(20,Vector.Zero,0,ProjectileParams())
 				d.vector = (target.Position - npc.Position):Normalized()*bdrip.bal.speed
 				d.delay = 10
 			end
 			if room:GetGridCollisionAtPos(Vector(npc.Position.X,npc.Position.Y+npc.Velocity.Y)) >= 4 then
 				npc:PlaySound(SoundEffect.SOUND_FORESTBOSS_STOMPS, 1, 0, false, 1)
-				npc:FireBossProjectiles(20,Vector(0,0),0,ProjectileParams())
+				npc:FireBossProjectiles(20,Vector.Zero,0,ProjectileParams())
 				d.vector = (target.Position - npc.Position):Normalized()*bdrip.bal.speed
 				d.delay = 10
 			end
@@ -4289,7 +4289,7 @@ function mod:BigDripAI(npc)
 	
 	if npc:IsDead() then
 		for i = 1, 10 do
-			Isaac.Spawn(EntityType.ENTITY_DRIP, 0, 0, npc.Position, Vector(0,0), npc)
+			Isaac.Spawn(EntityType.ENTITY_DRIP, 0, 0, npc.Position, Vector.Zero, npc)
 		end
 	end
 end
@@ -4461,7 +4461,7 @@ mod:AddCallback(ModCallbacks.MC_POST_ENTITY_REMOVE, function(_, npc)
 			if npc:IsDead() and not game:IsPaused() then
 				local dice = mod:RandomInt(2)
 				if dice == 1 then
-					local trinket = Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, TrinketType.TRINKET_YOUR_SOUL, npc.Position, Vector(0,0), npc)
+					local trinket = Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, TrinketType.TRINKET_YOUR_SOUL, npc.Position, Vector.Zero, npc)
 				end
 			end
 		end
@@ -4489,7 +4489,7 @@ mod:AddCallback(ModCallbacks.MC_PRE_NPC_COLLISION, function(_, npc, npc2)
 	--purple scythe
 	if npc.Type == d2.scythe.id and npc.Variant == d2.scythe.variant then
 		if npc2.Type == EntityType.ENTITY_PLAYER then
-			local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector(0,0), player):ToEffect()
+			local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector.Zero, player):ToEffect()
 			poof.Color = npc:GetData().poofColor
 			npc:Remove()
 		end
@@ -4524,7 +4524,7 @@ mod:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, function(_, npc,amount,flag,sou
 					npc:GetData().armorDamage = amount
 					npc:TakeDamage(npc:GetData().armorDamage, 0, source, 0)
 					npc:ToNPC():PlaySound(SoundEffect.SOUND_FIREDEATH_HISS, 0.18, 0, false, 2)
-					local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector(0,0), player):ToEffect()
+					local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector.Zero, player):ToEffect()
 					poof.SpriteScale = Vector(0.3,0.3)
 					poof.Color = Color(0.8,0.6,0.4,1)
 					return false
@@ -4592,7 +4592,7 @@ mod:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, function(_, npc,amount,flag,sou
 		
 		if npc:GetData().phase3 then
 			if npc:GetData().horse or npc:GetData().shieldQ then
-				local shield = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.BISHOP_SHIELD, 0, npc.Position, Vector(0,0), npc):ToEffect()
+				local shield = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.BISHOP_SHIELD, 0, npc.Position, Vector.Zero, npc):ToEffect()
 				shield.Target = npc
 				shield.SpriteOffset = Vector(0,-12)
 				shield.SpriteScale = Vector(1.1,1.1)
@@ -4757,7 +4757,7 @@ function mod:TumorUpdate1(tumor)
 				end
 				
 				if activeEnemies then
-					local creep = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.PLAYER_CREEP_BLACK, 0, tumor.Position, Vector(0,0), player):ToEffect()
+					local creep = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.PLAYER_CREEP_BLACK, 0, tumor.Position, Vector.Zero, player):ToEffect()
 					--local blackSplat = game:SpawnParticles(tumor.Position,EffectVariant.BLOOD_SPLAT,1,1,Color(0,0,0,0.8))
 				end
 			else
@@ -4766,7 +4766,7 @@ function mod:TumorUpdate1(tumor)
 		end
 		
 		if sprite:IsEventTriggered("Drip") then
-			local effect = Isaac.Spawn(1000, 7, 0, tumor.Position, Vector(0,0), tumor):ToEffect()
+			local effect = Isaac.Spawn(1000, 7, 0, tumor.Position, Vector.Zero, tumor):ToEffect()
 			effect.Color = Color(0,0,0,0.6)
 			effect.Scale = 0.4  
 		end
@@ -4836,7 +4836,7 @@ function mod:TumorUpdate3(tumor)
 			else
 				if d.creeptime <= 0 then
 					d.creeptime = tc.bal.creepMin2 + mod:RandomInt(tc.bal.creepBonus2)
-					local creep = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.PLAYER_CREEP_BLACK, 0, tumor.Position, Vector(0,0), player):ToEffect()
+					local creep = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.PLAYER_CREEP_BLACK, 0, tumor.Position, Vector.Zero, player):ToEffect()
 					--local blackSplat = game:SpawnParticles(tumor.Position,EffectVariant.BLOOD_SPLAT,1,1,Color(0,0,0,0.3))
 				else
 					d.creeptime = d.creeptime - 1
@@ -4854,8 +4854,6 @@ function mod:TumorUpdate4(tumor)
 		local room = game:GetRoom()
 		local d = tumor:GetData()
 		
-		print(sprite:GetAnimation())
-		print(tumor.State)
 		if tumor.Velocity.X >= 0 then
 			sprite.FlipX = false
 		else
@@ -4863,24 +4861,28 @@ function mod:TumorUpdate4(tumor)
 		end
 		
 		local activeEnemies = false
-		for i, entity in ipairs(Isaac.FindInRadius(tumor.Position, 875, EntityPartition.ENEMY)) do
+		for i, entity in ipairs(Isaac.GetRoomEntities()) do
 			if entity:IsActiveEnemy(false) and entity:IsVulnerableEnemy() then
 				activeEnemies = true
 				d.smile = true
 			end
 		end
 
-		if not tumor.State then
-			tumor.State = 0
+		if not d.state then
+			d.state = "standard"
 		end
 
 		--standard
-		if tumor.State == 0 then
+		if d.state == "standard" then
 			tumor.EntityCollisionClass = EntityCollisionClass.ENTCOLL_ALL
 		
 			if tumor.Velocity.X < 3 and tumor.Velocity.X > -3
 			and tumor.Velocity.Y < 3 and tumor.Velocity.Y > -3 then
-				mod:SpritePlay(sprite, "Idle")
+				if not activeEnemies and d.smile then
+					mod:SpritePlay(sprite, "Smile")
+				else
+					mod:SpritePlay(sprite, "Idle")
+				end
 			else
 				--currently walking				
 				if not activeEnemies and d.smile then
@@ -4895,7 +4897,7 @@ function mod:TumorUpdate4(tumor)
 				else
 					if d.creeptime <= 0 then
 						d.creeptime = tc.bal.creepMin2 + mod:RandomInt(tc.bal.creepBonus2)
-						local creep = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.PLAYER_CREEP_BLACK, 0, tumor.Position, Vector(0,0), player):ToEffect()
+						local creep = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.PLAYER_CREEP_BLACK, 0, tumor.Position, Vector.Zero, player):ToEffect()
 						--local blackSplat = game:SpawnParticles(tumor.Position,EffectVariant.BLOOD_SPLAT,1,1,Color(0,0,0,0.3))
 					else
 						d.creeptime = d.creeptime - 1
@@ -4920,19 +4922,18 @@ function mod:TumorUpdate4(tumor)
 				d.jumpCooldown = tc.bal.jumpCooldown
 			else
 				if d.jumpCooldown <= 0 then
-					mod:SpritePlay(sprite, "Jump")
-					tumor.State = 1
+					d.state = "jump"
 				elseif activeEnemies then
 					d.jumpCooldown = d.jumpCooldown - 1
 				end
 			end
 		--jump
-		elseif tumor.State == 1 then
+		elseif d.state == "jump" then
 			tumor.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
 		
-			if not sprite:IsPlaying("Jump") then
-				for i, entity in ipairs(Isaac.FindInRadius(player.Position, tc.bal.jumpRange)) do
-					if entity:IsVulnerableEnemy() then 
+			if sprite:IsFinished("Jump") then
+				for i, entity in ipairs(Isaac.GetRoomEntities()) do
+					if entity:IsActiveEnemy(false) and entity:IsVulnerableEnemy() then 
 						tumor.Position = entity.Position
 						break
 					elseif entity.Type == EntityType.ENTITY_PROJECTILE then 
@@ -4940,19 +4941,20 @@ function mod:TumorUpdate4(tumor)
 						break
 					end
 				end
-				mod:SpritePlay(sprite, "Land")
-				tumor.State = 2
+				d.state = "land"
 			elseif sprite:IsEventTriggered("Jump") then
 				sfx:Play(SoundEffect.SOUND_MEAT_JUMPS, 1, 2, false, 1)
+			elseif not sprite:IsPlaying("Jump") then
+				mod:SpritePlay(sprite, "Jump")
 			end
 		--land
-		elseif tumor.State == 2 then				
-			if not sprite:IsPlaying("Land") then
+		elseif d.state == "land" then				
+			if sprite:IsFinished("Land") then
 				d.jumpCooldown = nil
-				tumor.State = 0
+				d.state = "standard"
 				
 			elseif sprite:IsEventTriggered("Land") then
-				local creep = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.PLAYER_CREEP_BLACK, 0, tumor.Position, Vector(0,0), player):ToEffect()
+				local creep = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.PLAYER_CREEP_BLACK, 0, tumor.Position, Vector.Zero, player):ToEffect()
 				creep.SpriteScale = Vector(2.5,2.5)
 				
 				game:SpawnParticles(tumor.Position,EffectVariant.BLOOD_EXPLOSION,1,1,Color(0,0,0,1))
@@ -4969,6 +4971,8 @@ function mod:TumorUpdate4(tumor)
 						entity:TakeDamage(tc.bal.jumpDamage, 0, EntityRef(tumor), 1)
 					end
 				end
+			elseif not sprite:IsPlaying("Land") then
+				mod:SpritePlay(sprite, "Land")
 			end
 		end
 	end
@@ -4984,7 +4988,7 @@ function mod:NuggetUpdate(tumor)
 	tumor.SplatColor = Color(0,0,0,1)
 	
 	if tumor.Velocity.X > 0.1 and tumor.Velocity.Y > 0.1  then
-		tumor.Velocity = Vector(0,0)
+		tumor.Velocity = Vector.Zero
 	else
 		tumor.Velocity = tumor.Velocity * 0.9
 	end
@@ -5029,7 +5033,7 @@ end
 --t4
 function mod:TumorInit4(tumor)
 	tumor:GetSprite():Play("Idle")
-	tumor:GetData().state = "normal"
+	tumor:GetData().state = "standard"
 end
 
 --nugget
