@@ -4636,9 +4636,6 @@ mod.Tumorcube = {
 	variant4 = Isaac.GetEntityVariantByName("Wad of Tumors L4"),
 	nugget = Isaac.GetEntityVariantByName("Tumor Nugget"),
 	tearsUp = true,
-	helperid = 270,
-	helper = 56,
-	helperKeys = 39,
 	bal = {
 		orbitSpeed = 0.045,
 		orbitDistance = Vector(25, 25),
@@ -4679,38 +4676,13 @@ local myTumors = 0
 function mod:CacheUpdate(player, flag)
     if flag == CacheFlag.CACHE_FAMILIARS then
 		local tumorNum = player:GetCollectibleNum(tc.id) + player:GetEffects():GetCollectibleEffectNum(tc.id)
-		local tumorSub = tumorNum
-		local tumorFull = 0
-		while tumorSub > 4 do
-			tumorSub = tumorSub - 4
-			tumorFull = tumorFull + 1
+		
+		player:CheckFamiliar(tc.variant4, math.floor(tumorNum / 4), player:GetCollectibleRNG(tc.id), Isaac.GetItemConfig():GetCollectible(tc.id), 128)
+		local check = tumorNum % 4
+		for i = 1, 3 do
+			player:CheckFamiliar(tc["variant"..i], check == i and 1 or 0, player:GetCollectibleRNG(tc.id), Isaac.GetItemConfig():GetCollectible(tc.id), 128)
 		end
-		local tumorS1 = 0
-		local tumorS2 = 0
-		local tumorS3 = 0
-		local tumorS4 = 0
-		
-		local helperNum = player:GetCollectibleNum(tc.helperid) + player:GetEffects():GetCollectibleEffectNum(tc.helperid) --just in case you have the actual item
-		local helper = 0
-		if tumorSub == 1 then
-			tumorS1 = 1
-		elseif tumorSub == 2 then
-			tumorS2 = 1
-		elseif tumorSub == 3 then
-			tumorS3 = 1
-			helper = 1
-		elseif tumorSub == 4 then
-			tumorS4 = 1
-			helper = 1
-		end
-		local wadrng = player:GetCollectibleRNG(tc.id)
-		player:CheckFamiliar(tc.variant1, tumorS1, wadrng)
-		player:CheckFamiliar(tc.variant2, tumorS2, wadrng)
-		player:CheckFamiliar(tc.variant3, tumorS3, wadrng)
-		player:CheckFamiliar(tc.variant4, tumorS4 + tumorFull, wadrng)
-		
-		player:CheckFamiliar(tc.helper, helper + tumorFull + helperNum, wadrng)
-		
+				
 		if myTumors < tumorNum then
 			sfx:Play(ahSfx.tumorCollect, 1, 2, false, 1)
 		end
@@ -4718,7 +4690,7 @@ function mod:CacheUpdate(player, flag)
 	end
 	if flag == CacheFlag.CACHE_FIREDELAY and tc.tearsUp then
 		if player:HasCollectible(tc.id) then
-			local tumorNum = player:GetCollectibleNum(tc.id, true)
+			local tumorNum = player:GetCollectibleNum(tc.id, true) -- only the real item should give the tears up
 			
 			local tearsFlat = tumorNum * tc.tears.flat
 			local tearsMult = 1 + tc.tears.multiplier
@@ -4765,151 +4737,92 @@ end
 --tumor update
 --t1
 function mod:TumorUpdate1(tumor)
-    local player = tumor.Player
-    local sprite = tumor:GetSprite()
-    local room = game:GetRoom()
-	local d = tumor:GetData()
-	
-	if not d.creeptime then
-		d.creeptime = tc.bal.creepMin + mod:RandomInt(tc.bal.creepBonus)
-	else
-		if d.creeptime <= 0 then
+	if tumor.SubType == 128 then
+		local player = tumor.Player
+		local sprite = tumor:GetSprite()
+		local room = game:GetRoom()
+		local d = tumor:GetData()
+		
+		if not d.creeptime then
 			d.creeptime = tc.bal.creepMin + mod:RandomInt(tc.bal.creepBonus)
-			
-			local activeEnemies = false
-			for i, entity in ipairs(Isaac.FindInRadius(Vector(640, 580), 875, EntityPartition.ENEMY)) do
-				if entity:IsActiveEnemy(0) then
-					activeEnemies = true
-				end
-			end
-			
-			if activeEnemies then
-				local creep = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.PLAYER_CREEP_BLACK, 0, tumor.Position, Vector(0,0), player):ToEffect()
-				--local blackSplat = game:SpawnParticles(tumor.Position,EffectVariant.BLOOD_SPLAT,1,1,Color(0,0,0,0.8))
-			end
 		else
-			d.creeptime = d.creeptime - 1
+			if d.creeptime <= 0 then
+				d.creeptime = tc.bal.creepMin + mod:RandomInt(tc.bal.creepBonus)
+				
+				local activeEnemies = false
+				for i, entity in ipairs(Isaac.FindInRadius(Vector(640, 580), 875, EntityPartition.ENEMY)) do
+					if entity:IsActiveEnemy(0) then
+						activeEnemies = true
+					end
+				end
+				
+				if activeEnemies then
+					local creep = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.PLAYER_CREEP_BLACK, 0, tumor.Position, Vector(0,0), player):ToEffect()
+					--local blackSplat = game:SpawnParticles(tumor.Position,EffectVariant.BLOOD_SPLAT,1,1,Color(0,0,0,0.8))
+				end
+			else
+				d.creeptime = d.creeptime - 1
+			end
 		end
+		
+		if sprite:IsEventTriggered("Drip") then
+			local effect = Isaac.Spawn(1000, 7, 0, tumor.Position, Vector(0,0), tumor):ToEffect()
+			effect.Color = Color(0,0,0,0.6)
+			effect.Scale = 0.4  
+		end
+		
+		tumor.OrbitDistance = tc.bal.orbitDistance
+		tumor.OrbitSpeed = tc.bal.orbitSpeed
+		tumor.Velocity = tumor:GetOrbitPosition(player.Position + player.Velocity) - tumor.Position
+		tumor.SplatColor = Color(0,0,0,1)
 	end
-	
-	if sprite:IsEventTriggered("Drip") then
-		local effect = Isaac.Spawn(1000, 7, 0, tumor.Position, Vector(0,0), tumor):ToEffect()
-		effect.Color = Color(0,0,0,0.6)
-		effect.Scale = 0.4  
-	end
-	
-    tumor.OrbitDistance = tc.bal.orbitDistance
-    tumor.OrbitSpeed = tc.bal.orbitSpeed
-    tumor.Velocity = tumor:GetOrbitPosition(player.Position + player.Velocity) - tumor.Position
-	tumor.SplatColor = Color(0,0,0,1)
 end
 
 --t2
 function mod:TumorUpdate2(tumor)
-    local player = tumor.Player
-    local sprite = tumor:GetSprite()
-    local room = game:GetRoom()
-	local d = tumor:GetData()
-	
-	local dir = player:GetHeadDirection()
-	local animdir = dirtostring[dir]
-	d.animpre = d.animpre or "Float"
-	
-	local shootMultiplier
-	
-	if player:HasTrinket(TrinketType.TRINKET_FORGOTTEN_LULLABY) then
-		shootMultiplier = 0.5
-	else
-		shootMultiplier = 1
+	if tumor.SubType == 128 then
+		local player = tumor.Player
+		local sprite = tumor:GetSprite()
+		local room = game:GetRoom()
+		local d = tumor:GetData()
+		
+		tumor.OrbitDistance = tc.bal.orbitDistance
+		tumor.OrbitSpeed = tc.bal.orbitSpeed
+		tumor.Velocity = tumor:GetOrbitPosition(player.Position + player.Velocity) - tumor.Position
+		tumor.SplatColor = Color(0,0,0,1)
 	end
-	
-	if not d.cooldown then
-		d.cooldown = tumor.FrameCount + (tc.bal.shootDelay * shootMultiplier)
-	else
-		if not (player:GetShootingInput().X == 0 and player:GetShootingInput().Y == 0) and d.cooldown - tumor.FrameCount <= 0 then
-			d.animpre = "FloatShoot"
-			d.cooldown = tumor.FrameCount + (tc.bal.shootDelay * shootMultiplier)
-			local tear = tumor:FireProjectile(dirtovect[dir]):ToTear()
+end
+
+--remove meat boy tear for our own
+mod:AddCallback(ModCallbacks.MC_POST_TEAR_RENDER, function(_, tear)
+	if tear.FrameCount == 0 then
+		if tear.SpawnerType == 3 and tear.SpawnerVariant == tc.variant2 and tear.SpawnerEntity.SubType == 128 then
 			tear.CollisionDamage = tc.bal.shootDamage
 			tear.Scale = tc.bal.shootSize
-			tear:ChangeVariant(TearVariant.BLOOD)
-			tear:AddTearFlags(TearFlags.TEAR_SLOW)
-			tear:AddTearFlags(TearFlags.TEAR_GISH)
-			tear:SetColor(tc.bal.slowColor, -1, 1, false, false)
+			tear:AddTearFlags(TearFlags.TEAR_SLOW | TearFlags.TEAR_GISH)
+			local sprite = tear:GetSprite()
+			sprite.Color = tc.bal.slowColor
 		end
-		
-		if dir == Direction.LEFT then
-			sprite.FlipX = true
-		else
-			sprite.FlipX = false
-		end
-		
-		if (player:GetShootingInput().X == 0 and player:GetShootingInput().Y == 0) then
-			animdir = dirtostring[Direction.DOWN]
-			sprite.FlipX = false
-		end
-
-		if d.animpre == "FloatShoot" and d.cooldown - tumor.FrameCount <= (tc.bal.shootDelay - 8) then
-			d.animpre = "Float"
-		end	
-		
-		sprite:SetFrame(d.animpre..animdir, tumor.FrameCount % 15)
 	end
-
-    tumor.OrbitDistance = tc.bal.orbitDistance
-    tumor.OrbitSpeed = tc.bal.orbitSpeed
-    tumor.Velocity = tumor:GetOrbitPosition(player.Position + player.Velocity) - tumor.Position
-	tumor.SplatColor = Color(0,0,0,1)
 end
+)
 
 --t3
 function mod:TumorUpdate3(tumor)
-	local player = tumor.Player
-    local sprite = tumor:GetSprite()
-    local room = game:GetRoom()
-	local d = tumor:GetData()
-	
-	if not d.helperInit then
-		if not d.helper then
-			for i, entity in ipairs(Isaac.FindByType(EntityType.ENTITY_FAMILIAR, tc.helper)) do
-				if entity:ToFamiliar().Keys <= 0 or entity:ToFamiliar().Keys == tc.helperKeys then
-					d.helper = entity
-					if entity:ToFamiliar().Keys <= 0 then
-						d.helper:ToFamiliar():AddKeys(tc.helperKeys)
-					end
-					break
-				end
-			end
-		end
-		
-		if d.helper and d.helper:ToFamiliar().Keys == tc.helperKeys then
-			tumor.Position = d.helper.Position
-			d.helperInit = true
-		else
-			d.jankTimer = d.jankTimer or 30
-			if d.jankTimer == 0 then
-				print("(AH) Mod incompability detected, have a free gift!")
-				game:GetPlayer(0):AddCollectible(tc.helperid)
-				d.jankTimer = -1
-			else
-				d.jankTimer = d.jankTimer - 1
-			end
-		end
-	elseif d.helper then
-		local hsprite = d.helper:GetSprite()
-		local tardir = d.helper.Position - tumor.Position
-		
-		tumor.Velocity = d.helper.Velocity 
+	if tumor.SubType == 128 then
+		local player = tumor.Player
+		local sprite = tumor:GetSprite()
+		local room = game:GetRoom()
+		local d = tumor:GetData()
+			
 		tumor.SplatColor = Color(0,0,0,1)
-		d.helper.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
-		d.helper.Visible = false
 		
 		if tumor.Velocity.X >= 0 then
 			sprite.FlipX = false
 		else
 			sprite.FlipX = true
 		end
-
+		
 		if tumor.Velocity.X < 3 and tumor.Velocity.X > -3
 		and tumor.Velocity.Y < 3 and tumor.Velocity.Y > -3 then
 			mod:SpritePlay(sprite, "Idle")
@@ -4930,65 +4843,19 @@ function mod:TumorUpdate3(tumor)
 				end
 			end
 		end
-		
-		if (tardir.X > 25 or tardir.X < -25) 
-		or (tardir.Y > 25 or tardir.Y < -25) then
-			tumor.Position = d.helper.Position
-		end
-		
-		if not d.helper:Exists() then
-			d.helper = nil
-		end
-	else
-		d.helperInit = false
-		d.helper = false
-		d.jankTimer = nil
-		tumor.Velocity = Vector(0,0)
 	end
 end
 
 --t4
 function mod:TumorUpdate4(tumor)
-	local player = tumor.Player
-    local sprite = tumor:GetSprite()
-    local room = game:GetRoom()
-	local d = tumor:GetData()
-	
-	if not d.helperInit then
-		if not d.helper then
-			for i, entity in ipairs(Isaac.FindByType(EntityType.ENTITY_FAMILIAR, tc.helper)) do
-				if entity:ToFamiliar().Keys <= 0 or entity:ToFamiliar().Keys == tc.helperKeys then
-					d.helper = entity
-					if entity:ToFamiliar().Keys <= 0 then
-						d.helper:ToFamiliar():AddKeys(tc.helperKeys)
-					end
-					break
-				end
-			end
-		end
+	if tumor.SubType == 128 then
+		local player = tumor.Player
+		local sprite = tumor:GetSprite()
+		local room = game:GetRoom()
+		local d = tumor:GetData()
 		
-		if d.helper and d.helper:ToFamiliar().Keys == tc.helperKeys then
-			tumor.Position = d.helper.Position
-			d.helperInit = true
-		else
-			d.jankTimer = d.jankTimer or 30
-			if d.jankTimer == 0 then
-				print("(AH) Mod incompability detected, have a free gift!")
-				game:GetPlayer(0):AddCollectible(tc.helperid)
-				d.jankTimer = -1
-			else
-				d.jankTimer = d.jankTimer - 1
-			end
-		end
-	elseif d.helper then
-		local hsprite = d.helper:GetSprite()
-		local tardir = d.helper.Position - tumor.Position
-		
-		tumor.Velocity = d.helper.Velocity 
-		tumor.SplatColor = Color(0,0,0,1)
-		d.helper.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
-		d.helper.Visible = false
-		
+		print(sprite:GetAnimation())
+		print(tumor.State)
 		if tumor.Velocity.X >= 0 then
 			sprite.FlipX = false
 		else
@@ -5003,12 +4870,12 @@ function mod:TumorUpdate4(tumor)
 			end
 		end
 
-		if not d.state then
-			d.state = "normal"
+		if not tumor.State then
+			tumor.State = 0
 		end
 
 		--standard
-		if d.state == "normal" then
+		if tumor.State == 0 then
 			tumor.EntityCollisionClass = EntityCollisionClass.ENTCOLL_ALL
 		
 			if tumor.Velocity.X < 3 and tumor.Velocity.X > -3
@@ -5054,43 +4921,37 @@ function mod:TumorUpdate4(tumor)
 			else
 				if d.jumpCooldown <= 0 then
 					mod:SpritePlay(sprite, "Jump")
-					d.state = "jump"
+					tumor.State = 1
 				elseif activeEnemies then
 					d.jumpCooldown = d.jumpCooldown - 1
 				end
 			end
 		--jump
-		elseif d.state == "jump" then
+		elseif tumor.State == 1 then
 			tumor.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
 		
-			if sprite:IsFinished("Jump") then
+			if not sprite:IsPlaying("Jump") then
 				for i, entity in ipairs(Isaac.FindInRadius(player.Position, tc.bal.jumpRange)) do
 					if entity:IsVulnerableEnemy() then 
-						d.helper.Position = entity.Position
 						tumor.Position = entity.Position
 						break
 					elseif entity.Type == EntityType.ENTITY_PROJECTILE then 
-						d.helper.Position = entity.Position
 						tumor.Position = entity.Position
 						break
 					end
 				end
 				mod:SpritePlay(sprite, "Land")
-				d.state = "land"
+				tumor.State = 2
 			elseif sprite:IsEventTriggered("Jump") then
 				sfx:Play(SoundEffect.SOUND_MEAT_JUMPS, 1, 2, false, 1)
 			end
 		--land
-		elseif d.state == "land" then
-			d.helper.Friction = 0
-			
-			if sprite:IsFinished("Land") then
+		elseif tumor.State == 2 then				
+			if not sprite:IsPlaying("Land") then
 				d.jumpCooldown = nil
-				d.helper.Friction = 1
-				d.state = "normal"
+				tumor.State = 0
 				
 			elseif sprite:IsEventTriggered("Land") then
-			
 				local creep = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.PLAYER_CREEP_BLACK, 0, tumor.Position, Vector(0,0), player):ToEffect()
 				creep.SpriteScale = Vector(2.5,2.5)
 				
@@ -5109,22 +4970,7 @@ function mod:TumorUpdate4(tumor)
 					end
 				end
 			end
-		
 		end
-		
-		if (tardir.X > 25 or tardir.X < -25) 
-		or (tardir.Y > 25 or tardir.Y < -25) then
-			tumor.Position = d.helper.Position
-		end
-		
-		if not d.helper:Exists() then
-			d.helper = nil
-		end
-	else
-		d.helperInit = false
-		d.helper = false
-		d.jankTimer = nil
-		tumor.Velocity = Vector(0,0)
 	end
 end
 
@@ -5162,7 +5008,6 @@ mod:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, mod.NuggetUpdate, tc.nugget)
 --t1
 function mod:TumorInit1(tumor)
     tumor:GetSprite():Play("Float")
-    tumor:AddToFollowers()
     tumor:AddToOrbit(95)
 	tumor.OrbitDistance = tc.bal.orbitDistance
 	tumor.OrbitSpeed = tc.bal.orbitSpeed
@@ -5171,7 +5016,6 @@ end
 --t2
 function mod:TumorInit2(tumor)
     tumor:GetSprite():Play("FloatDown")
-    tumor:AddToFollowers()
     tumor:AddToOrbit(95)
 	tumor.OrbitDistance = tc.bal.orbitDistance
 	tumor.OrbitSpeed = tc.bal.orbitSpeed

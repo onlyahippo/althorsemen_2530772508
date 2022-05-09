@@ -84,16 +84,16 @@
     </entity>
 
 	<!-- Wad of Tumors -->
-    <entity anm2path="wadoftumorslevel1.anm2" tags="cansacrifice" baseHP="0" boss="0" champion="0" collisionDamage="7" collisionInterval="4" collisionMass="3" collisionRadius="8" friction="1" id="3" name="Wad of Tumors L1" numGridCollisionPoints="12" shadowSize="14" stageHP="0">
+    <entity anm2path="wadoftumorslevel1.anm2" tags="cansacrifice" baseHP="0" boss="0" champion="0" collisionDamage="7" collisionInterval="4" collisionMass="3" collisionRadius="8" friction="1" id="3" name="Wad of Tumors L1" numGridCollisionPoints="12" shadowSize="14" stageHP="0" variant="44" subtype="128">
         <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
     </entity>
-	<entity anm2path="wadoftumorslevel2.anm2" tags="cansacrifice" baseHP="0" boss="0" champion="0" collisionDamage="7" collisionInterval="4" collisionMass="3" collisionRadius="8" friction="1" id="3" name="Wad of Tumors L2" numGridCollisionPoints="12" shadowSize="14" stageHP="0">
+	<entity anm2path="wadoftumorslevel2.anm2" tags="cansacrifice" baseHP="0" boss="0" champion="0" collisionDamage="7" collisionInterval="4" collisionMass="3" collisionRadius="8" friction="1" id="3" name="Wad of Tumors L2" numGridCollisionPoints="12" shadowSize="14" stageHP="0" variant="45" subtype="128">
         <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
     </entity>
-	<entity anm2path="wadoftumorslevel3.anm2" tags="cansacrifice" baseHP="0" boss="0" champion="0" collisionDamage="5" collisionInterval="12" collisionMass="3" collisionRadius="13" friction="1" id="3" name="Wad of Tumors L3" numGridCollisionPoints="12" shadowSize="16" stageHP="0">
+	<entity anm2path="wadoftumorslevel3.anm2" tags="cansacrifice" baseHP="0" boss="0" champion="0" collisionDamage="5" collisionInterval="12" collisionMass="3" collisionRadius="13" friction="1" id="3" name="Wad of Tumors L3" numGridCollisionPoints="12" shadowSize="16" stageHP="0" variant="46" subtype="128">
         <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
     </entity>
-	<entity anm2path="wadoftumorslevel4.anm2" tags="cansacrifice" baseHP="0" boss="0" champion="0" collisionDamage="15" collisionInterval="16" collisionMass="3" collisionRadius="16" friction="1" id="3" name="Wad of Tumors L4" numGridCollisionPoints="12" shadowSize="20" stageHP="0">
+	<entity anm2path="wadoftumorslevel4.anm2" tags="cansacrifice" baseHP="0" boss="0" champion="0" collisionDamage="15" collisionInterval="16" collisionMass="3" collisionRadius="16" friction="1" id="3" name="Wad of Tumors L4" numGridCollisionPoints="12" shadowSize="20" stageHP="0" variant="47" subtype="128">
         <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
     </entity>
 	<entity anm2path="tumorspurs.anm2" baseHP="0" boss="0" champion="0" collisionDamage="7" collisionInterval="14" collisionMass="3" collisionRadius="10" friction="1" id="3" name="Tumor Nugget" numGridCollisionPoints="12" shadowSize="12" stageHP="0" variant="128">
