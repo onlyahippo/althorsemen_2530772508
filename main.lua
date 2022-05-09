@@ -16,7 +16,7 @@ mod.CustomSFX = {
 }
 local ahSfx = mod.CustomSFX
 
-mod.HorseChance = 0.2
+mod.HorseChance = 0.15
 
 ------------------------BOSSES------------------------
 ------------------------------------------------------
