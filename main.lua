@@ -4825,10 +4825,10 @@ function mod:TumorUpdate3(tumor)
 		
 		if tumor.Velocity.X < 3 and tumor.Velocity.X > -3
 		and tumor.Velocity.Y < 3 and tumor.Velocity.Y > -3 then
-			mod:SpritePlay(sprite, "Idle")
+			mod:SpritePlay(sprite, "Wad_Idle")
 		else
 			--currently walking
-			mod:SpritePlay(sprite, "Walk")
+			mod:SpritePlay(sprite, "Wad_Walk")
 			
 			--creep trail
 			if not d.creeptime then
@@ -4879,16 +4879,16 @@ function mod:TumorUpdate4(tumor)
 			if tumor.Velocity.X < 3 and tumor.Velocity.X > -3
 			and tumor.Velocity.Y < 3 and tumor.Velocity.Y > -3 then
 				if not activeEnemies and d.smile then
-					mod:SpritePlay(sprite, "Smile")
+					mod:SpritePlay(sprite, "Wad_Smile")
 				else
-					mod:SpritePlay(sprite, "Idle")
+					mod:SpritePlay(sprite, "Wad_Idle")
 				end
 			else
 				--currently walking				
 				if not activeEnemies and d.smile then
-					mod:SpritePlay(sprite, "WalkSmile")
+					mod:SpritePlay(sprite, "Wad_WalkSmile")
 				else
-					mod:SpritePlay(sprite, "Walk")
+					mod:SpritePlay(sprite, "Wad_Walk")
 				end
 				
 				--creep trail
@@ -4923,6 +4923,7 @@ function mod:TumorUpdate4(tumor)
 			else
 				if d.jumpCooldown <= 0 then
 					d.state = "jump"
+					mod:SpritePlay(sprite, "Wad_Jump")
 				elseif activeEnemies then
 					d.jumpCooldown = d.jumpCooldown - 1
 				end
@@ -4931,7 +4932,7 @@ function mod:TumorUpdate4(tumor)
 		elseif d.state == "jump" then
 			tumor.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
 		
-			if sprite:IsFinished("Jump") then
+			if sprite:IsFinished("Wad_Jump") then
 				for i, entity in ipairs(Isaac.GetRoomEntities()) do
 					if entity:IsActiveEnemy(false) and entity:IsVulnerableEnemy() then 
 						tumor.Position = entity.Position
@@ -4942,14 +4943,13 @@ function mod:TumorUpdate4(tumor)
 					end
 				end
 				d.state = "land"
+				mod:SpritePlay(sprite, "Wad_Land")
 			elseif sprite:IsEventTriggered("Jump") then
 				sfx:Play(SoundEffect.SOUND_MEAT_JUMPS, 1, 2, false, 1)
-			elseif not sprite:IsPlaying("Jump") then
-				mod:SpritePlay(sprite, "Jump")
 			end
 		--land
 		elseif d.state == "land" then				
-			if sprite:IsFinished("Land") then
+			if sprite:IsFinished("Wad_Land") then
 				d.jumpCooldown = nil
 				d.state = "standard"
 				
@@ -4971,8 +4971,6 @@ function mod:TumorUpdate4(tumor)
 						entity:TakeDamage(tc.bal.jumpDamage, 0, EntityRef(tumor), 1)
 					end
 				end
-			elseif not sprite:IsPlaying("Land") then
-				mod:SpritePlay(sprite, "Land")
 			end
 		end
 	end
@@ -5336,7 +5334,10 @@ end)
 --book of revelations
 mod:AddCallback(ModCallbacks.MC_USE_ITEM,function(_,collectible)
 	revUsed = true
-	StageAPI.GenerateBaseRoom(GetClosestBossRoom())
+	local roomDesc = GetClosestBossRoom()
+	if roomDesc.Data and (roomDesc.Data.Subtype ~= 81 and roomDesc.Data.Subtype ~= 82 and roomDesc.Data.Subtype ~= 83) then
+		StageAPI.GenerateBaseRoom(GetClosestBossRoom())
+	end
 end,CollectibleType.COLLECTIBLE_BOOK_OF_REVELATIONS)
 
 StageAPI.AddCallback("Althorsemen", "PRE_STAGEAPI_SELECT_BOSS_ITEM", 1, function(pickup, currentRoom)
