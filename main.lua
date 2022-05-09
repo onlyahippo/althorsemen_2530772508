@@ -5247,6 +5247,8 @@ local function FloorVerify()
 			return p2.nameAlt]]
 		end
 	end
+	
+	return nil
 end
 
 local function FloodProcessing() 
@@ -5322,7 +5324,7 @@ local spawnRNG = RNG()
 StageAPI.AddCallback("Althorsemen", "PRE_BOSS_SELECT", 1, function(bosses, _rng, roomDesc, ignoreNoOptions)
 	local stageType = game:GetLevel():GetStageType()
 	spawnRNG:SetSeed(roomDesc.SpawnSeed, 0)
-	if (stageType == StageType.STAGETYPE_REPENTANCE or stageType == StageType.STAGETYPE_REPENTANCE_B) then
+	if FloorVerify() then
 		if revUsed or (spawnRNG:RandomFloat() < mod.HorseChance) then
 			revUsed = false
 			print("horseman spawned")
@@ -5335,7 +5337,7 @@ end)
 mod:AddCallback(ModCallbacks.MC_USE_ITEM,function(_,collectible)
 	revUsed = true
 	local roomDesc = GetClosestBossRoom()
-	if roomDesc.Data and (roomDesc.Data.Subtype ~= 81 and roomDesc.Data.Subtype ~= 82 and roomDesc.Data.Subtype ~= 83) then
+	if roomDesc.Data and roomDesc.Data.VisitedCount == 0 and (roomDesc.Data.Subtype ~= 81 and roomDesc.Data.Subtype ~= 82 and roomDesc.Data.Subtype ~= 83) then
 		StageAPI.GenerateBaseRoom(GetClosestBossRoom())
 	end
 end,CollectibleType.COLLECTIBLE_BOOK_OF_REVELATIONS)
@@ -5539,7 +5541,7 @@ end
 
 --EID--------
 if EID then
-	EID:addCollectible(tc.id, "↑ +0.4 Tears up#LVL1: Sticky Orbital#LVL2: Shooting Orbital#LVL3: Ash LVL 1#LVL4: Ash LVL 2")
+	EID:addCollectible(tc.id, "↑ {{Tears}} +0.4 Tears up#LVL1: Sticky Orbital#LVL2: Shooting Orbital#LVL3: Ash LVL 1#LVL4: Ash LVL 2")
 end
 
 --Enhanced Boss Bars
