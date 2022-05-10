@@ -5290,38 +5290,24 @@ local function FloodProcessing()
 	end
 end
 
-local function GetClosestBossRoom()
-	local level = game:GetLevel()
+local function GetFirstBossRoomListIndex(level)
 	local rooms = level:GetRooms()
-	if level:GetCurses() & LevelCurse.CURSE_OF_LABYRINTH > 0 then
-		local neighbors={-1,-13,1,13}
-		for i = 0, rooms.Size - 1 do
-			local room = rooms:Get(i)
-			if room and room.Data then
-				if room.Data.Type == RoomType.ROOM_BOSS then
-					local count = 0
-					for i = 1, 4 do
-						local neighbor = Game():GetLevel():GetRoomByIdx(room.GridIndex+neighbors[i], 0)
-						if neighbor and neighbor.Data then
-							count = count + 1
-						end
-					end
-					
-					if count >= 2 then
-						return room
-					end
-				end
+	for i = 0, rooms.Size - 1 do
+		local room = rooms:Get(i)
+		if room and room.Data and room.Data.Type == RoomType.ROOM_BOSS then
+			if i ~= level:GetLastBossRoomListIndex() then
+				return room.ListIndex
 			end
 		end
-	else
-		return rooms:Get(level:GetLastBossRoomListIndex())
 	end
+	
+	return level:GetLastBossRoomListIndex()
 end
 
 local function ForceHorseman()
 	local altBosses = {Pool = {}}
 	altBosses.Pool[1] = FloorVerify()
-	FloodProcessing() -- not sure if theres a better spot to put this
+	FloodProcessing()
 	return altBosses
 end
 
@@ -5353,12 +5339,13 @@ end)
 
 --book of revelations
 mod:AddCallback(ModCallbacks.MC_USE_ITEM,function(_,collectible)
-    local roomDesc = GetClosestBossRoom()
+	local level = game:GetLevel()
+    local roomDesc = level:GetRooms():Get(GetFirstBossRoomListIndex(level))
 	if FloorVerify() then
 		if roomDesc.Data and roomDesc.VisitedCount == 0 then
 			revUsed = true
 			if (roomDesc.Data.Subtype ~= 81 and roomDesc.Data.Subtype ~= 82 and roomDesc.Data.Subtype ~= 83) then
-				StageAPI.GenerateBaseRoom(GetClosestBossRoom())
+				StageAPI.GenerateBaseRoom(roomDesc)
 			end
 		end
 	end
