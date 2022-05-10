@@ -4635,6 +4635,7 @@ mod.Tumorcube = {
 	variant3 = Isaac.GetEntityVariantByName("Wad of Tumors L3"),
 	variant4 = Isaac.GetEntityVariantByName("Wad of Tumors L4"),
 	nugget = Isaac.GetEntityVariantByName("Tumor Nugget"),
+	subtype = 128,
 	tearsUp = true,
 	bal = {
 		orbitSpeed = 0.045,
@@ -4677,10 +4678,10 @@ function mod:CacheUpdate(player, flag)
     if flag == CacheFlag.CACHE_FAMILIARS then
 		local tumorNum = player:GetCollectibleNum(tc.id) + player:GetEffects():GetCollectibleEffectNum(tc.id)
 		
-		player:CheckFamiliar(tc.variant4, math.floor(tumorNum / 4), player:GetCollectibleRNG(tc.id), Isaac.GetItemConfig():GetCollectible(tc.id), 128)
+		player:CheckFamiliar(tc.variant4, math.floor(tumorNum / 4), player:GetCollectibleRNG(tc.id), Isaac.GetItemConfig():GetCollectible(tc.id), tc.subtype)
 		local check = tumorNum % 4
 		for i = 1, 3 do
-			player:CheckFamiliar(tc["variant"..i], check == i and 1 or 0, player:GetCollectibleRNG(tc.id), Isaac.GetItemConfig():GetCollectible(tc.id), 128)
+			player:CheckFamiliar(tc["variant"..i], check == i and 1 or 0, player:GetCollectibleRNG(tc.id), Isaac.GetItemConfig():GetCollectible(tc.id), tc.subtype)
 		end
 				
 		if myTumors < tumorNum then
@@ -4737,7 +4738,7 @@ end
 --tumor update
 --t1
 function mod:TumorUpdate1(tumor)
-	if tumor.SubType == 128 then
+	if tumor.SubType == tc.subtype then
 		local player = tumor.Player
 		local sprite = tumor:GetSprite()
 		local room = game:GetRoom()
@@ -4780,7 +4781,7 @@ end
 
 --t2
 function mod:TumorUpdate2(tumor)
-	if tumor.SubType == 128 then
+	if tumor.SubType == tc.subtype then
 		local player = tumor.Player
 		local sprite = tumor:GetSprite()
 		local room = game:GetRoom()
@@ -4796,7 +4797,7 @@ end
 --remove meat boy tear for our own
 mod:AddCallback(ModCallbacks.MC_POST_TEAR_RENDER, function(_, tear)
 	if tear.FrameCount == 0 then
-		if tear.SpawnerType == 3 and tear.SpawnerVariant == tc.variant2 and tear.SpawnerEntity.SubType == 128 then
+		if tear.SpawnerType == EntityType.ENTITY_FAMILIAR and tear.SpawnerVariant == tc.variant2 and tear.SpawnerEntity.SubType == tc.subtype then
 			tear.CollisionDamage = tc.bal.shootDamage
 			tear.Scale = tc.bal.shootSize
 			tear:AddTearFlags(TearFlags.TEAR_SLOW | TearFlags.TEAR_GISH)
@@ -4809,7 +4810,7 @@ end
 
 --t3
 function mod:TumorUpdate3(tumor)
-	if tumor.SubType == 128 then
+	if tumor.SubType == tc.subtype then
 		local player = tumor.Player
 		local sprite = tumor:GetSprite()
 		local room = game:GetRoom()
@@ -4848,7 +4849,7 @@ end
 
 --t4
 function mod:TumorUpdate4(tumor)
-	if tumor.SubType == 128 then
+	if tumor.SubType == tc.subtype then
 		local player = tumor.Player
 		local sprite = tumor:GetSprite()
 		local room = game:GetRoom()
@@ -5009,29 +5010,37 @@ mod:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, mod.NuggetUpdate, tc.nugget)
 --tumor initialize
 --t1
 function mod:TumorInit1(tumor)
-    tumor:GetSprite():Play("Float")
-    tumor:AddToOrbit(95)
-	tumor.OrbitDistance = tc.bal.orbitDistance
-	tumor.OrbitSpeed = tc.bal.orbitSpeed
+	if tumor.SubType == tc.subtype then
+		tumor:GetSprite():Play("Float")
+		tumor:AddToOrbit(95)
+		tumor.OrbitDistance = tc.bal.orbitDistance
+		tumor.OrbitSpeed = tc.bal.orbitSpeed
+	end
 end
 
 --t2
 function mod:TumorInit2(tumor)
-    tumor:GetSprite():Play("FloatDown")
-    tumor:AddToOrbit(95)
-	tumor.OrbitDistance = tc.bal.orbitDistance
-	tumor.OrbitSpeed = tc.bal.orbitSpeed
+	if tumor.SubType == tc.subtype then
+		tumor:GetSprite():Play("FloatDown")
+		tumor:AddToOrbit(95)
+		tumor.OrbitDistance = tc.bal.orbitDistance
+		tumor.OrbitSpeed = tc.bal.orbitSpeed
+	end
 end
 
 --t3
 function mod:TumorInit3(tumor)
-	tumor:GetSprite():Play("Idle")
+	if tumor.SubType == tc.subtype then
+		tumor:GetSprite():Play("Idle")
+	end
 end
 
 --t4
 function mod:TumorInit4(tumor)
-	tumor:GetSprite():Play("Idle")
-	tumor:GetData().state = "standard"
+	if tumor.SubType == tc.subtype then
+		tumor:GetSprite():Play("Idle")
+		tumor:GetData().state = "standard"
+	end
 end
 
 --nugget
@@ -5068,62 +5077,70 @@ mod:AddCallback(ModCallbacks.MC_FAMILIAR_INIT, mod.NuggetInit, tc.nugget)
 --tumor collision
 --t1
 function mod:TumorCollision1(tumor, entity, _)
-    if entity.Type == EntityType.ENTITY_PROJECTILE then entity:Kill()
-    elseif entity:IsVulnerableEnemy() then 
-		entity:AddSlowing(EntityRef(tumors), tc.bal.slowDuration, tc.bal.slowAmount, tc.bal.slowColor) 
+	if tumor.SubType == tc.subtype then
+		if entity.Type == EntityType.ENTITY_PROJECTILE then entity:Kill()
+		elseif entity:IsVulnerableEnemy() then 
+			entity:AddSlowing(EntityRef(tumors), tc.bal.slowDuration, tc.bal.slowAmount, tc.bal.slowColor) 
+		end
 	end
 end
 
 --t2
 function mod:TumorCollision2(tumor, entity, _)
-    if entity.Type == EntityType.ENTITY_PROJECTILE then 
-		if not entity:GetData().tumorSpawned then
-			entity:GetData().tumorSpawned = true
-			mod:TumorSpur(tumor,tc.bal.tumorMax1)
-		end
-		entity:Kill()
-    elseif entity:IsVulnerableEnemy() and not EntityRef(entity).IsFriendly and not EntityRef(entity).IsCharmed then 
-		entity:AddSlowing(EntityRef(tumors), tc.bal.slowDuration, tc.bal.slowAmount, tc.bal.slowColor) 
-		local tumorDice = mod:RandomInt(tc.bal.tumorBigChance)
-		if entity.HitPoints <= tumor.CollisionDamage and tumorDice == 1 and not entity:GetData().tumorSpawned then
-			entity:GetData().tumorSpawned = true
-			mod:TumorSpur(tumor,tc.bal.tumorMax1)
+	if tumor.SubType == tc.subtype then
+		if entity.Type == EntityType.ENTITY_PROJECTILE then 
+			if not entity:GetData().tumorSpawned then
+				entity:GetData().tumorSpawned = true
+				mod:TumorSpur(tumor,tc.bal.tumorMax1)
+			end
+			entity:Kill()
+		elseif entity:IsVulnerableEnemy() and not EntityRef(entity).IsFriendly and not EntityRef(entity).IsCharmed then 
+			entity:AddSlowing(EntityRef(tumors), tc.bal.slowDuration, tc.bal.slowAmount, tc.bal.slowColor) 
+			local tumorDice = mod:RandomInt(tc.bal.tumorBigChance)
+			if entity.HitPoints <= tumor.CollisionDamage and tumorDice == 1 and not entity:GetData().tumorSpawned then
+				entity:GetData().tumorSpawned = true
+				mod:TumorSpur(tumor,tc.bal.tumorMax1)
+			end
 		end
 	end
 end
 
 --t3
 function mod:TumorCollision3(tumor, entity, _)
-	if entity.Type == EntityType.ENTITY_PROJECTILE then 
-		local tumorDice = mod:RandomInt(tc.bal.tumorBigChance)
-		if tumorDice == 1 and not entity:GetData().tumorSpawned then
-			entity:GetData().tumorSpawned = true
-			mod:TumorSpur(tumor,tc.bal.tumorMax2)
-		end
-    elseif entity:IsVulnerableEnemy() and not EntityRef(entity).IsFriendly and not EntityRef(entity).IsCharmed then 
-		entity:AddSlowing(EntityRef(tumors), tc.bal.slowDuration, tc.bal.slowAmount, tc.bal.slowColor) 
-		local tumorDice = mod:RandomInt(tc.bal.tumorSmallChance)
-		if entity.HitPoints <= tumor.CollisionDamage and tumorDice == 1 and not entity:GetData().tumorSpawned then
-			entity:GetData().tumorSpawned = true
-			mod:TumorSpur(tumor,tc.bal.tumorMax2)
+	if tumor.SubType == tc.subtype then
+		if entity.Type == EntityType.ENTITY_PROJECTILE then 
+			local tumorDice = mod:RandomInt(tc.bal.tumorBigChance)
+			if tumorDice == 1 and not entity:GetData().tumorSpawned then
+				entity:GetData().tumorSpawned = true
+				mod:TumorSpur(tumor,tc.bal.tumorMax2)
+			end
+		elseif entity:IsVulnerableEnemy() and not EntityRef(entity).IsFriendly and not EntityRef(entity).IsCharmed then 
+			entity:AddSlowing(EntityRef(tumors), tc.bal.slowDuration, tc.bal.slowAmount, tc.bal.slowColor) 
+			local tumorDice = mod:RandomInt(tc.bal.tumorSmallChance)
+			if entity.HitPoints <= tumor.CollisionDamage and tumorDice == 1 and not entity:GetData().tumorSpawned then
+				entity:GetData().tumorSpawned = true
+				mod:TumorSpur(tumor,tc.bal.tumorMax2)
+			end
 		end
 	end
 end
 
 --t4
 function mod:TumorCollision4(tumor, entity, _)
-	if entity.Type == EntityType.ENTITY_PROJECTILE then 
-		local tumorDice = mod:RandomInt(tc.bal.tumorBigChance)
-		if tumorDice == 1 and not entity:GetData().tumorSpawned then
-			entity:GetData().tumorSpawned = true
-			mod:TumorSpur(tumor,tc.bal.tumorMax3)
-		end
-	elseif entity:IsVulnerableEnemy() and not EntityRef(entity).IsFriendly and not EntityRef(entity).IsCharmed then 
-		entity:AddSlowing(EntityRef(tumors), tc.bal.slowDuration, tc.bal.slowAmount, tc.bal.slowColor)
-		local tumorDice = mod:RandomInt(tc.bal.tumorSmallChance)
-		if entity.HitPoints <= tumor.CollisionDamage and tumorDice == 1 and not entity:GetData().tumorSpawned then
-			entity:GetData().tumorSpawned = true
-			mod:TumorSpur(tumor,tc.bal.tumorMax3)
+	if tumor.SubType == tc.subtype then
+		if entity.Type == EntityType.ENTITY_PROJECTILE then 
+			local tumorDice = mod:RandomInt(tc.bal.tumorBigChance)
+			if tumorDice == 1 and not entity:GetData().tumorSpawned then
+				entity:GetData().tumorSpawned = true
+				mod:TumorSpur(tumor,tc.bal.tumorMax3)
+			end
+		elseif entity:IsVulnerableEnemy() and not EntityRef(entity).IsFriendly and not EntityRef(entity).IsCharmed then 
+			entity:AddSlowing(EntityRef(tumors), tc.bal.slowDuration, tc.bal.slowAmount, tc.bal.slowColor)
+			local tumorDice = mod:RandomInt(tc.bal.tumorSmallChance)
+			if entity.HitPoints <= tumor.CollisionDamage and tumorDice == 1 and not entity:GetData().tumorSpawned then
+				entity:GetData().tumorSpawned = true
+				mod:TumorSpur(tumor,tc.bal.tumorMax3)
+			end
 		end
 	end
 end
@@ -5304,6 +5321,7 @@ end
 local function ForceHorseman()
 	local altBosses = {Pool = {}}
 	altBosses.Pool[1] = FloorVerify()
+	FloodProcessing() -- not sure if theres a better spot to put this
 	return altBosses
 end
 
