@@ -5,7 +5,7 @@ local sfx = SFXManager()
 local rng = RNG()
 
 local firstLoaded = true
-local loadText = "Alt Horsemen v5.3 (COMPLETE)"
+local loadText = "Alt Horsemen v5.4 (COMPLETE)"
 local loadTextFailed = "Alt Horsemen load failed (STAGEAPI Disabled)"
 
 ------------------------------------------------------
@@ -5327,7 +5327,7 @@ StageAPI.AddCallback("Althorsemen", "PRE_BOSS_SELECT", 1, function(bosses, _rng,
 	if FloorVerify() then
 		if revUsed or (spawnRNG:RandomFloat() < mod.HorseChance) then
 			revUsed = false
-			print("horseman spawned")
+			print("Horseman spawned")
 			return ForceHorseman()
 		end
 	end
@@ -5335,10 +5335,14 @@ end)
 
 --book of revelations
 mod:AddCallback(ModCallbacks.MC_USE_ITEM,function(_,collectible)
-	revUsed = true
-	local roomDesc = GetClosestBossRoom()
-	if roomDesc.Data and roomDesc.Data.VisitedCount == 0 and (roomDesc.Data.Subtype ~= 81 and roomDesc.Data.Subtype ~= 82 and roomDesc.Data.Subtype ~= 83) then
-		StageAPI.GenerateBaseRoom(GetClosestBossRoom())
+    local roomDesc = GetClosestBossRoom()
+	if FloorVerify() then
+		if roomDesc.Data and roomDesc.VisitedCount == 0 then
+			revUsed = true
+			if (roomDesc.Data.Subtype ~= 81 and roomDesc.Data.Subtype ~= 82 and roomDesc.Data.Subtype ~= 83) then
+				StageAPI.GenerateBaseRoom(GetClosestBossRoom())
+			end
+		end
 	end
 end,CollectibleType.COLLECTIBLE_BOOK_OF_REVELATIONS)
 
