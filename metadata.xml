@@ -27,15 +27,17 @@ When the horsemen get added into the alt path officially, this mod will cease to
 -----------------------------------------
 
 [h1]Credits[/h1]
-[url=https://twitter.com/hippotasty]hippocrunchy[/url] - Design, Sprites, Implementation
+hippocrunchy - Main Design, Sprites, Implementation
 
-[url=https://twitter.com/lambchop_is_ok]lambchop_is_ok[/url] - Sprites (Famine)
-[url=https://twitter.com/TotallyNotIlias]TotallyNotIlias[/url] - Sprites (War)
-[url=https://twitter.com/Cometz202]Cometz[/url] - Sprites (Pestilence, boss portraits)
+lambchop_is_ok - Sprites (Famine)
+TotallyNotIlias - Sprites (War)
+Cometz - Sprites (Pestilence, Boss Portraits)
 
-[url=https://twitter.com/_jubbalub]jubbalub[/url] - Tumor Item Concept
-[url=https://twitter.com/NY_Sagittarius]NotYourSagittarius[/url] - Original Character Design</description>
-    <version>1.26</version>
+jubbalub - Tumor Item Concept
+NotYourSagittarius - Original Character Design
+kittenchilly - Additional Programming
+We Strvn - Extra Room Design</description>
+    <version>1.27</version>
     <visibility>Public</visibility>
     <tag id="Lua"/>
     <tag id="Items"/>
