@@ -5191,30 +5191,33 @@ end
 --horsemen check
 local function FloorVerify()
 	local level = game:GetLevel()
+	local backwards = game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH_INIT) or game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH)
 	local stage = level:GetStage()
 	local stageType = level:GetStageType()
 	
-	--normal
-	if stageType == StageType.STAGETYPE_REPENTANCE then
-		if (stage == LevelStage.STAGE1_1 or stage == LevelStage.STAGE1_2) and not bossSeen.f2 then
-			return f2.name
-		elseif (stage == LevelStage.STAGE2_1 or stage == LevelStage.STAGE2_2) and not bossSeen.w2 then
-			return w2.name
-		elseif (stage == LevelStage.STAGE3_1) and not bossSeen.d2 then
-			return d2.name
-		elseif (stage == LevelStage.STAGE4_1) and not bossSeen.p2 then
-			return p2.name
-		end
-	--alt
-	elseif stageType == StageType.STAGETYPE_REPENTANCE_B then
-		if (stage == LevelStage.STAGE1_1 or stage == LevelStage.STAGE1_2) and not bossSeen.f2 then
-			return f2.nameAlt
-		elseif (stage == LevelStage.STAGE2_1 or stage == LevelStage.STAGE2_2) and not bossSeen.w2 then
-			return w2.nameAlt
-		elseif (stage == LevelStage.STAGE3_1) and not bossSeen.d2 then
-			return d2.nameAlt
-		--[[elseif (stage == LevelStage.STAGE4_1) and not bossSeen.p2 then
-			return p2.nameAlt]]
+	if not backwards then
+		--normal
+		if stageType == StageType.STAGETYPE_REPENTANCE then
+			if (stage == LevelStage.STAGE1_1 or stage == LevelStage.STAGE1_2) and not bossSeen.f2 then
+				return f2.name
+			elseif (stage == LevelStage.STAGE2_1 or stage == LevelStage.STAGE2_2) and not bossSeen.w2 then
+				return w2.name
+			elseif (stage == LevelStage.STAGE3_1) and not bossSeen.d2 then
+				return d2.name
+			elseif (stage == LevelStage.STAGE4_1) and not bossSeen.p2 then
+				return p2.name
+			end
+		--alt
+		elseif stageType == StageType.STAGETYPE_REPENTANCE_B then
+			if (stage == LevelStage.STAGE1_1 or stage == LevelStage.STAGE1_2) and not bossSeen.f2 then
+				return f2.nameAlt
+			elseif (stage == LevelStage.STAGE2_1 or stage == LevelStage.STAGE2_2) and not bossSeen.w2 then
+				return w2.nameAlt
+			elseif (stage == LevelStage.STAGE3_1) and not bossSeen.d2 then
+				return d2.nameAlt
+			--[[elseif (stage == LevelStage.STAGE4_1) and not bossSeen.p2 then
+				return p2.nameAlt]]
+			end
 		end
 	end
 	
@@ -5239,9 +5242,8 @@ end
 
 local function ForceHorseman(roomDesc, horseman)
     local baseFloorInfo = StageAPI.GetBaseFloorInfo()
-	local backwards = game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH_INIT) or game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH)
 	if roomDesc and horseman then
-		if roomDesc.VisitedCount == 0 and roomDesc.Data.Shape ~= RoomShape.ROOMSHAPE_2x1 and not backwards then
+		if roomDesc.VisitedCount == 0 and roomDesc.Data.Shape ~= RoomShape.ROOMSHAPE_2x1 then
 			
 			local newRoom = StageAPI.GenerateBossRoom({
 				BossID = horseman,
