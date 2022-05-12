@@ -5239,8 +5239,9 @@ end
 
 local function ForceHorseman(roomDesc, horseman)
     local baseFloorInfo = StageAPI.GetBaseFloorInfo()
+	local backwards = game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH_INIT) or game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH)
 	if roomDesc and horseman then
-		if roomDesc.VisitedCount == 0 and roomDesc.Data.Shape ~= RoomShape.ROOMSHAPE_2x1 then
+		if roomDesc.VisitedCount == 0 and roomDesc.Data.Shape ~= RoomShape.ROOMSHAPE_2x1 and not backwards then
 			
 			local newRoom = StageAPI.GenerateBossRoom({
 				BossID = horseman,
