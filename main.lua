@@ -5156,7 +5156,6 @@ local meatCheck
 local bandageCheck
 local sickFloodBro
 local sickFloodBro2
-local bossRoomId
 
 local tumorConstruct
 
@@ -5183,23 +5182,6 @@ local function CheckThatMeat()
 			break
 		end
 	end
-end
-
---get id of boss room
-local function GetBossRoomId(subtype)
-	local level = game:GetLevel()
-	for i=0,168 do
-		local roomDesc = level:GetRoomByIdx(i)
-		if roomDesc.Data then 
-			if roomDesc.Data.Type == RoomType.ROOM_BOSS then
-				--print(roomDesc.Data.Subtype)
-				if roomDesc.Data.Subtype == subtype or subtype < 0 then
-					return i
-				end
-			end
-		end
-	end
-	return -1
 end
 
 --flood boss room
@@ -5337,7 +5319,6 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, function(_)
 	bandageCheck = false
 	sickFloodBro = false
 	sickFloodBro2 = false
-	bossRoomId = nil
 end)
 
 --book of revelations
