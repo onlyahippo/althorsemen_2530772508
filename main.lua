@@ -5536,7 +5536,7 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function(_)
 			end
 		end
 		
-		FloodProcessing()
+		FloodProcessing(level:GetCurrentRoomDesc())
 	end
 end
 )
