@@ -5282,7 +5282,7 @@ end
 local function ForceHorseman(roomDesc, horseman)
     local baseFloorInfo = StageAPI.GetBaseFloorInfo()
 	if roomDesc and horseman then
-		if roomDesc.VisitedCount == 0 then
+		if roomDesc.VisitedCount == 0 and roomDesc.Data.Shape ~= RoomShape.ROOMSHAPE_2x1 then
 			
 			local newRoom = StageAPI.GenerateBossRoom({
 				BossID = horseman,
