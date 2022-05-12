@@ -5154,8 +5154,6 @@ mod:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, mod.NuggetCollision,  tc
 local doHorseDrop
 local meatCheck
 local bandageCheck
-local sickFloodBro
-local sickFloodBro2
 
 local tumorConstruct
 
@@ -5189,12 +5187,9 @@ local function BossRoomFlood(roomDesc, newBoss)
 	local level = game:GetLevel()
 	if roomDesc.Data then 
 		local levelRoom = StageAPI.GetLevelRoom(roomDesc.ListIndex)
-		--print(StageAPI.GetLevelRoom(roomDesc.ListIndex))
 		if levelRoom then
-			--print(levelRoom.PersistentData.BossID)
-			if levelRoom.PersistentData.BossID == newBoss and roomDesc.Flags ~= RoomDescriptor.FLAG_FLOODED then
-				roomDesc.Flags = RoomDescriptor.FLAG_FLOODED
-				--print("flooded")
+			if levelRoom.PersistentData.BossID == newBoss and (roomDesc.Flags & RoomDescriptor.FLAG_FLOODED == 0)then
+				roomDesc.Flags = roomDesc.Flags | RoomDescriptor.FLAG_FLOODED
 				return true
 			end
 		end
@@ -5209,7 +5204,7 @@ local function FloorVerify()
 	local stageType = level:GetStageType()
 	
 	--normal
-	if (stageType == StageType.STAGETYPE_REPENTANCE and stageType ~= StageType.STAGETYPE_REPENTANCE_B) then
+	if stageType == StageType.STAGETYPE_REPENTANCE then
 		if (stage == LevelStage.STAGE1_1 or stage == LevelStage.STAGE1_2) and not bossSeen.f2 then
 			return f2.name
 		elseif (stage == LevelStage.STAGE2_1 or stage == LevelStage.STAGE2_2) and not bossSeen.w2 then
@@ -5220,7 +5215,7 @@ local function FloorVerify()
 			return p2.name
 		end
 	--alt
-	elseif (stageType == StageType.STAGETYPE_REPENTANCE_B) then
+	elseif stageType == StageType.STAGETYPE_REPENTANCE_B then
 		if (stage == LevelStage.STAGE1_1 or stage == LevelStage.STAGE1_2) and not bossSeen.f2 then
 			return f2.nameAlt
 		elseif (stage == LevelStage.STAGE2_1 or stage == LevelStage.STAGE2_2) and not bossSeen.w2 then
@@ -5233,16 +5228,6 @@ local function FloorVerify()
 	end
 	
 	return nil
-end
-
-local function FloodProcessing(roomDesc) 
-	local checkMirror = game:GetRoom():IsMirrorWorld()
-	if not checkMirror and sickFloodBro == false then
-		sickFloodBro = BossRoomFlood(roomDesc, f2.nameAlt)
-	end
-	if checkMirror and sickFloodBro2 == false then
-		sickFloodBro2 = BossRoomFlood(roomDesc, f2.nameAlt)
-	end
 end
 
 local function GetFirstBossRoomDesc(level)
@@ -5291,10 +5276,15 @@ local function ForceHorseman(roomDesc, horseman)
 					StageAPI.SetLevelRoom(mirroredRoom, mirroredDesc.ListIndex, 1)
 					
 					StageAPI.LogMinor("Mirroring!")
-					FloodProcessing(mirroredDesc)
+					
+					if horseman == f2.nameAlt then
+						BossRoomFlood(mirroredDesc, horseman)
+					end
 				end
 				
-				FloodProcessing(roomDesc)
+				if horseman == f2.nameAlt then
+					BossRoomFlood(roomDesc, horseman)
+				end
 			end
 		end
 	end
@@ -5317,8 +5307,6 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, function(_)
 	doHorseDrop = false
 	meatCheck = false
 	bandageCheck = false
-	sickFloodBro = false
-	sickFloodBro2 = false
 end)
 
 --book of revelations
@@ -5461,12 +5449,11 @@ end
 --New Room
 mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function(_)
 	if StageAPI and StageAPI.Loaded and not StageAPI.InTestMode then
-	
 		local room = game:GetRoom()
 		local level = game:GetLevel()
         if room:GetType() == RoomType.ROOM_BOSS then
 			local bossGet
-			for i, entity in ipairs(Isaac.FindInRadius(room:GetCenterPos(), 1000, EntityPartition.ENEMY)) do
+			for i, entity in ipairs(Isaac.GetRoomEntities()) do
 				--FAMINE
 				if entity.Type == f2.id and entity.Variant == f2.variant then
 					bossGet = f2.name
@@ -5516,8 +5503,6 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function(_)
 				end
 			end
 		end
-		
-		FloodProcessing(level:GetCurrentRoomDesc())
 	end
 end
 )
