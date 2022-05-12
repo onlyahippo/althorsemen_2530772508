@@ -5305,7 +5305,7 @@ local function ForceHorseman(roomDesc, horseman)
 				
 				if baseFloorInfo.HasMirrorLevel then
 					local mirroredRoom = newRoom:Copy(roomDesc)
-					local mirroredDesc = level:GetRoomByIdx(roomDesc.SafeGridIndex, 1)
+					local mirroredDesc = game:GetLevel():GetRoomByIdx(roomDesc.SafeGridIndex, 1)
 					StageAPI.SetLevelRoom(mirroredRoom, mirroredDesc.ListIndex, 1)
 					
 					StageAPI.LogMinor("Mirroring!")
