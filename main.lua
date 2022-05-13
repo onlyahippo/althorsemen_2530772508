@@ -4,7 +4,7 @@ local game = Game()
 local sfx = SFXManager()
 
 local firstLoaded = true
-local loadText = "Alt Horsemen v5.42 (COMPLETE)"
+local loadText = "Alt Horsemen v5.43 (COMPLETE)"
 local loadTextFailed = "Alt Horsemen load failed (STAGEAPI Disabled)"
 
 ------------------------------------------------------
@@ -4122,6 +4122,7 @@ mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.Pestilence2Update, p2.id)
 --Pest boom
 function mod:PestProjectileBoom(tear,collided)
 	local d = tear:GetData()
+	local rng = tear:GetDropRNG()
 
 	if d.pestBoomTarget then
 		if not d.target then
@@ -4397,6 +4398,12 @@ end
 
 --replaces math.random
 function mod:RandomInt(rng, iMin, iMax)
+
+	if not iMin then
+		iMin = rng
+		rng = RNG()
+	end
+	
 	if not iMax then
 		iMax = iMin
 		iMin = 1
@@ -4614,7 +4621,7 @@ mod:AddCallback(ModCallbacks.MC_PRE_TEAR_COLLISION, function(_, tear, npc)
 	if npc.Type == w2.army.id and (npc.Variant == w2.army.variant or npc.Variant == w2.army.variantBomb) and npc.SubType == 3 then
 		local dice = mod:RandomInt(npc:GetDropRNG(), w2.army.reflectChance)
 		if dice == 1 then
-			tear.Velocity = (tear.Velocity * -0.8):Rotated(-20 + mod:RandomInt(40))
+			tear.Velocity = (tear.Velocity * -0.8):Rotated(-20 + mod:RandomInt(npc:GetDropRNG(),40))
 			return false
 		end
 	end
