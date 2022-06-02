@@ -4,7 +4,7 @@ local game = Game()
 local sfx = SFXManager()
 
 local firstLoaded = true
-local loadText = "Alt Horsemen v5.43 (COMPLETE)"
+local loadText = "Alt Horsemen v5.44 (COMPLETE)"
 local loadTextFailed = "Alt Horsemen load failed (STAGEAPI Disabled)"
 
 ------------------------------------------------------
@@ -5084,7 +5084,7 @@ mod:AddCallback(ModCallbacks.MC_FAMILIAR_INIT, mod.NuggetInit, tc.nugget)
 function mod:TumorCollision1(tumor, entity, _)
 	if tumor.SubType == tc.subtype then
 		if entity.Type == EntityType.ENTITY_PROJECTILE then entity:Kill()
-		elseif entity:IsVulnerableEnemy() then 
+		elseif entity:IsVulnerableEnemy() and not EntityRef(entity).IsFriendly then 
 			entity:AddSlowing(EntityRef(tumors), tc.bal.slowDuration, tc.bal.slowAmount, tc.bal.slowColor) 
 		end
 	end
@@ -5099,7 +5099,7 @@ function mod:TumorCollision2(tumor, entity, _)
 				mod:TumorSpur(tumor,tc.bal.tumorMax1)
 			end
 			entity:Kill()
-		elseif entity:IsVulnerableEnemy() and not EntityRef(entity).IsFriendly and not EntityRef(entity).IsCharmed then 
+		elseif entity:IsVulnerableEnemy() and not EntityRef(entity).IsFriendly then 
 			entity:AddSlowing(EntityRef(tumors), tc.bal.slowDuration, tc.bal.slowAmount, tc.bal.slowColor) 
 			local tumorDice = mod:RandomInt(tumor:GetDropRNG(), tc.bal.tumorBigChance)
 			if entity.HitPoints <= tumor.CollisionDamage and tumorDice == 1 and not entity:GetData().tumorSpawned then
@@ -5120,7 +5120,7 @@ function mod:TumorCollision3(tumor, entity, _)
 				entity:GetData().tumorSpawned = true
 				mod:TumorSpur(tumor,tc.bal.tumorMax2)
 			end
-		elseif entity:IsVulnerableEnemy() and not EntityRef(entity).IsFriendly and not EntityRef(entity).IsCharmed then 
+		elseif entity:IsVulnerableEnemy() and not EntityRef(entity).IsFriendly then 
 			entity:AddSlowing(EntityRef(tumors), tc.bal.slowDuration, tc.bal.slowAmount, tc.bal.slowColor) 
 			local tumorDice = mod:RandomInt(rng, tc.bal.tumorSmallChance)
 			if entity.HitPoints <= tumor.CollisionDamage and tumorDice == 1 and not entity:GetData().tumorSpawned then
@@ -5141,7 +5141,7 @@ function mod:TumorCollision4(tumor, entity, _)
 				entity:GetData().tumorSpawned = true
 				mod:TumorSpur(tumor,tc.bal.tumorMax3)
 			end
-		elseif entity:IsVulnerableEnemy() and not EntityRef(entity).IsFriendly and not EntityRef(entity).IsCharmed then 
+		elseif entity:IsVulnerableEnemy() and not EntityRef(entity).IsFriendly then 
 			entity:AddSlowing(EntityRef(tumors), tc.bal.slowDuration, tc.bal.slowAmount, tc.bal.slowColor)
 			local tumorDice = mod:RandomInt(rng, tc.bal.tumorSmallChance)
 			if entity.HitPoints <= tumor.CollisionDamage and tumorDice == 1 and not entity:GetData().tumorSpawned then
