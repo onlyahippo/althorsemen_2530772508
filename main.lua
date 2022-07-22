@@ -5249,6 +5249,7 @@ end
 
 local function ForceHorseman(roomDesc, horseman)
     local baseFloorInfo = StageAPI.GetBaseFloorInfo()
+	if game:IsGreedMode() then return end
 	if roomDesc and horseman then
 		if roomDesc.VisitedCount == 0 and (roomDesc.Data.Shape == RoomShape.ROOMSHAPE_1x1 or roomDesc.Data.Shape == RoomShape.ROOMSHAPE_1x2) then
 			
