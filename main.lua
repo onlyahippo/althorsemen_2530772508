@@ -4681,34 +4681,34 @@ function mod:GridAlignPosition(pos)
 	return Vector(x, y)
 end
 
-local function IsEntityValidToTarget(entity, tumor)
-    entity = entity:ToNPC()
-
-    return (
-        entity and
-        entity:IsVulnerableEnemy() and
-        not entity:HasEntityFlags(EntityFlag.FLAG_NO_TARGET) and
-        entity.Pathfinder:HasPathToPos(tumor.Position, false)
-    )
-end
-
 local function ShouldGetNewTargetPosition(entity)
 	local data = entity:GetData()
 	local room = game:GetRoom()
 
 	return (
 		not data.targetGridPosition or
-		data.targetGridPosition:Distance(entity.Position) < 5 or
-		data.targetGridPosition:Distance(entity.Position) > 60 or
+		data.targetGridPosition:Distance(entity.Position) ~= 5 or
 		room:GetGridCollisionAtPos(data.targetGridPosition) ~= GridCollisionClass.COLLISION_NONE
 	)
 end
 
+local function IsEntityValidToTarget(entity, familiar)
+    entity = entity:ToNPC()
+
+    return (
+        entity and
+        entity:IsVulnerableEnemy() and
+        not entity:HasEntityFlags(EntityFlag.FLAG_NO_TARGET) and
+        entity.Pathfinder:HasPathToPos(familiar.Position, false)
+    )
+end
+
 function mod:WadPathfind(entity, targetPosition, speedLimit)
 	local data = entity:GetData()
-
+	local room = game:GetRoom()
+	local unblocked, grid = room:CheckLine(entity.Position, targetPosition, 0)
+	
 	if ShouldGetNewTargetPosition(entity) then
-		local room = game:GetRoom()
 		local entityPosition = mod:GridAlignPosition(entity.Position)
 		local targetPosition = mod:GridAlignPosition(targetPosition)
 
@@ -4755,8 +4755,11 @@ function mod:WadPathfind(entity, targetPosition, speedLimit)
 
 		data.targetGridPosition = choice
 	end
-
-	if data.targetGridPosition then
+	
+	if unblocked then
+		local targetVelocity = (targetPosition - entity.Position):Resized(speedLimit)
+		entity.Velocity = mod:Lerp(entity.Velocity, targetVelocity, 0.4)
+	elseif data.targetGridPosition then
 		local targetVelocity = (data.targetGridPosition - entity.Position):Resized(speedLimit)
 		entity.Velocity = mod:Lerp(entity.Velocity, targetVelocity, 0.4)
 	else
@@ -4936,10 +4939,9 @@ function mod:TumorUpdate3(tumor)
 	
 	tumor.SplatColor = Color(0,0,0,1)
 	tumor:PickEnemyTarget(200, 13, 8)
-	d.target = tumor.Target
 	
-	if d.target and IsEntityValidToTarget(d.target, tumor) then
-		mod:WadPathfind(tumor, d.target.Position, 6)
+	if tumor.Target and IsEntityValidToTarget(tumor.Target, tumor) then
+		mod:WadPathfind(tumor, tumor.Target.Position, 6)
 	elseif tumor.Position:Distance(player.Position) > 75 then
 		mod:WadPathfind(tumor, player.Position, 6)
 	else
@@ -4983,10 +4985,9 @@ function mod:TumorUpdate4(tumor)
 	local rng = tumor:GetDropRNG()
 	
 	tumor:PickEnemyTarget(200, 13, 8)
-	d.target = tumor.Target
 	
-	if d.target and IsEntityValidToTarget(d.target, tumor) then
-		mod:WadPathfind(tumor, d.target.Position, 7)
+	if tumor.Target and IsEntityValidToTarget(tumor.Target, tumor) then
+		mod:WadPathfind(tumor, tumor.Target.Position, 7)
 	elseif tumor.Position:Distance(player.Position) > 75 then
 		mod:WadPathfind(tumor, player.Position, 7)
 	else
@@ -5165,12 +5166,16 @@ end
 --t3
 function mod:TumorInit3(tumor)
 	tumor:GetSprite():Play("Idle")
+	tumor.EntityCollisionClass = EntityCollisionClass.ENTCOLL_ALL
+	tumor.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_GROUND
 end
 
 --t4
 function mod:TumorInit4(tumor)
 	tumor:GetSprite():Play("Idle")
 	tumor:GetData().state = "standard"
+	tumor.EntityCollisionClass = EntityCollisionClass.ENTCOLL_ALL
+	tumor.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_GROUND
 end
 
 --nugget
@@ -5203,6 +5208,15 @@ mod:AddCallback(ModCallbacks.MC_FAMILIAR_INIT, mod.TumorInit2, tc.variant2)
 mod:AddCallback(ModCallbacks.MC_FAMILIAR_INIT, mod.TumorInit3, tc.variant3)
 mod:AddCallback(ModCallbacks.MC_FAMILIAR_INIT, mod.TumorInit4, tc.variant4)
 mod:AddCallback(ModCallbacks.MC_FAMILIAR_INIT, mod.NuggetInit, tc.nugget)
+
+
+--t4
+function mod:Test(familiar)
+	print(familiar.EntityCollisionClass)
+	print(familiar.GridCollisionClass)
+end
+mod:AddCallback(ModCallbacks.MC_FAMILIAR_INIT, mod.Test)
+
 
 --tumor collision
 --t1
