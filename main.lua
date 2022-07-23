@@ -5209,15 +5209,6 @@ mod:AddCallback(ModCallbacks.MC_FAMILIAR_INIT, mod.TumorInit3, tc.variant3)
 mod:AddCallback(ModCallbacks.MC_FAMILIAR_INIT, mod.TumorInit4, tc.variant4)
 mod:AddCallback(ModCallbacks.MC_FAMILIAR_INIT, mod.NuggetInit, tc.nugget)
 
-
---t4
-function mod:Test(familiar)
-	print(familiar.EntityCollisionClass)
-	print(familiar.GridCollisionClass)
-end
-mod:AddCallback(ModCallbacks.MC_FAMILIAR_INIT, mod.Test)
-
-
 --tumor collision
 --t1
 function mod:TumorCollision1(tumor, entity, _)
