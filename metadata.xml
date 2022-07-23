@@ -29,15 +29,15 @@ When the horsemen get added into the alt path officially, this mod will cease to
 [h1]Credits[/h1]
 hippocrunchy - Main Design, Sprites, Implementation
 
+kittenchilly - Programming
 lambchop_is_ok - Sprites (Famine)
 TotallyNotIlias - Sprites (War)
 Cometz - Sprites (Pestilence, Boss Portraits)
 
 jubbalub - Tumor Item Concept
 NotYourSagittarius - Original Character Design
-kittenchilly - Additional Programming
 We Strvn - Extra Room Design</description>
-    <version>1.31</version>
+    <version>1.32</version>
     <visibility>Public</visibility>
     <tag id="Lua"/>
     <tag id="Items"/>
