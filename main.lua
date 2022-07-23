@@ -5425,7 +5425,7 @@ end
 
 local spawnRNG = RNG()
 mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, function(_)
-	if StageAPI and StageAPI.Loaded and not StageAPI.InTestMode then
+	if StageAPI and StageAPI.Loaded and not StageAPI.InTestMode and not game:IsGreedMode() then
 		local roomDesc = GetFirstBossRoomDesc(game:GetLevel())
 		spawnRNG:SetSeed(roomDesc.SpawnSeed, 0)
 		
@@ -5442,7 +5442,7 @@ end)
 
 --book of revelations
 mod:AddCallback(ModCallbacks.MC_USE_ITEM,function(_,collectible)
-	if StageAPI and StageAPI.Loaded and not StageAPI.InTestMode then
+	if StageAPI and StageAPI.Loaded and not StageAPI.InTestMode not game:IsGreedMode() then
 		local roomDesc = GetFirstBossRoomDesc(game:GetLevel())
 		
 		local horseman = FloorVerify()
