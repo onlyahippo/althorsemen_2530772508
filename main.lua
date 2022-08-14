@@ -4,7 +4,7 @@ local game = Game()
 local sfx = SFXManager()
 
 local firstLoaded = true
-local loadText = "Alt Horsemen v5.45 (COMPLETE)"
+local loadText = "Alt Horsemen v5.5 (COMPLETE)"
 local loadTextFailed = "Alt Horsemen load failed (STAGEAPI Disabled)"
 
 ------------------------------------------------------
@@ -957,8 +957,8 @@ function mod:War2AI(npc)
 		if sprite:IsFinished("BigBoomTime") then
 			local boom = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.BOMB_EXPLOSION, 0, npc.Position, Vector.Zero, player):ToEffect()
 			boom.SpriteScale = Vector(2,2)
-			local boom = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF02, 1, npc.Position, Vector.Zero, player):ToEffect()
-			boom.SpriteScale = Vector(2,2)
+			local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF02, 1, npc.Position, Vector.Zero, player):ToEffect()
+			poof.SpriteScale = Vector(2,2)
 			
 			for i, entity in ipairs(Isaac.FindByType(w2.army.id, w2.army.variant)) do
 				entity:Kill()
