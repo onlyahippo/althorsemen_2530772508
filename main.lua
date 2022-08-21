@@ -4,7 +4,7 @@ local game = Game()
 local sfx = SFXManager()
 
 local firstLoaded = true
-local loadText = "Alt Horsemen v5.6 (COMPLETE)"
+local loadText = "Alt Horsemen v5.61 (COMPLETE)"
 local loadTextFailed = "Alt Horsemen load failed (STAGEAPI Disabled)"
 
 ------------------------------------------------------
@@ -2721,8 +2721,6 @@ function mod:Death2AI(npc)
 			elseif d.stateTimer > 0 then
 				d.stateTimer = d.stateTimer - 1 
 			else
-				local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector.Zero, npc):ToEffect()
-				poof.Color = npc:GetData().poofColor
 				npc:Remove()
 			end
 		end
