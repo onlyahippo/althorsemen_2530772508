@@ -4,7 +4,7 @@ local game = Game()
 local sfx = SFXManager()
 
 local firstLoaded = true
-local loadText = "Alt Horsemen v5.44 (COMPLETE)"
+local loadText = "Alt Horsemen v5.610 (COMPLETE)"
 local loadTextFailed = "Alt Horsemen load failed (STAGEAPI Disabled)"
 
 ------------------------------------------------------
@@ -957,8 +957,8 @@ function mod:War2AI(npc)
 		if sprite:IsFinished("BigBoomTime") then
 			local boom = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.BOMB_EXPLOSION, 0, npc.Position, Vector.Zero, player):ToEffect()
 			boom.SpriteScale = Vector(2,2)
-			local boom = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF02, 1, npc.Position, Vector.Zero, player):ToEffect()
-			boom.SpriteScale = Vector(2,2)
+			local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF02, 1, npc.Position, Vector.Zero, player):ToEffect()
+			poof.SpriteScale = Vector(2,2)
 			
 			for i, entity in ipairs(Isaac.FindByType(w2.army.id, w2.army.variant)) do
 				entity:Kill()
@@ -2671,7 +2671,7 @@ function mod:Death2AI(npc)
 		--transform
 		elseif d.substate == 1 then
 			if sprite:IsEventTriggered("Effect") then
-				local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector.Zero, player):ToEffect()
+				local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector.Zero, npc):ToEffect()
 				poof.Color = d.poofColor
 				npc.EntityCollisionClass = EntityCollisionClass.ENTCOLL_PLAYERONLY
 				
@@ -2721,8 +2721,6 @@ function mod:Death2AI(npc)
 			elseif d.stateTimer > 0 then
 				d.stateTimer = d.stateTimer - 1 
 			else
-				local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, npc.Position, Vector.Zero, npc):ToEffect()
-				poof.Color = npc:GetData().poofColor
 				npc:Remove()
 			end
 		end
