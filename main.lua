@@ -4,7 +4,7 @@ local game = Game()
 local sfx = SFXManager()
 
 local firstLoaded = true
-local loadText = "Alt Horsemen v5.61 (COMPLETE)"
+local loadText = "Alt Horsemen v5.62 (COMPLETE)"
 local loadTextFailed = "Alt Horsemen load failed (STAGEAPI Disabled)"
 
 ------------------------------------------------------
