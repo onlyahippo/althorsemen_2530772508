@@ -4,7 +4,7 @@ local game = Game()
 local sfx = SFXManager()
 
 local firstLoaded = true
-local loadText = "Alt Horsemen v5.62 (COMPLETE)"
+local loadText = "Alt Horsemen v5.65 (COMPLETE)"
 local loadTextFailed = "Alt Horsemen load failed (STAGEAPI Disabled)"
 
 ------------------------------------------------------
@@ -5416,7 +5416,13 @@ local spawnRNG = RNG()
 mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, function(_)
 	if StageAPI and StageAPI.Loaded and not StageAPI.InTestMode and not game:IsGreedMode() then
 		local roomDesc = GetFirstBossRoomDesc(game:GetLevel())
-		spawnRNG:SetSeed(roomDesc.SpawnSeed, 0)
+		if roomDesc then
+			spawnRNG:SetSeed(roomDesc.SpawnSeed, 1)
+		else
+			local rand = Random()
+			if rand == 0 then rand = 1 end
+			spawnRNG:SetSeed(rand, 1)
+		end
 		
 		local horseman = FloorVerify()
 		if horseman then
@@ -5456,7 +5462,7 @@ end
 
 if StageAPI and firstLoaded then	
 	mod.StageAPIBosses = {
-		p2 = StageAPI.AddBossData(p2.name, {
+		StageAPI.AddBossData(p2.name, {
 			Name = p2.name,
 			Portrait = p2.portrait,
 			Offset = Vector(0,-15),
@@ -5465,7 +5471,7 @@ if StageAPI and firstLoaded then
 			Rooms = StageAPI.RoomsList("AHPestRooms", require("resources.luarooms.boss_pestilence2")),
 			Horseman = true,
 		}),
-		--[[p2alt = StageAPI.AddBossData(p2.nameAlt, {
+		--[[StageAPI.AddBossData(p2.nameAlt, {
 			Name = p2.name,
 			Portrait = p2.portraitAlt,
 			Offset = Vector(0,-15),
@@ -5474,7 +5480,7 @@ if StageAPI and firstLoaded then
 			Rooms = StageAPI.RoomsList("AHPestAltRooms", require("resources.luarooms.boss_pestilence_alt")),
 			Horseman = true,
 		})]]
-		d2 = StageAPI.AddBossData(d2.name, {
+		StageAPI.AddBossData(d2.name, {
 			Name = d2.name,
 			Portrait = d2.portrait,
 			Offset = Vector(0,-22),
@@ -5483,7 +5489,7 @@ if StageAPI and firstLoaded then
 			Rooms = StageAPI.RoomsList("AHDeathRooms", require("resources.luarooms.boss_death2")),
 			Horseman = true,
 		}),
-		d2alt = StageAPI.AddBossData(d2.nameAlt, {
+		StageAPI.AddBossData(d2.nameAlt, {
 			Name = d2.name,
 			Portrait = d2.portraitAlt,
 			Offset = Vector(0,-22),
@@ -5492,7 +5498,7 @@ if StageAPI and firstLoaded then
 			Rooms = StageAPI.RoomsList("AHDeathAltRooms", require("resources.luarooms.boss_death2_alt")),
 			Horseman = true,
 		}),
-		w2 = StageAPI.AddBossData(w2.name, {
+		StageAPI.AddBossData(w2.name, {
 			Name = w2.name,
 			Portrait = w2.portrait,
 			Offset = Vector(0,-22),
@@ -5501,7 +5507,7 @@ if StageAPI and firstLoaded then
 			Rooms = StageAPI.RoomsList("AHWarRooms", require("resources.luarooms.boss_war2")),
 			Horseman = true,
 		}),
-		w2alt = StageAPI.AddBossData(w2.nameAlt, {
+		StageAPI.AddBossData(w2.nameAlt, {
 			Name = w2.name,
 			Portrait = w2.portraitAlt,
 			Offset = Vector(0,-22),
@@ -5510,7 +5516,7 @@ if StageAPI and firstLoaded then
 			Rooms = StageAPI.RoomsList("AHWarAltRooms", require("resources.luarooms.boss_war2_alt")),
 			Horseman = true,
 		}),
-		f2 = StageAPI.AddBossData(f2.name, {
+		StageAPI.AddBossData(f2.name, {
 			Name = f2.name,
 			Portrait = f2.portrait,
 			Offset = Vector(0,-15),
@@ -5519,7 +5525,7 @@ if StageAPI and firstLoaded then
 			Rooms = StageAPI.RoomsList("AHFamineRooms", require("resources.luarooms.boss_famine2")),
 			Horseman = true,
 		}),
-		f2alt = StageAPI.AddBossData(f2.nameAlt, {
+		StageAPI.AddBossData(f2.nameAlt, {
 			Name = f2.name,
 			Portrait = f2.portraitAlt,
 			Offset = Vector(0,-15),
@@ -5528,7 +5534,7 @@ if StageAPI and firstLoaded then
 			Rooms = StageAPI.RoomsList("AHFamineAltRooms", require("resources.luarooms.boss_famine2_alt")),
 			Horseman = true,
 		}),
-		bdrip = StageAPI.AddBossData(bdrip.name, {
+		StageAPI.AddBossData(bdrip.name, {
 			Name = bdrip.name,
 			Portrait = bdrip.portrait,
 			Offset = Vector(50,50),
@@ -5537,6 +5543,11 @@ if StageAPI and firstLoaded then
 			Rooms = StageAPI.RoomsList("AHBigDripRooms", require("resources.luarooms.bigdrip")),
 		}),
 	}
+
+	for _, boss in ipairs(mod.StageAPIBosses) do
+		local bossData = StageAPI.GetBossData(boss)
+		bossData.IsAHBoss = true
+	end
 end
 
 --New Game
@@ -5624,6 +5635,68 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function(_)
 	end
 end
 )
+
+local function areAllBossesGone()
+	if game:GetRoom():GetAliveBossesCount() ~= 0 then
+		return false
+	end
+
+	for _, entity in ipairs(Isaac.GetRoomEntities()) do
+		if entity:IsBoss() then
+			return false
+		end
+	end
+
+	return true
+end
+
+--New Age Nevermore processing
+function mod.MusicLogic()
+	if not StageAPI or not FiendFolio then return end
+	if StageAPI.InNewStage() then return end
+	local currentRoom = StageAPI.GetCurrentRoom()
+	local isAHBoss
+	local bossData
+	if currentRoom and currentRoom.PersistentData.BossID then
+		bossData = StageAPI.GetBossData(currentRoom.PersistentData.BossID)
+		if bossData and bossData.IsAHBoss then
+			isAHBoss = true
+		end
+	end
+
+	if isAHBoss then
+		local mm = MusicManager()
+		local musicId = mm:GetCurrentMusicID()
+		local stageType = Game():GetLevel():GetStageType()
+
+		local newId = nil
+		local queueMaize
+		if musicId == Music.MUSIC_BOSS or musicId == Music.MUSIC_BOSS2 or musicId == Music.MUSIC_BOSS3 then
+			newId = FiendFolio.Music.HorsemanTheme
+		elseif musicId == Music.MUSIC_JINGLE_BOSS then
+			newId = FiendFolio.Music.HorsemanAppear
+		elseif musicId == Music.MUSIC_JINGLE_BOSS_OVER or musicId == Music.MUSIC_JINGLE_BOSS_OVER2 or musicId == Music.MUSIC_JINGLE_BOSS_OVER3
+		or ((musicId == FiendFolio.Music.HorsemanTheme or musicId == FiendFolio.Music.AltBossTheme or musicId == FiendFolio.Music.BossTheme) and areAllBossesGone()) then
+			newId = FiendFolio.Music.HorsemanOverJingle
+			queueMaize = true
+		elseif musicId == Music.MUSIC_BOSS_OVER then
+			newId = FiendFolio.Music.BossOver
+		end
+
+		if newId then
+			mm:Play(newId, 0)
+			mm:UpdateVolume()
+			if queueMaize then
+				mm:Queue(FiendFolio.Music.BossOver)
+			end
+		end
+	end
+end
+
+function mod:OnRender()
+	mod.MusicLogic()
+end
+mod:AddCallback(ModCallbacks.MC_POST_RENDER, mod.OnRender)
 
 --EID--------
 if EID then
