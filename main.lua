@@ -4,7 +4,7 @@ local game = Game()
 local sfx = SFXManager()
 
 local firstLoaded = true
-local loadText = "Alt Horsemen v5.65 (COMPLETE)"
+local loadText = "Alt Horsemen v5.66 (COMPLETE)"
 local loadTextFailed = "Alt Horsemen load failed (STAGEAPI Disabled)"
 
 ------------------------------------------------------
@@ -4777,11 +4777,11 @@ function mod:CacheUpdate(player, flag)
 		for i = 1, 3 do
 			player:CheckFamiliar(tc["variant"..i], check == i and 1 or 0, player:GetCollectibleRNG(tc.id), Isaac.GetItemConfig():GetCollectible(tc.id))
 		end
-				
+
 		if myTumors < tumorNum then
 			sfx:Play(ahSfx.tumorCollect, 1, 2, false, 1)
+			myTumors = tumorNum
 		end
-		myTumors = tumorNum
 	end
 	if flag == CacheFlag.CACHE_FIREDELAY and tc.tearsUp then
 		if player:HasCollectible(tc.id) then
