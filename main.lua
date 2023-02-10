@@ -2,10 +2,40 @@ Althorsemen = RegisterMod("Alt Horsemen",1)
 local mod = Althorsemen
 local game = Game()
 local sfx = SFXManager()
+local baseRNG = RNG()
 
 local firstLoaded = true
-local loadText = "Alt Horsemen v5.66 (COMPLETE)"
+local loadText = "Alt Horsemen v5.7 (COMPLETE)"
 local loadTextFailed = "Alt Horsemen load failed (STAGEAPI Disabled)"
+
+------------------------CONFIG------------------------
+
+StageAPI.UnregisterCallbacks("Althorsemen")
+
+local json = require("json")
+function mod.GetSaveData()
+    if not mod.SavaData then
+        if Isaac.HasModData(mod) then
+            mod.SavaData = json.decode(Isaac.LoadModData(mod))
+        else
+            mod.SavaData = {}
+        end
+		mod.CheckDefaultConfigs(mod.SavaData)
+    end
+
+    return mod.SavaData
+end
+
+function mod.StoreSaveData()
+    Isaac.SaveModData(mod, json.encode(mod.SavaData))
+end
+
+mod.Scripts = {
+	DSS = {
+	  Menu				= include("ahscripts.DSS.AHMenu"),
+	  DefaultConfigs	= include("ahscripts.DSS.DefaultConfigs"),
+	},
+}
 
 ------------------------------------------------------
 
@@ -14,8 +44,6 @@ mod.CustomSFX = {
 	tumorCollect = Isaac.GetSoundIdByName("TumorCollect")
 }
 local ahSfx = mod.CustomSFX
-
-mod.HorseChance = 0.15
 
 ------------------------BOSSES------------------------
 ------------------------------------------------------
@@ -4399,7 +4427,7 @@ function mod:RandomInt(rng, iMin, iMax)
 
 	if not iMin then
 		iMin = rng
-		rng = RNG()
+		rng = baseRNG
 	end
 	
 	if not iMax then
@@ -5323,6 +5351,14 @@ local function FloorVerify()
 	local stageType = level:GetStageType()
 	
 	if not backwards then
+
+		--FFG
+		if FFGRACE then
+			if FFGRACE.STAGE.Boiler:IsStage() and not bossSeen.f2 then
+				return f2.name .. " Boiler"
+			end
+		end
+
 		--normal
 		if stageType == StageType.STAGETYPE_REPENTANCE then
 			if (stage == LevelStage.STAGE1_1 or stage == LevelStage.STAGE1_2) and not bossSeen.f2 then
@@ -5425,8 +5461,14 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, function(_)
 		end
 		
 		local horseman = FloorVerify()
+
+		local horsechance = 0.15
+		if mod.GetSaveData().HorseChance then
+			horsechance = 0.01*mod.GetSaveData().HorseChance
+		end
+
 		if horseman then
-			if spawnRNG:RandomFloat() < mod.HorseChance then
+			if spawnRNG:RandomFloat() < horsechance then
 				ForceHorseman(roomDesc, horseman)
 			end
 		end
@@ -5449,7 +5491,7 @@ end,CollectibleType.COLLECTIBLE_BOOK_OF_REVELATIONS)
 
 if StageAPI then
 	StageAPI.AddCallback("Althorsemen", "PRE_STAGEAPI_SELECT_BOSS_ITEM", 1, function(pickup, currentRoom)
-		if doHorseDrop then
+		if doHorseDrop and (mod.GetSaveData().EnableItemDrop == nil or mod.GetSaveData().EnableItemDrop == 1) then
 			doHorseDrop = false
 			pickup:Morph(pickup.Type, pickup.Variant, tc.id)
 			return true
@@ -5542,6 +5584,17 @@ if StageAPI and firstLoaded then
 			Weight = 0,
 			Rooms = StageAPI.RoomsList("AHBigDripRooms", require("resources.luarooms.bigdrip")),
 		}),
+
+		--FFG
+		StageAPI.AddBossData(f2.name .. " Boiler", {
+			Name = f2.name .. " Boiler",
+			Portrait = "gfx/bosses/famine2/boiler/portrait_famine2_boiler.png",
+			Offset = Vector(0,-15),
+			Bossname = f2.bossName,
+			Weight = f2.weight,
+			Rooms = StageAPI.RoomsList("AHFamineRooms", require("resources.luarooms.boss_famine2")),
+			Horseman = true,
+		}),
 	}
 
 	for _, boss in ipairs(mod.StageAPIBosses) do
@@ -5556,6 +5609,10 @@ mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, function(_, isContinue)
 	--for k, v in pairs(floorInfo.Bosses.Pool) do 
 		--print (v.BossID)
 	--end
+
+	local seeds = game:GetSeeds()
+	local startSeed = seeds:GetStartSeed()
+	baseRNG:SetSeed(startSeed, 35)
 	
 	if not isContinue then
 		if firstLoaded then
@@ -5564,6 +5621,7 @@ mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, function(_, isContinue)
 			else
 				print(loadTextFailed)
 			end
+
 			firstLoaded = false
 		end
 		
@@ -5601,6 +5659,7 @@ mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function(_)
 					
 					StageAPI.SetBossEncountered(f2.name)
 					StageAPI.SetBossEncountered(f2.nameAlt)
+					StageAPI.SetBossEncountered(f2.name .. " Boiler")
 					break
 				--WAR
 				elseif entity.Type == w2.id and entity.Variant == w2.variant then
