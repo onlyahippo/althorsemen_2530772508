@@ -5,7 +5,7 @@ local sfx = SFXManager()
 local baseRNG = RNG()
 
 local firstLoaded = true
-local loadText = "Alt Horsemen v5.7 (COMPLETE)"
+local loadText = "Alt Horsemen v5.71 (COMPLETE)"
 local loadTextFailed = "Alt Horsemen load failed (STAGEAPI Disabled)"
 
 ------------------------CONFIG------------------------
@@ -983,9 +983,9 @@ function mod:War2AI(npc)
 		end
 		
 		if sprite:IsFinished("BigBoomTime") then
-			local boom = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.BOMB_EXPLOSION, 0, npc.Position, Vector.Zero, player):ToEffect()
+			local boom = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.BOMB_EXPLOSION, 0, npc.Position, Vector.Zero, npc):ToEffect()
 			boom.SpriteScale = Vector(2,2)
-			local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF02, 1, npc.Position, Vector.Zero, player):ToEffect()
+			local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF02, 1, npc.Position, Vector.Zero, npc):ToEffect()
 			poof.SpriteScale = Vector(2,2)
 			
 			for i, entity in ipairs(Isaac.FindByType(w2.army.id, w2.army.variant)) do
@@ -5435,12 +5435,12 @@ local function ForceHorseman(roomDesc, horseman)
 					
 					StageAPI.LogMinor("Mirroring!")
 					
-					if horseman == f2.nameAlt then
+					if horseman == f2.nameAlt or horseman == f2.name .. " Boiler" then
 						BossRoomFlood(mirroredDesc, horseman)
 					end
 				end
 				
-				if horseman == f2.nameAlt then
+				if horseman == f2.nameAlt or horseman == f2.name .. " Boiler" then
 					BossRoomFlood(roomDesc, horseman)
 				end
 			end
